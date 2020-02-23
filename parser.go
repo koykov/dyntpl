@@ -10,13 +10,20 @@ import (
 )
 
 var (
-	empty    []byte
-	noFmt    = []byte(" \t\n")
-	ctlOpen  = []byte("{%")
-	ctlClose = []byte("%}")
+	empty      []byte
+	noFmt      = []byte(" \t\n")
+	ctlOpen    = []byte("{%")
+	ctlClose   = []byte("%}")
+	ctlTrim    = []byte("{}% ")
+	ctlTrimAll = []byte("{}%= ")
 
 	reCutComments = regexp.MustCompile(`\t*{#[^#]*#}\n*`)
 	reCutFmt      = regexp.MustCompile(`\n+\t*\s*`)
+
+	reTplPS = regexp.MustCompile(`=\s*(.*) prefix (.*) suffix (.*)`)
+	reTplP  = regexp.MustCompile(`=\s*(.*) prefix (.*)`)
+	reTplS  = regexp.MustCompile(`=\s*(.*) suffix (.*)`)
+	reTpl   = regexp.MustCompile(`= (.*)`)
 )
 
 func Parse(tpl []byte, keepFmt bool) (tree *Tree, err error) {
@@ -46,7 +53,8 @@ type Parser struct {
 	keepFmt bool
 	tpl     []byte
 
-	cl, cs int
+	// Counters of conditions, loops and switches.
+	cc, cl, cs int
 }
 
 func (p *Parser) cutComments() {
@@ -71,7 +79,7 @@ func (p *Parser) parseTpl() (*Tree, error) {
 			if inCtl {
 				return nil, ErrUnexpectedEOF
 			}
-			tree.nodes = append(tree.nodes, Node{typ: TypeRaw, raw: p.tpl[o:]})
+			tree.addRaw(p.tpl[o:])
 			o = i
 			break
 		}
@@ -81,14 +89,44 @@ func (p *Parser) parseTpl() (*Tree, error) {
 				return nil, ErrUnexpectedEOF
 			}
 			e += 2
-			tree.nodes = append(tree.nodes, Node{typ: TypeTpl, raw: p.tpl[o:e]})
+			node := Node{}
+			e, err := p.processCtl(tree, &node, p.tpl[o:e], o)
+			if err != nil {
+				return nil, err
+			}
 			o, i = e, e
 			inCtl = false
 		} else {
-			tree.nodes = append(tree.nodes, Node{typ: TypeRaw, raw: p.tpl[o:i]})
+			tree.addRaw(p.tpl[o:i])
 			o = i
 			inCtl = true
 		}
 	}
 	return tree, nil
+}
+
+func (p *Parser) processCtl(tree *Tree, root *Node, ctl []byte, pos int) (offset int, err error) {
+	t := cbytealg.Trim(ctl, ctlTrim)
+	// Check tpl control
+	if reTplPS.Match(t) || reTplP.Match(t) || reTplS.Match(t) || reTpl.Match(t) {
+		root.typ = TypeTpl
+		if m := reTplPS.FindSubmatch(t); m != nil {
+			root.raw = m[1]
+			root.prefix = m[2]
+			root.suffix = m[3]
+		} else if m := reTplP.FindSubmatch(t); m != nil {
+			root.raw = m[1]
+			root.prefix = m[2]
+		} else if m := reTplS.FindSubmatch(t); m != nil {
+			root.raw = m[1]
+			root.suffix = m[2]
+		} else {
+			root.raw = cbytealg.Trim(t, ctlTrimAll)
+		}
+		tree.addNode(*root)
+		offset = pos + len(ctl)
+		return
+	}
+
+	return 0, ErrBadCtl
 }

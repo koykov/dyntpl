@@ -24,15 +24,15 @@ func (typ Type) String() string {
 	case TypeTpl:
 		return "tpl"
 	case TypeCondition:
-		return "cnd"
+		return "cond"
 	case TypeLoop:
-		return "lop"
+		return "loop"
 	case TypeCtx:
 		return "ctx"
 	case TypeSwitch:
-		return "swt"
+		return "switch"
 	case TypeCase:
-		return "cas"
+		return "case"
 	case TypeDefault:
 		return "def"
 	default:
@@ -45,9 +45,11 @@ type Tree struct {
 }
 
 type Node struct {
-	typ   Type
-	raw   []byte
-	child []Node
+	typ    Type
+	raw    []byte
+	prefix []byte
+	suffix []byte
+	child  []Node
 }
 
 func (t *Tree) humanReadable() []byte {
@@ -66,9 +68,32 @@ func (t *Tree) hrHelper(buf *bytes.Buffer, nodes []Node, indent []byte, depth in
 		buf.WriteByte(':')
 		buf.WriteByte(' ')
 		buf.Write(node.raw)
+		if len(node.prefix) > 0 {
+			buf.WriteString(" pfx ")
+			buf.Write(node.prefix)
+		}
+		if len(node.suffix) > 0 {
+			buf.WriteString(" sfx ")
+			buf.Write(node.suffix)
+		}
 		buf.WriteByte('\n')
 		if len(node.child) > 0 {
 			t.hrHelper(buf, node.child, indent, depth+1)
 		}
 	}
+}
+
+func (t *Tree) addNode(node Node) {
+	t.nodes = append(t.nodes, node)
+}
+
+func (t *Tree) addRaw(raw []byte) {
+	if len(raw) == 0 {
+		return
+	}
+	t.nodes = append(t.nodes, Node{typ: TypeRaw, raw: raw})
+}
+
+func (t *Tree) addTpl(tpl []byte) {
+	t.nodes = append(t.nodes, Node{typ: TypeTpl, raw: tpl})
 }
