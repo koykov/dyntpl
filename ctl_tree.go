@@ -5,16 +5,28 @@ import (
 )
 
 type Type int
+type CondOp int
 
 const (
 	TypeRaw Type = iota
 	TypeTpl
-	TypeCondition
+	TypeCond
+	TypeCondTrue
+	TypeCondFalse
 	TypeLoop
 	TypeCtx
 	TypeSwitch
 	TypeCase
 	TypeDefault
+	TypeDiv
+
+	CondOpUnk CondOp = iota
+	CondOpEq
+	CondOpNq
+	CondOpGt
+	CondOpGtq
+	CondOpLt
+	CondOpLtq
 )
 
 func (typ Type) String() string {
@@ -23,8 +35,12 @@ func (typ Type) String() string {
 		return "raw"
 	case TypeTpl:
 		return "tpl"
-	case TypeCondition:
+	case TypeCond:
 		return "cond"
+	case TypeCondTrue:
+		return "true"
+	case TypeCondFalse:
+		return "false"
 	case TypeLoop:
 		return "loop"
 	case TypeCtx:
@@ -35,6 +51,27 @@ func (typ Type) String() string {
 		return "case"
 	case TypeDefault:
 		return "def"
+	case TypeDiv:
+		return "div"
+	default:
+		return "unk"
+	}
+}
+
+func (c CondOp) String() string {
+	switch c {
+	case CondOpEq:
+		return "=="
+	case CondOpNq:
+		return "!="
+	case CondOpGt:
+		return ">"
+	case CondOpGtq:
+		return ">="
+	case CondOpLt:
+		return "<"
+	case CondOpLtq:
+		return "<="
 	default:
 		return "unk"
 	}
@@ -49,7 +86,12 @@ type Node struct {
 	raw    []byte
 	prefix []byte
 	suffix []byte
-	child  []Node
+
+	condL  []byte
+	condR  []byte
+	condOp CondOp
+
+	child []Node
 }
 
 func (t *Tree) humanReadable() []byte {
@@ -57,7 +99,7 @@ func (t *Tree) humanReadable() []byte {
 		return nil
 	}
 	var buf bytes.Buffer
-	t.hrHelper(&buf, t.nodes, []byte("  "), 0)
+	t.hrHelper(&buf, t.nodes, []byte("\t"), 0)
 	return buf.Bytes()
 }
 
@@ -76,6 +118,18 @@ func (t *Tree) hrHelper(buf *bytes.Buffer, nodes []Node, indent []byte, depth in
 			buf.WriteString(" sfx ")
 			buf.Write(node.suffix)
 		}
+		if len(node.condL) > 0 {
+			buf.WriteString("left ")
+			buf.Write(node.condL)
+		}
+		if node.condOp != 0 {
+			buf.WriteString(" op ")
+			buf.WriteString(node.condOp.String())
+		}
+		if len(node.condR) > 0 {
+			buf.WriteString(" right ")
+			buf.Write(node.condR)
+		}
 		buf.WriteByte('\n')
 		if len(node.child) > 0 {
 			t.hrHelper(buf, node.child, indent, depth+1)
@@ -83,17 +137,38 @@ func (t *Tree) hrHelper(buf *bytes.Buffer, nodes []Node, indent []byte, depth in
 	}
 }
 
-func (t *Tree) addNode(node Node) {
-	t.nodes = append(t.nodes, node)
+func addNode(nodes []Node, node Node) []Node {
+	nodes = append(nodes, node)
+	return nodes
 }
 
-func (t *Tree) addRaw(raw []byte) {
+func addRaw(nodes []Node, raw []byte) []Node {
 	if len(raw) == 0 {
-		return
+		return nodes
 	}
-	t.nodes = append(t.nodes, Node{typ: TypeRaw, raw: raw})
+	nodes = append(nodes, Node{typ: TypeRaw, raw: raw})
+	return nodes
 }
 
-func (t *Tree) addTpl(tpl []byte) {
-	t.nodes = append(t.nodes, Node{typ: TypeTpl, raw: tpl})
+func addTpl(nodes []Node, tpl []byte) []Node {
+	nodes = append(nodes, Node{typ: TypeTpl, raw: tpl})
+	return nodes
+}
+
+func splitNodes(nodes []Node) [][]Node {
+	if len(nodes) == 0 {
+		return nil
+	}
+	split := make([][]Node, 0)
+	var o int
+	for i, node := range nodes {
+		if node.typ == TypeDiv {
+			split = append(split, nodes[o:i])
+			o = i + 1
+		}
+	}
+	if o < len(nodes) {
+		split = append(split, nodes[o:])
+	}
+	return split
 }

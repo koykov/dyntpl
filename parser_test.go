@@ -39,7 +39,7 @@ raw: }]
 	"key1": {%= val0 %},
 	"key2": {%= val1 suffix , %}
 	{%= val2 prefix "key3" %},
-	{%= val3 prefix "key4" suffix , %}
+	{%= val3 pfx "key4" sfx , %}
 	"key5": "foo bar"
 }
 `)
@@ -51,6 +51,48 @@ tpl: val2 pfx "key3"
 raw: ,
 tpl: val3 pfx "key4" sfx ,
 raw: "key5": "foo bar"}
+`)
+
+	condOrigin = []byte(`
+<h1>Profile</h1>
+{% if user.Id == 0 %}
+You should <a href="{%= loginUrl %}">log in</a>.
+{% else %}
+Welcome, {%= user.Name %}.
+{% endif %}
+Copyright {%= brand %}
+`)
+	condExpect = []byte(`raw: <h1>Profile</h1>
+cond: left user.Id op == right 0
+	true: 
+		raw: You should <a href="
+		tpl: loginUrl
+		raw: ">log in</a>.
+	false: 
+		raw: Welcome, 
+		tpl: user.Name
+		raw: .
+raw: Copyright 
+tpl: brand
+`)
+	condNestedOrigin = []byte(`
+{% if request.Secure == 1 %}
+	{% if user.AllowBuy %}
+		{%= user.Name %}, you may buy our items safely.
+	{% else %}
+		{%= user.Name %}, you should confirm your account first.
+	{% endif %}
+{% endif %}
+`)
+	condNestedExpect = []byte(`cond: left request.Secure op == right 1
+	true: 
+		cond: 
+			true: 
+				tpl: user.Name
+				raw: , you may buy our items safely.
+			false: 
+				tpl: user.Name
+				raw: , you should confirm your account first.
 `)
 )
 
@@ -98,5 +140,19 @@ func TestParse_PrefixSuffix(t *testing.T) {
 	r := tree.humanReadable()
 	if !bytes.Equal(r, tplPSExpect) {
 		t.Errorf("prefix/suffix test failed\nexp: %s\ngot: %s", string(tplPSExpect), string(r))
+	}
+}
+
+func TestParse_Condition(t *testing.T) {
+	tree, _ := Parse(condOrigin, false)
+	r := tree.humanReadable()
+	if !bytes.Equal(r, condExpect) {
+		t.Errorf("condition test failed\nexp: %s\ngot: %s", string(condExpect), string(r))
+	}
+
+	treeNested, _ := Parse(condNestedOrigin, false)
+	rNested := treeNested.humanReadable()
+	if !bytes.Equal(rNested, condNestedExpect) {
+		t.Errorf("nested condition test failed\nexp: %s\ngot: %s", string(condNestedExpect), string(rNested))
 	}
 }
