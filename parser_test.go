@@ -94,6 +94,59 @@ tpl: brand
 				tpl: user.Name
 				raw: , you should confirm your account first.
 `)
+
+	loopOrigin = []byte(`
+<h2>Export history</h2>
+<label>Type</label>
+<select name="type">
+	{% for k, v := range user.historyTags %}
+	<option value="{%= k %}">{%= v %}</option>
+	{% endfor %}
+</select>
+<label>Format</label>
+<select name="fmt">
+	{% for i:=0; i<4; i++ %}
+	<option value="{%= i %}">{%= allowFmt[i] %}</option>
+	{% endfor %}
+</select>
+`)
+	loopExpect = []byte(`raw: <h2>Export history</h2><label>Type</label><select name="type">
+rloop: key k val v src user.historyTags
+	raw: <option value="
+	tpl: k
+	raw: ">
+	tpl: v
+	raw: </option>
+raw: </select><label>Format</label><select name="fmt">
+cloop: cnt i cond < lim 4 op ++
+	raw: <option value="
+	tpl: i
+	raw: ">
+	tpl: allowFmt[i]
+	raw: </option>
+raw: </select>
+`)
+	loopSepOrigin = []byte(`
+{
+	"rules": [
+		{% for _, rule := range config.Rules sep , %}
+		{
+			"key": {%= rule.Id %},
+			"val": {%= rule.Slug %}
+		}
+		{% endfor %}
+	]
+}
+`)
+	loopSepExpect = []byte(`raw: {"rules": [
+rloop: val rule src config.Rules sep ,
+	raw: {"key": 
+	tpl: rule.Id
+	raw: ,"val": 
+	tpl: rule.Slug
+	raw: }
+raw: ]}
+`)
 )
 
 func TestParse_CutComments(t *testing.T) {
@@ -154,5 +207,19 @@ func TestParse_Condition(t *testing.T) {
 	rNested := treeNested.humanReadable()
 	if !bytes.Equal(rNested, condNestedExpect) {
 		t.Errorf("nested condition test failed\nexp: %s\ngot: %s", string(condNestedExpect), string(rNested))
+	}
+}
+
+func TestParse_Loop(t *testing.T) {
+	tree, _ := Parse(loopOrigin, false)
+	r := tree.humanReadable()
+	if !bytes.Equal(r, loopExpect) {
+		t.Errorf("loop test failed\nexp: %s\ngot: %s", string(loopExpect), string(r))
+	}
+
+	treeSep, _ := Parse(loopSepOrigin, false)
+	rSep := treeSep.humanReadable()
+	if !bytes.Equal(rSep, loopSepExpect) {
+		t.Errorf("loop with sep test failed\nexp: %s\ngot: %s", string(loopSepExpect), string(rSep))
 	}
 }

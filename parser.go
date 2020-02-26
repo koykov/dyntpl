@@ -28,7 +28,9 @@ type target map[int]int
 
 var (
 	empty      []byte
-	noSpace    = []byte(" ")
+	space      = []byte(" ")
+	comma      = []byte(",")
+	uscore     = []byte("_")
 	noFmt      = []byte(" \t\n")
 	ctlOpen    = []byte("{%")
 	ctlClose   = []byte("%}")
@@ -36,6 +38,7 @@ var (
 	ctlTrimAll = []byte("{}%= ")
 	condElse   = []byte(`else`)
 	condEnd    = []byte(`endif`)
+	loopEnd    = []byte(`endfor`)
 
 	opEq  = []byte("==")
 	opNq  = []byte("!=")
@@ -43,6 +46,8 @@ var (
 	opGtq = []byte(">=")
 	opLt  = []byte("<")
 	opLtq = []byte("<=")
+	opInc = []byte("++")
+	opDec = []byte("--")
 
 	reCutComments = regexp.MustCompile(`\t*{#[^#]*#}\n*`)
 	reCutFmt      = regexp.MustCompile(`\n+\t*\s*`)
@@ -55,6 +60,10 @@ var (
 	reCond        = regexp.MustCompile(`if .*`)
 	reCondExpr    = regexp.MustCompile(`if (.*)(==|!=|>|>=|<|<=)(.*)`)
 	reCondComplex = regexp.MustCompile(`if .*&&|\|\||\(|\).*`)
+
+	reLoop      = regexp.MustCompile(`for .*`)
+	reLoopRange = regexp.MustCompile(`for ([^:]+)\s*:*=\s*range\s*([^\s]*)\s*(?:separator|sep)*\s*(.*)`)
+	reLoopCount = regexp.MustCompile(`for (\w*)\s*:*=\d+\s*;\s*\w+\s*(<|<=|>|>=|!=)+\s*([^;]+)\s*;\s*\w*(--|\+\+)+\s*(?:separator|sep)*\s*(.*)`)
 )
 
 func Parse(tpl []byte, keepFmt bool) (tree *Tree, err error) {
@@ -210,31 +219,89 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 		return nodes, offset, up, err
 	}
 
+	// Check loop structure.
+	if reLoop.Match(t) {
+		if m := reLoopRange.FindSubmatch(t); m != nil {
+			root.typ = TypeLoopRange
+			if bytes.Contains(m[1], comma) {
+				kv := bytes.Split(m[1], comma)
+				root.loopKey = cbytealg.Trim(kv[0], space)
+				if bytes.Equal(root.loopKey, uscore) {
+					root.loopKey = nil
+				}
+				root.loopVal = cbytealg.Trim(kv[1], space)
+			} else {
+				root.loopKey = cbytealg.Trim(m[1], space)
+			}
+			root.loopSrc = m[2]
+			if len(m) > 2 {
+				root.loopSep = m[3]
+			}
+		} else if m := reLoopCount.FindSubmatch(t); m != nil {
+			root.typ = TypeLoopCount
+			root.loopCnt = m[1]
+			root.loopCondOp = p.parseOp(m[2])
+			root.loopLim = m[3]
+			root.loopCntOp = p.parseOp(m[4])
+			if len(m) > 4 {
+				root.loopSep = m[5]
+			}
+		} else {
+			return nodes, 0, up, ErrLoopParse
+		}
+
+		target := newTarget(p)
+		p.cl++
+
+		root.child = make([]Node, 0)
+		root.child, offset, err = p.parseTpl(root.child, pos+len(ctl), target)
+
+		nodes = addNode(nodes, *root)
+		return nodes, offset, up, err
+	}
+	// Check loop end.
+	if bytes.Equal(t, loopEnd) {
+		p.cl--
+		offset = pos + len(ctl)
+		up = true
+		return nodes, offset, up, err
+	}
+
 	return nodes, 0, up, ErrBadCtl
 }
 
-func (p *Parser) parseCondExpr(expr []byte) (l, r []byte, op CondOp) {
+func (p *Parser) parseCondExpr(expr []byte) (l, r []byte, op Op) {
 	if m := reCondExpr.FindSubmatch(expr); m != nil {
-		l = cbytealg.Trim(m[1], noSpace)
-		r = cbytealg.Trim(m[3], noSpace)
-		switch {
-		case bytes.Equal(m[2], opEq):
-			op = CondOpEq
-		case bytes.Equal(m[2], opNq):
-			op = CondOpNq
-		case bytes.Equal(m[2], opGt):
-			op = CondOpGt
-		case bytes.Equal(m[2], opGtq):
-			op = CondOpGtq
-		case bytes.Equal(m[2], opLt):
-			op = CondOpLt
-		case bytes.Equal(m[2], opLtq):
-			op = CondOpLtq
-		default:
-			op = CondOpUnk
-		}
+		l = cbytealg.Trim(m[1], space)
+		r = cbytealg.Trim(m[3], space)
+		op = p.parseOp(m[2])
 	}
 	return
+}
+
+func (p *Parser) parseOp(src []byte) Op {
+	var op Op
+	switch {
+	case bytes.Equal(src, opEq):
+		op = OpEq
+	case bytes.Equal(src, opNq):
+		op = OpNq
+	case bytes.Equal(src, opGt):
+		op = OpGt
+	case bytes.Equal(src, opGtq):
+		op = OpGtq
+	case bytes.Equal(src, opLt):
+		op = OpLt
+	case bytes.Equal(src, opLtq):
+		op = OpLtq
+	case bytes.Equal(src, opInc):
+		op = OpInc
+	case bytes.Equal(src, opDec):
+		op = OpDec
+	default:
+		op = OpUnk
+	}
+	return op
 }
 
 func newTarget(p *Parser) *target {

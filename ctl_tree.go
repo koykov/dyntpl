@@ -5,7 +5,7 @@ import (
 )
 
 type Type int
-type CondOp int
+type Op int
 
 const (
 	TypeRaw Type = iota
@@ -13,20 +13,23 @@ const (
 	TypeCond
 	TypeCondTrue
 	TypeCondFalse
-	TypeLoop
+	TypeLoopRange
+	TypeLoopCount
 	TypeCtx
 	TypeSwitch
 	TypeCase
 	TypeDefault
 	TypeDiv
 
-	CondOpUnk CondOp = iota
-	CondOpEq
-	CondOpNq
-	CondOpGt
-	CondOpGtq
-	CondOpLt
-	CondOpLtq
+	OpUnk Op = iota
+	OpEq
+	OpNq
+	OpGt
+	OpGtq
+	OpLt
+	OpLtq
+	OpInc
+	OpDec
 )
 
 func (typ Type) String() string {
@@ -41,8 +44,10 @@ func (typ Type) String() string {
 		return "true"
 	case TypeCondFalse:
 		return "false"
-	case TypeLoop:
-		return "loop"
+	case TypeLoopRange:
+		return "rloop"
+	case TypeLoopCount:
+		return "cloop"
 	case TypeCtx:
 		return "ctx"
 	case TypeSwitch:
@@ -58,20 +63,24 @@ func (typ Type) String() string {
 	}
 }
 
-func (c CondOp) String() string {
+func (c Op) String() string {
 	switch c {
-	case CondOpEq:
+	case OpEq:
 		return "=="
-	case CondOpNq:
+	case OpNq:
 		return "!="
-	case CondOpGt:
+	case OpGt:
 		return ">"
-	case CondOpGtq:
+	case OpGtq:
 		return ">="
-	case CondOpLt:
+	case OpLt:
 		return "<"
-	case CondOpLtq:
+	case OpLtq:
 		return "<="
+	case OpInc:
+		return "++"
+	case OpDec:
+		return "--"
 	default:
 		return "unk"
 	}
@@ -89,7 +98,16 @@ type Node struct {
 
 	condL  []byte
 	condR  []byte
-	condOp CondOp
+	condOp Op
+
+	loopKey    []byte
+	loopVal    []byte
+	loopSrc    []byte
+	loopCnt    []byte
+	loopCntOp  Op
+	loopCondOp Op
+	loopLim    []byte
+	loopSep    []byte
 
 	child []Node
 }
@@ -118,6 +136,7 @@ func (t *Tree) hrHelper(buf *bytes.Buffer, nodes []Node, indent []byte, depth in
 			buf.WriteString(" sfx ")
 			buf.Write(node.suffix)
 		}
+
 		if len(node.condL) > 0 {
 			buf.WriteString("left ")
 			buf.Write(node.condL)
@@ -130,6 +149,41 @@ func (t *Tree) hrHelper(buf *bytes.Buffer, nodes []Node, indent []byte, depth in
 			buf.WriteString(" right ")
 			buf.Write(node.condR)
 		}
+
+		if len(node.loopKey) > 0 {
+			buf.WriteString("key ")
+			buf.Write(node.loopKey)
+			buf.WriteByte(' ')
+		}
+		if len(node.loopVal) > 0 {
+			buf.WriteString("val ")
+			buf.Write(node.loopVal)
+		}
+		if len(node.loopSrc) > 0 {
+			buf.WriteString(" src ")
+			buf.Write(node.loopSrc)
+		}
+		if len(node.loopCnt) > 0 {
+			buf.WriteString("cnt ")
+			buf.Write(node.loopCnt)
+		}
+		if node.loopCondOp != 0 {
+			buf.WriteString(" cond ")
+			buf.WriteString(node.loopCondOp.String())
+		}
+		if len(node.loopLim) > 0 {
+			buf.WriteString(" lim ")
+			buf.Write(node.loopLim)
+		}
+		if node.loopCntOp != 0 {
+			buf.WriteString(" op ")
+			buf.WriteString(node.loopCntOp.String())
+		}
+		if len(node.loopSep) > 0 {
+			buf.WriteString(" sep ")
+			buf.Write(node.loopSep)
+		}
+
 		buf.WriteByte('\n')
 		if len(node.child) > 0 {
 			t.hrHelper(buf, node.child, indent, depth+1)
