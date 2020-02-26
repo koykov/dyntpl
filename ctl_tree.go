@@ -109,6 +109,12 @@ type Node struct {
 	loopLim    []byte
 	loopSep    []byte
 
+	switchArg []byte
+
+	caseL  []byte
+	caseR  []byte
+	caseOp Op
+
 	child []Node
 }
 
@@ -184,6 +190,18 @@ func (t *Tree) hrHelper(buf *bytes.Buffer, nodes []Node, indent []byte, depth in
 			buf.Write(node.loopSep)
 		}
 
+		if len(node.caseL) > 0 &&node.caseOp != 0 && len(node.caseR) > 0 {
+			buf.WriteString("left ")
+			buf.Write(node.caseL)
+			buf.WriteString(" op ")
+			buf.WriteString(node.caseOp.String())
+			buf.WriteString(" right ")
+			buf.Write(node.caseR)
+		} else if len(node.caseL) > 0 {
+			buf.WriteString("val ")
+			buf.Write(node.caseL)
+		}
+
 		buf.WriteByte('\n')
 		if len(node.child) > 0 {
 			t.hrHelper(buf, node.child, indent, depth+1)
@@ -225,4 +243,31 @@ func splitNodes(nodes []Node) [][]Node {
 		split = append(split, nodes[o:])
 	}
 	return split
+}
+
+func rollupSwitchNodes(nodes []Node) []Node {
+	if len(nodes) == 0 {
+		return nil
+	}
+	var (
+		r = make([]Node, 0)
+		group = Node{typ: -1}
+	)
+	for _, node := range nodes {
+		if node.typ != TypeCase && node.typ != TypeDefault && group.typ == -1 {
+			continue
+		}
+		if node.typ == TypeCase || node.typ == TypeDefault {
+			if group.typ != -1 {
+				r = append(r, group)
+			}
+			group = node
+			continue
+		}
+		group.child = append(group.child, node)
+	}
+	if len(group.child) > 0 {
+		r = append(r, group)
+	}
+	return r
 }

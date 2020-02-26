@@ -39,6 +39,8 @@ var (
 	condElse   = []byte(`else`)
 	condEnd    = []byte(`endif`)
 	loopEnd    = []byte(`endfor`)
+	swDefault  = []byte(`default`)
+	swEnd      = []byte(`endswitch`)
 
 	opEq  = []byte("==")
 	opNq  = []byte("!=")
@@ -64,6 +66,9 @@ var (
 	reLoop      = regexp.MustCompile(`for .*`)
 	reLoopRange = regexp.MustCompile(`for ([^:]+)\s*:*=\s*range\s*([^\s]*)\s*(?:separator|sep)*\s*(.*)`)
 	reLoopCount = regexp.MustCompile(`for (\w*)\s*:*=\d+\s*;\s*\w+\s*(<|<=|>|>=|!=)+\s*([^;]+)\s*;\s*\w*(--|\+\+)+\s*(?:separator|sep)*\s*(.*)`)
+
+	reSwitch     = regexp.MustCompile(`^switch\s*(.*)`)
+	reSwitchCase = regexp.MustCompile(`case ([^<=>!]+)([<=>!]{2})*(.*)`)
 )
 
 func Parse(tpl []byte, keepFmt bool) (tree *Tree, err error) {
@@ -267,6 +272,45 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 		return nodes, offset, up, err
 	}
 
+	// Check switch structure.
+	if m := reSwitch.FindSubmatch(t); m != nil {
+		target := newTarget(p)
+		p.cs++
+
+		root.typ = TypeSwitch
+		if len(m) > 0 {
+			root.switchArg = m[1]
+		}
+		root.child = make([]Node, 0)
+		root.child, offset, err = p.parseTpl(root.child, pos+len(ctl), target)
+		root.child = rollupSwitchNodes(root.child)
+
+		nodes = addNode(nodes, *root)
+		return nodes, offset, up, err
+	}
+	// Check switch's case.
+	if reSwitchCase.Match(t) {
+		root.typ = TypeCase
+		root.caseL, root.caseR, root.caseOp = p.parseCaseExpr(t)
+		nodes = addNode(nodes, *root)
+		offset = pos + len(ctl)
+		return nodes, offset, up, err
+	}
+	// Check switch's default.
+	if bytes.Equal(t, swDefault) {
+		root.typ = TypeDefault
+		nodes = addNode(nodes, *root)
+		offset = pos + len(ctl)
+		return nodes, offset, up, err
+	}
+	// Check switch end.
+	if bytes.Equal(t, swEnd) {
+		p.cs--
+		offset = pos + len(ctl)
+		up = true
+		return nodes, offset, up, err
+	}
+
 	return nodes, 0, up, ErrBadCtl
 }
 
@@ -275,6 +319,17 @@ func (p *Parser) parseCondExpr(expr []byte) (l, r []byte, op Op) {
 		l = cbytealg.Trim(m[1], space)
 		r = cbytealg.Trim(m[3], space)
 		op = p.parseOp(m[2])
+	}
+	return
+}
+
+func (p *Parser) parseCaseExpr(expr []byte) (l, r []byte, op Op) {
+	if m := reSwitchCase.FindSubmatch(expr); m != nil {
+		l = cbytealg.Trim(m[1], space)
+		if len(m) > 1 {
+			op = p.parseOp(m[2])
+			r = cbytealg.Trim(m[3], space)
+		}
 	}
 	return
 }
@@ -305,13 +360,21 @@ func (p *Parser) parseOp(src []byte) Op {
 }
 
 func newTarget(p *Parser) *target {
-	return &target{targetCond: p.cc, targetLoop: p.cl, targetSwitch: p.cs}
+	return &target{
+		targetCond: p.cc,
+		targetLoop: p.cl,
+		targetSwitch: p.cs,
+	}
 }
 
 func (t *target) reached(p *Parser) bool {
-	return (*t)[targetCond] == p.cc && (*t)[targetLoop] == p.cl && (*t)[targetSwitch] == p.cs
+	return (*t)[targetCond] == p.cc &&
+		(*t)[targetLoop] == p.cl &&
+		(*t)[targetSwitch] == p.cs
 }
 
 func (t *target) eqZero() bool {
-	return (*t)[targetCond] == 0 && (*t)[targetLoop] == 0 && (*t)[targetSwitch] == 0
+	return (*t)[targetCond] == 0 &&
+		(*t)[targetLoop] == 0 &&
+		(*t)[targetSwitch] == 0
 }

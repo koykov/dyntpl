@@ -147,6 +147,68 @@ rloop: val rule src config.Rules sep ,
 	raw: }
 raw: ]}
 `)
+
+	switchOrigin = []byte(`<Tracking event="
+	{% switch track.Event %}
+	{% case param.Start %}
+		start
+	{% case param.FirstQuartile %}
+		firstQuartile
+	{% case param.Midpoint %}
+		midpoint
+	{% case param.ThirdQuartile %}
+		thirdQuartile
+	{% case param.Complete %}
+		complete
+	{% default %}
+		unknown
+	{% endswitch %}
+">
+	<![CDATA[{%= track.Value %}]]>
+</Tracking>`)
+	switchExpect = []byte(`raw: <Tracking event="
+switch: 
+	case: val param.Start
+		raw: start
+	case: val param.FirstQuartile
+		raw: firstQuartile
+	case: val param.Midpoint
+		raw: midpoint
+	case: val param.ThirdQuartile
+		raw: thirdQuartile
+	case: val param.Complete
+		raw: complete
+	def: 
+		raw: unknown
+raw: "><![CDATA[
+tpl: track.Value
+raw: ]]></Tracking>
+`)
+	switchNoCondOrigin = []byte(`
+[
+	{
+		{% switch %}
+		{% case item.Index == 0 %}
+			"name": {%= item.Name %},
+		{% case item.Index == 1 %}
+			{%= item.Slug pfx "slug": sfx , %}
+		{% case item.Uid == -1 %}
+			"no_data": true
+		{% endswitch %}
+	}
+]`)
+	switchNoCondExpect = []byte(`raw: [{
+switch: 
+	case: left item.Index op == right 0
+		raw: "name": 
+		tpl: item.Name
+		raw: ,
+	case: left item.Index op == right 1
+		tpl: item.Slug pfx "slug": sfx ,
+	case: left item.Uid op == right -1
+		raw: "no_data": true
+raw: }]
+`)
 )
 
 func TestParse_CutComments(t *testing.T) {
@@ -221,5 +283,19 @@ func TestParse_Loop(t *testing.T) {
 	rSep := treeSep.humanReadable()
 	if !bytes.Equal(rSep, loopSepExpect) {
 		t.Errorf("loop with sep test failed\nexp: %s\ngot: %s", string(loopSepExpect), string(rSep))
+	}
+}
+
+func TestParse_Switch(t *testing.T) {
+	tree, _ := Parse(switchOrigin, false)
+	r := tree.humanReadable()
+	if !bytes.Equal(r, switchExpect) {
+		t.Errorf("switch test failed\nexp: %s\ngot: %s", string(switchExpect), string(r))
+	}
+
+	treeNC, _ := Parse(switchNoCondOrigin, false)
+	rNC := treeNC.humanReadable()
+	if !bytes.Equal(rNC, switchNoCondExpect) {
+		t.Errorf("switch no cond test failed\nexp: %s\ngot: %s", string(switchNoCondExpect), string(rNC))
 	}
 }
