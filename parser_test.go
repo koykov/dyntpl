@@ -167,7 +167,7 @@ raw: ]}
 	<![CDATA[{%= track.Value %}]]>
 </Tracking>`)
 	switchExpect = []byte(`raw: <Tracking event="
-switch: 
+switch: arg track.Event
 	case: val param.Start
 		raw: start
 	case: val param.FirstQuartile

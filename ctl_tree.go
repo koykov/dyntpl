@@ -190,7 +190,11 @@ func (t *Tree) hrHelper(buf *bytes.Buffer, nodes []Node, indent []byte, depth in
 			buf.Write(node.loopSep)
 		}
 
-		if len(node.caseL) > 0 &&node.caseOp != 0 && len(node.caseR) > 0 {
+		if len(node.switchArg) > 0 {
+			buf.WriteString("arg ")
+			buf.Write(node.switchArg)
+		}
+		if len(node.caseL) > 0 && node.caseOp != 0 && len(node.caseR) > 0 {
 			buf.WriteString("left ")
 			buf.Write(node.caseL)
 			buf.WriteString(" op ")
@@ -250,7 +254,7 @@ func rollupSwitchNodes(nodes []Node) []Node {
 		return nil
 	}
 	var (
-		r = make([]Node, 0)
+		r     = make([]Node, 0)
 		group = Node{typ: -1}
 	)
 	for _, node := range nodes {
