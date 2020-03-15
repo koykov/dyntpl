@@ -3,11 +3,12 @@ package cbytetpl
 import (
 	"fmt"
 	"reflect"
+	"strconv"
 )
 
 type ReflectInspector struct{}
 
-func (i ReflectInspector) Get(src interface{}, path ...interface{}) interface{} {
+func (i ReflectInspector) Get(src interface{}, path ...string) interface{} {
 	var (
 		r interface{}
 		c int
@@ -15,7 +16,7 @@ func (i ReflectInspector) Get(src interface{}, path ...interface{}) interface{} 
 	)
 	r = src
 	for c, k = range path {
-		r = i.inspect(r, k)
+		r = i.inspect(r, k.(string))
 	}
 	if c < len(path)-1 {
 		r = nil
@@ -23,11 +24,11 @@ func (i ReflectInspector) Get(src interface{}, path ...interface{}) interface{} 
 	return r
 }
 
-func (i ReflectInspector) Set(dst, value interface{}, path ...interface{}) {
+func (i ReflectInspector) Set(dst, value interface{}, path ...string) {
 	// Empty method, there is no way to update data using reflection.
 }
 
-func (i ReflectInspector) inspect(node interface{}, key interface{}) interface{} {
+func (i ReflectInspector) inspect(node interface{}, key string) interface{} {
 	v := reflect.ValueOf(node)
 	switch v.Kind() {
 	case reflect.Ptr:
@@ -57,7 +58,7 @@ func (i ReflectInspector) inspect(node interface{}, key interface{}) interface{}
 			}
 		}
 	case reflect.Struct:
-		f := v.FieldByName(key.(string))
+		f := v.FieldByName(key)
 		if f.IsValid() && f.CanInterface() {
 			return f.Interface()
 		}
@@ -65,7 +66,11 @@ func (i ReflectInspector) inspect(node interface{}, key interface{}) interface{}
 		if bytes, ok := node.([]byte); ok {
 			return bytes
 		}
-		sv := v.Index(key.(int))
+		idx, err := strconv.Atoi(key)
+		if err != nil {
+			return nil
+		}
+		sv := v.Index(idx)
 		if sv.IsValid() && sv.CanInterface() {
 			return sv.Interface()
 		}

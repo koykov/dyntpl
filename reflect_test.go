@@ -98,14 +98,14 @@ func testReflect(t testing.TB) {
 		t.Error("object.Finance.Balance: mismatch result and expectation")
 	}
 
-	date := i.Get(testO, "Finance", "History", 1, "DateUnix")
+	date := i.Get(testO, "Finance", "History", "1", "DateUnix")
 	if date.(int64) != 153465345246 {
 		t.Error("object.Finance.History.1.DateUnix: mismatch result and expectation")
 	}
 
-	comment := i.Get(testO, "Finance", "History", 0, "Comment")
+	comment := i.Get(testO, "Finance", "History", "0", "Comment")
 	if !bytes.Equal(comment.([]byte), expectComment) {
-		t.Error("object.Finance.History.1.DateUnix: mismatch result and expectation")
+		t.Error("object.Finance.History.0.DateUnix: mismatch result and expectation")
 	}
 }
 
