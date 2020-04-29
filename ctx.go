@@ -1,16 +1,21 @@
 package cbytetpl
 
-import "github.com/koykov/cbytealg"
+import (
+	"github.com/koykov/cbytealg"
+	"github.com/koykov/inspector"
+)
 
 type Ctx struct {
 	vars  []ctxVar
 	ssbuf []string
+	buf   interface{}
+	Err   error
 }
 
 type ctxVar struct {
 	key string
 	val interface{}
-	ins Inspector
+	ins inspector.Inspector
 }
 
 func NewCtx() *Ctx {
@@ -21,11 +26,7 @@ func NewCtx() *Ctx {
 	return &ctx
 }
 
-func (c *Ctx) Set(key string, val interface{}) {
-	c.SetWithInspector(key, val, ReflectInspector{})
-}
-
-func (c *Ctx) SetWithInspector(key string, val interface{}, ins Inspector) {
+func (c *Ctx) Set(key string, val interface{}, ins inspector.Inspector) {
 	c.vars = append(c.vars, ctxVar{
 		key: key,
 		val: val,
@@ -42,7 +43,11 @@ func (c *Ctx) Get(path string) interface{} {
 
 	for _, v := range c.vars {
 		if v.key == c.ssbuf[0] {
-			return v.ins.Get(v.val, c.ssbuf[1:]...)
+			c.Err = v.ins.GetTo(v.val, &c.buf, c.ssbuf[1:]...)
+			if c.Err != nil {
+				return nil
+			}
+			return c.buf
 		}
 	}
 
