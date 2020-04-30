@@ -53,3 +53,10 @@ func (c *Ctx) Get(path string) interface{} {
 
 	return nil
 }
+
+func (c *Ctx) Reset() {
+	c.Err = nil
+	c.buf = nil
+	c.vars = c.vars[:0]
+	c.ssbuf = c.ssbuf[:0]
+}

@@ -96,3 +96,34 @@ func BenchmarkCtx_Get(b *testing.B) {
 		}
 	}
 }
+
+func BenchmarkCtxPool_Get(b *testing.B) {
+	var (
+		ins testobj_ins.TestObjectInspector
+		raw interface{}
+	)
+
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		ctx := CP.Get()
+		ctx.Set("obj", testO, &ins)
+
+		raw = ctx.Get("obj.Id")
+		if ctx.Err != nil {
+			b.Error("ctx get error", ctx.Err)
+		}
+		if *raw.(*string) != "foo" {
+			b.Error("ctx get mismatch: obj.Id")
+		}
+
+		raw = ctx.Get("obj.Finance.Balance")
+		if ctx.Err != nil {
+			b.Error("ctx get error", ctx.Err)
+		}
+		if *raw.(*float64) != 9000 {
+			b.Error("ctx get mismatch: obj.Finance.Balance")
+		}
+
+		CP.Put(ctx)
+	}
+}
