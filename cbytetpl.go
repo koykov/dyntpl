@@ -70,17 +70,11 @@ func (t *Tpl) renderNode(node *Node, ctx *Ctx) (err error) {
 			_, err = t.w.Write(raw.([]byte))
 		case *[]byte:
 			_, err = t.w.Write(*raw.(*[]byte))
-			if err != nil {
-				return
-			}
 		// String case.
 		case string:
 			_, err = t.w.Write(fastconv.S2B(raw.(string)))
 		case *string:
 			_, err = t.w.Write(fastconv.S2B(*raw.(*string)))
-			if err != nil {
-				return
-			}
 		// All other cases.
 		default:
 			//
