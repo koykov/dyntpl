@@ -32,6 +32,26 @@ func byteConvStr(buf []byte, val interface{}) ([]byte, error) {
 	return buf, nil
 }
 
+func byteConvBool(buf []byte, val interface{}) ([]byte, error) {
+	var b bool
+	switch val.(type) {
+	case *bool:
+		b = *val.(*bool)
+	case bool:
+		b = val.(bool)
+	default:
+		return buf, ErrUnknownType
+	}
+
+	if b {
+		buf = append(buf, "true"...)
+	} else {
+		buf = append(buf, "false"...)
+	}
+
+	return buf, nil
+}
+
 func byteConvInt(buf []byte, val interface{}) ([]byte, error) {
 	var i int64
 	switch val.(type) {

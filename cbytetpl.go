@@ -84,6 +84,7 @@ func (t *Tpl) renderNode(node *Node, ctx *Ctx) (err error) {
 func init() {
 	RegisterByteConvFn(byteConvBytes)
 	RegisterByteConvFn(byteConvStr)
+	RegisterByteConvFn(byteConvBool)
 	RegisterByteConvFn(byteConvInt)
 	RegisterByteConvFn(byteConvUint)
 	RegisterByteConvFn(byteConvFloat)
