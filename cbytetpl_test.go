@@ -12,17 +12,21 @@ var (
 	buf bytes.Buffer
 
 	user = &testobj.TestObject{
-		Name: []byte("John"),
+		Name:   []byte("John"),
+		Status: 78,
 		Finance: &testobj.TestFinance{
-			Balance: 9000.015,
+			Balance:  9000.015,
+			AllowBuy: false,
 		},
 	}
 	ins testobj_ins.TestObjectInspector
 
 	tplRaw = []byte(`<h1>Raw template<h1><p>Lorem ipsum dolor sit amet, ...</p>`)
 
-	tplSimple    = []byte(`<h1>Welcome, {%= user.Name %}!</h1><p>Your balance: {%= user.Finance.Balance %}</p>`)
-	expectSimple = []byte(`<h1>Welcome, John!</h1><p>Your balance: 9000.015</p>`)
+	tplSimple = []byte(`<h1>Welcome, {%= user.Name %}!</h1>
+<p>Status: {%= user.Status %}</p>
+<p>Your balance: {%= user.Finance.Balance %}; buy allowance: {%= user.Finance.AllowBuy %}</p>`)
+	expectSimple = []byte(`<h1>Welcome, John!</h1><p>Status: 78</p><p>Your balance: 9000.015; buy allowance: false</p>`)
 )
 
 func pretest() {
