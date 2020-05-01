@@ -64,23 +64,27 @@ func (t *Tpl) renderNode(node *Node, ctx *Ctx) (err error) {
 			err = ctx.Err
 			return
 		}
-		switch raw.(type) {
-		// Bytes case.
-		case []byte:
-			_, err = t.w.Write(raw.([]byte))
-		case *[]byte:
-			_, err = t.w.Write(*raw.(*[]byte))
-		// String case.
-		case string:
-			_, err = t.w.Write(fastconv.S2B(raw.(string)))
-		case *string:
-			_, err = t.w.Write(fastconv.S2B(*raw.(*string)))
-		// All other cases.
-		default:
-			//
+		for _, bcFn := range byteConvFnRegistry {
+			ctx.bbuf = ctx.bbuf[:0]
+			ctx.bbuf, err = bcFn(ctx.bbuf, raw)
+			if err == nil && len(ctx.bbuf) > 0 {
+				_, err = t.w.Write(ctx.bbuf)
+				break
+			}
 		}
 	default:
 		err = ErrUnknownCtl
 	}
+	if err == ErrUnknownType {
+		return
+	}
 	return
+}
+
+func init() {
+	RegisterByteConvFn(byteConvBytes)
+	RegisterByteConvFn(byteConvStr)
+	RegisterByteConvFn(byteConvInt)
+	RegisterByteConvFn(byteConvUint)
+	RegisterByteConvFn(byteConvFloat)
 }

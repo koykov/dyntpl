@@ -8,6 +8,7 @@ import (
 type Ctx struct {
 	vars  []ctxVar
 	ssbuf []string
+	bbuf  []byte
 	buf   interface{}
 	Err   error
 }
@@ -22,6 +23,7 @@ func NewCtx() *Ctx {
 	ctx := Ctx{
 		vars:  make([]ctxVar, 0),
 		ssbuf: make([]string, 0),
+		bbuf:  make([]byte, 0),
 	}
 	return &ctx
 }
@@ -59,4 +61,5 @@ func (c *Ctx) Reset() {
 	c.buf = nil
 	c.vars = c.vars[:0]
 	c.ssbuf = c.ssbuf[:0]
+	c.bbuf = c.bbuf[:0]
 }

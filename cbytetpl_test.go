@@ -14,15 +14,15 @@ var (
 	user = &testobj.TestObject{
 		Name: []byte("John"),
 		Finance: &testobj.TestFinance{
-			Balance: 9000,
+			Balance: 9000.015,
 		},
 	}
 	ins testobj_ins.TestObjectInspector
 
 	tplRaw = []byte(`<h1>Raw template<h1><p>Lorem ipsum dolor sit amet, ...</p>`)
 
-	tplSimple    = []byte(`<h1>Welcome, {%= user.Name %}!</h1>`)
-	expectSimple = []byte(`<h1>Welcome, John!</h1>`)
+	tplSimple    = []byte(`<h1>Welcome, {%= user.Name %}!</h1><p>Your balance: {%= user.Finance.Balance %}</p>`)
+	expectSimple = []byte(`<h1>Welcome, John!</h1><p>Your balance: 9000.015</p>`)
 )
 
 func pretest() {
