@@ -8,28 +8,28 @@ type Type int
 type Op int
 
 const (
-	TypeRaw Type = iota
-	TypeTpl
-	TypeCond
-	TypeCondTrue
-	TypeCondFalse
-	TypeLoopRange
-	TypeLoopCount
-	TypeCtx
-	TypeSwitch
-	TypeCase
-	TypeDefault
-	TypeDiv
+	TypeRaw       Type = 0
+	TypeTpl       Type = 1
+	TypeCond      Type = 2
+	TypeCondTrue  Type = 3
+	TypeCondFalse Type = 4
+	TypeLoopRange Type = 5
+	TypeLoopCount Type = 6
+	TypeCtx       Type = 7
+	TypeSwitch    Type = 8
+	TypeCase      Type = 9
+	TypeDefault   Type = 10
+	TypeDiv       Type = 11
 
-	OpUnk Op = iota
-	OpEq
-	OpNq
-	OpGt
-	OpGtq
-	OpLt
-	OpLtq
-	OpInc
-	OpDec
+	OpUnk Op = 0
+	OpEq  Op = 1
+	OpNq  Op = 2
+	OpGt  Op = 3
+	OpGtq Op = 4
+	OpLt  Op = 5
+	OpLtq Op = 6
+	OpInc Op = 7
+	OpDec Op = 8
 )
 
 func (typ Type) String() string {
@@ -63,8 +63,8 @@ func (typ Type) String() string {
 	}
 }
 
-func (c Op) String() string {
-	switch c {
+func (o Op) String() string {
+	switch o {
 	case OpEq:
 		return "=="
 	case OpNq:
@@ -83,6 +83,21 @@ func (c Op) String() string {
 		return "--"
 	default:
 		return "unk"
+	}
+}
+
+func (o Op) Swap() Op {
+	switch o {
+	case OpGt:
+		return OpLt
+	case OpGtq:
+		return OpLtq
+	case OpLt:
+		return OpGt
+	case OpLtq:
+		return OpGtq
+	default:
+		return o
 	}
 }
 

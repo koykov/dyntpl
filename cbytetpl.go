@@ -4,14 +4,11 @@ import (
 	"bytes"
 	"io"
 	"sync"
-
-	"github.com/koykov/fastconv"
 )
 
 type Tpl struct {
 	Id   string
 	tree *Tree
-	w    io.Writer
 }
 
 var (
@@ -43,9 +40,8 @@ func RenderTo(w io.Writer, id string, ctx *Ctx) (err error) {
 		err = ErrTplNotFound
 		return
 	}
-	tpl.w = w
 	for _, node := range tpl.tree.nodes {
-		err = tpl.renderNode(&node, ctx)
+		err = tpl.renderNode(w, &node, ctx)
 		if err != nil {
 			return
 		}
@@ -54,12 +50,12 @@ func RenderTo(w io.Writer, id string, ctx *Ctx) (err error) {
 	return
 }
 
-func (t *Tpl) renderNode(node *Node, ctx *Ctx) (err error) {
+func (t *Tpl) renderNode(w io.Writer, node *Node, ctx *Ctx) (err error) {
 	switch node.typ {
 	case TypeRaw:
-		_, err = t.w.Write(node.raw)
+		_, err = w.Write(node.raw)
 	case TypeTpl:
-		raw := ctx.Get(fastconv.B2S(node.raw))
+		raw := ctx.get(node.raw)
 		if ctx.Err != nil {
 			err = ctx.Err
 			return
@@ -72,8 +68,46 @@ func (t *Tpl) renderNode(node *Node, ctx *Ctx) (err error) {
 			ctx.bbuf = ctx.bbuf[:0]
 			ctx.bbuf, err = bcFn(ctx.bbuf, raw)
 			if err == nil && len(ctx.bbuf) > 0 {
-				_, err = t.w.Write(ctx.bbuf)
+				_, err = w.Write(ctx.bbuf)
 				break
+			}
+		}
+	case TypeCond:
+		sl := isStatic(node.condL)
+		sr := isStatic(node.condR)
+		if sl && sr {
+			err = ErrSenselessCond
+			return
+		}
+		var r bool
+		if sr {
+			r = ctx.cmp(node.condL, node.condOp, node.condR)
+		}
+		if ctx.Err != nil {
+			err = ctx.Err
+			return
+		}
+		if sl {
+			r = ctx.cmp(node.condR, node.condOp.Swap(), node.condL)
+		}
+		if ctx.Err != nil {
+			err = ctx.Err
+			return
+		}
+		if r {
+			if len(node.child) > 0 {
+				err = t.renderNode(w, &node.child[0], ctx)
+			}
+		} else {
+			if len(node.child) > 1 {
+				err = t.renderNode(w, &node.child[0], ctx)
+			}
+		}
+	case TypeCondTrue, TypeCondFalse:
+		for _, ch := range node.child {
+			err = t.renderNode(w, &ch, ctx)
+			if err != nil {
+				return
 			}
 		}
 	default:

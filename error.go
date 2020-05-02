@@ -11,4 +11,5 @@ var (
 	ErrTplNotFound   = errors.New("template not found")
 	ErrEmptyArg      = errors.New("empty input param")
 	ErrUnknownType   = errors.New("unknown type")
+	ErrSenselessCond = errors.New("comparison of two static args")
 )

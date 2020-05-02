@@ -27,6 +27,11 @@ var (
 <p>Status: {%= user.Status %}</p>
 <p>Your balance: {%= user.Finance.Balance %}; buy allowance: {%= user.Finance.AllowBuy %}</p>`)
 	expectSimple = []byte(`<h1>Welcome, John!</h1><p>Status: 78</p><p>Your balance: 9000.015; buy allowance: false</p>`)
+
+	tplCond = []byte(`<h2>Status</h2><p>
+{% if user.Status >= 60 %}Privileged user, your balance: {%= user.Finance.Balance %}.
+{% else %}You don't have enough privileges.{% endif %}</p>`)
+	expectCond = []byte(`<h2>Status</h2><p>Privileged user, your balance: 9000.015.</p>`)
 )
 
 func pretest() {
@@ -35,6 +40,9 @@ func pretest() {
 
 	tree, _ = Parse(tplSimple, false)
 	RegisterTpl("tplSimple", tree)
+
+	tree, _ = Parse(tplCond, false)
+	RegisterTpl("tplCond", tree)
 }
 
 func TestTplRaw(t *testing.T) {
@@ -63,6 +71,20 @@ func TestTplSimple(t *testing.T) {
 	}
 }
 
+func TestTplCond(t *testing.T) {
+	pretest()
+
+	ctx := NewCtx()
+	ctx.Set("user", user, &ins)
+	result, err := Render("tplCond", ctx)
+	if err != nil {
+		t.Error(err)
+	}
+	if !bytes.Equal(result, expectCond) {
+		t.Error("cond tpl mismatch")
+	}
+}
+
 func BenchmarkTplSimple(b *testing.B) {
 	pretest()
 
@@ -77,6 +99,25 @@ func BenchmarkTplSimple(b *testing.B) {
 		}
 		if !bytes.Equal(buf.Bytes(), expectSimple) {
 			b.Error("simple tpl mismatch")
+		}
+		CP.Put(ctx)
+	}
+}
+
+func BenchmarkTplCond(b *testing.B) {
+	pretest()
+
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		ctx := CP.Get()
+		ctx.Set("user", user, &ins)
+		buf.Reset()
+		err := RenderTo(&buf, "tplCond", ctx)
+		if err != nil {
+			b.Error(err)
+		}
+		if !bytes.Equal(buf.Bytes(), expectCond) {
+			b.Error("cond tpl mismatch")
 		}
 		CP.Put(ctx)
 	}

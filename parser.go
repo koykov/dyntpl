@@ -60,7 +60,7 @@ var (
 	reTpl   = regexp.MustCompile(`^= (.*)`)
 
 	reCond        = regexp.MustCompile(`if .*`)
-	reCondExpr    = regexp.MustCompile(`if (.*)(==|!=|>|>=|<|<=)(.*)`)
+	reCondExpr    = regexp.MustCompile(`if (.*)(==|!=|>=|<=|>|<)(.*)`)
 	reCondComplex = regexp.MustCompile(`if .*&&|\|\||\(|\).*`)
 
 	reLoop      = regexp.MustCompile(`for .*`)
@@ -361,8 +361,8 @@ func (p *Parser) parseOp(src []byte) Op {
 
 func newTarget(p *Parser) *target {
 	return &target{
-		targetCond: p.cc,
-		targetLoop: p.cl,
+		targetCond:   p.cc,
+		targetLoop:   p.cl,
 		targetSwitch: p.cs,
 	}
 }
