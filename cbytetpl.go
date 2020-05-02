@@ -64,6 +64,10 @@ func (t *Tpl) renderNode(node *Node, ctx *Ctx) (err error) {
 			err = ctx.Err
 			return
 		}
+		if raw == nil || raw == "" {
+			err = ErrEmptyArg
+			return
+		}
 		for _, bcFn := range byteConvFnRegistry {
 			ctx.bbuf = ctx.bbuf[:0]
 			ctx.bbuf, err = bcFn(ctx.bbuf, raw)
@@ -74,9 +78,6 @@ func (t *Tpl) renderNode(node *Node, ctx *Ctx) (err error) {
 		}
 	default:
 		err = ErrUnknownCtl
-	}
-	if err == ErrUnknownType {
-		return
 	}
 	return
 }
