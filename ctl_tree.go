@@ -111,9 +111,11 @@ type Node struct {
 	prefix []byte
 	suffix []byte
 
-	condL  []byte
-	condR  []byte
-	condOp Op
+	condL       []byte
+	condR       []byte
+	condStaticL bool
+	condStaticR bool
+	condOp      Op
 
 	loopKey    []byte
 	loopVal    []byte

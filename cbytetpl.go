@@ -73,8 +73,8 @@ func (t *Tpl) renderNode(w io.Writer, node *Node, ctx *Ctx) (err error) {
 			}
 		}
 	case TypeCond:
-		sl := isStatic(node.condL)
-		sr := isStatic(node.condR)
+		sl := node.condStaticL
+		sr := node.condStaticR
 		if sl && sr {
 			err = ErrSenselessCond
 			return

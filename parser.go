@@ -196,7 +196,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 		split := splitNodes(subNodes)
 
 		root.typ = TypeCond
-		root.condL, root.condR, root.condOp = p.parseCondExpr(t)
+		root.condL, root.condR, root.condStaticL, root.condStaticR, root.condOp = p.parseCondExpr(t)
 		if len(split) > 0 {
 			nodeTrue := Node{typ: TypeCondTrue, child: split[0]}
 			root.child = append(root.child, nodeTrue)
@@ -314,10 +314,12 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 	return nodes, 0, up, ErrBadCtl
 }
 
-func (p *Parser) parseCondExpr(expr []byte) (l, r []byte, op Op) {
+func (p *Parser) parseCondExpr(expr []byte) (l, r []byte, sl, sr bool, op Op) {
 	if m := reCondExpr.FindSubmatch(expr); m != nil {
 		l = cbytealg.Trim(m[1], space)
 		r = cbytealg.Trim(m[3], space)
+		sl = isStatic(l)
+		sr = isStatic(r)
 		op = p.parseOp(m[2])
 	}
 	return
