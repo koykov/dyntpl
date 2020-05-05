@@ -12,11 +12,35 @@ var (
 	buf bytes.Buffer
 
 	user = &testobj.TestObject{
+		Id:     "115",
 		Name:   []byte("John"),
 		Status: 78,
+		Flags: testobj.TestFlag{
+			"export": 17,
+			"ro":     4,
+			"rw":     7,
+			"Valid":  1,
+		},
 		Finance: &testobj.TestFinance{
 			Balance:  9000.015,
 			AllowBuy: false,
+			History: []testobj.TestHistory{
+				{
+					152354345634,
+					14.345241,
+					[]byte("pay for domain"),
+				},
+				{
+					153465345246,
+					-3.0000342543,
+					[]byte("got refund"),
+				},
+				{
+					156436535640,
+					2325242534.35324523,
+					[]byte("maintenance"),
+				},
+			},
 		},
 	}
 	ins testobj_ins.TestObjectInspector
@@ -32,6 +56,21 @@ var (
 {% if user.Status >= 60 %}Privileged user, your balance: {%= user.Finance.Balance %}.
 {% else %}You don't have enough privileges.{% endif %}</p>`)
 	expectCond = []byte(`<h2>Status</h2><p>Privileged user, your balance: 9000.015.</p>`)
+
+	tplLoopRange = []byte(`{
+	"id":"{%= user.Id %}",
+	"name":"{%= user.Name %}",
+	"fin_history":[
+		{% for k, item := range user.Finance.History sep , %}
+		{%= k %}:{
+			"utime":{%= item.DateUnix %},
+			"cost":{%= item.Cost %},
+			"desc":"{%= item.Comment %}"
+		}
+		{% endfor %}
+	]
+}`)
+	expectLoopRange = []byte(`{"id":"115","name":"John","fin_history":[0:{"utime":152354345634,"cost":14.345241,"desc":"pay for domain"},1:{"utime":153465345246,"cost":-3.0000342543,"desc":"got refund"},2:{"utime":156436535640,"cost":2325242534.3532453,"desc":"maintenance"}]}`)
 )
 
 func pretest() {
@@ -43,6 +82,9 @@ func pretest() {
 
 	tree, _ = Parse(tplCond, false)
 	RegisterTpl("tplCond", tree)
+
+	tree, _ = Parse(tplLoopRange, false)
+	RegisterTpl("tplLoopRange", tree)
 }
 
 func TestTplRaw(t *testing.T) {
@@ -85,6 +127,20 @@ func TestTplCond(t *testing.T) {
 	}
 }
 
+func TestTplLoopRange(t *testing.T) {
+	pretest()
+
+	ctx := NewCtx()
+	ctx.Set("user", user, &ins)
+	result, err := Render("tplLoopRange", ctx)
+	if err != nil {
+		t.Error(err)
+	}
+	if !bytes.Equal(result, expectLoopRange) {
+		t.Error("loop range tpl mismatch")
+	}
+}
+
 func BenchmarkTplSimple(b *testing.B) {
 	pretest()
 
@@ -118,6 +174,25 @@ func BenchmarkTplCond(b *testing.B) {
 		}
 		if !bytes.Equal(buf.Bytes(), expectCond) {
 			b.Error("cond tpl mismatch")
+		}
+		CP.Put(ctx)
+	}
+}
+
+func BenchmarkTplLoopRange(b *testing.B) {
+	pretest()
+
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		ctx := CP.Get()
+		buf.Reset()
+		ctx.Set("user", user, &ins)
+		err := RenderTo(&buf, "tplLoopRange", ctx)
+		if err != nil {
+			b.Error(err)
+		}
+		if !bytes.Equal(buf.Bytes(), expectLoopRange) {
+			b.Error("loop range tpl mismatch")
 		}
 		CP.Put(ctx)
 	}
