@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"io"
 	"sync"
+
+	"github.com/koykov/cbytealg"
 )
 
 type Tpl struct {
@@ -64,13 +66,9 @@ func (t *Tpl) renderNode(w io.Writer, node *Node, ctx *Ctx) (err error) {
 			err = ErrEmptyArg
 			return
 		}
-		for _, bcFn := range byteConvFnRegistry {
-			ctx.bbuf = ctx.bbuf[:0]
-			ctx.bbuf, err = bcFn(ctx.bbuf, raw)
-			if err == nil && len(ctx.bbuf) > 0 {
-				_, err = w.Write(ctx.bbuf)
-				break
-			}
+		ctx.bbuf, err = cbytealg.AnyToBytes(ctx.bbuf, raw)
+		if err == nil {
+			_, err = w.Write(ctx.bbuf)
 		}
 	case TypeCond:
 		sl := node.condStaticL
@@ -118,13 +116,4 @@ func (t *Tpl) renderNode(w io.Writer, node *Node, ctx *Ctx) (err error) {
 		err = ErrUnknownCtl
 	}
 	return
-}
-
-func init() {
-	RegisterByteConvFn(byteConvBytes)
-	RegisterByteConvFn(byteConvStr)
-	RegisterByteConvFn(byteConvBool)
-	RegisterByteConvFn(byteConvInt)
-	RegisterByteConvFn(byteConvUint)
-	RegisterByteConvFn(byteConvFloat)
 }
