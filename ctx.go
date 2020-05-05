@@ -15,10 +15,7 @@ type Ctx struct {
 	bbuf1 []byte
 	cbuf  bool
 	buf   interface{}
-	cntr  int
-	node  Node
-	tpl   *Tpl
-	w     io.Writer
+	rlp   *RangeLoopPool
 	Err   error
 }
 
@@ -96,17 +93,11 @@ func (c *Ctx) cmp(path []byte, cond Op, right []byte) bool {
 	return false
 }
 
-func (c *Ctx) Loop() {
-	if c.cntr > 0 && len(c.node.loopSep) > 0 {
-		_, _ = c.w.Write(c.node.loopSep)
-	}
-	c.cntr++
-	for _, ch := range c.node.child {
-		_ = c.tpl.renderNode(c.w, &ch, c)
-	}
+func (c *Ctx) SetRLP(rlp *RangeLoopPool) {
+	c.rlp = rlp
 }
 
-func (c *Ctx) loop(path []byte) {
+func (c *Ctx) loop(path []byte, node Node, tpl *Tpl, w io.Writer) {
 	c.ssbuf = c.ssbuf[:0]
 	c.ssbuf = cbytealg.AppendSplitStr(c.ssbuf, fastconv.B2S(path), ".", -1)
 	if len(c.ssbuf) == 0 {
@@ -114,11 +105,12 @@ func (c *Ctx) loop(path []byte) {
 	}
 	for _, v := range c.vars {
 		if v.key == c.ssbuf[0] {
-			c.cntr = 0
-			c.Err = v.ins.Loop(v.val, c, &c.bbuf1, c.ssbuf[1:]...)
-			if c.Err != nil {
-				return
+			if c.rlp == nil {
+				c.rlp = &RLP
 			}
+			rl := c.rlp.Get(node, tpl, c, w)
+			c.Err = v.ins.Loop(v.val, rl, &c.bbuf1, c.ssbuf[1:]...)
+			c.rlp.Put(rl)
 			return
 		}
 	}
@@ -131,4 +123,6 @@ func (c *Ctx) Reset() {
 	c.ssbuf = c.ssbuf[:0]
 	c.bbuf = c.bbuf[:0]
 	c.bbuf1 = c.bbuf1[:0]
+	// Clear redundant pointer.
+	c.rlp = nil
 }
