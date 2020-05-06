@@ -3,6 +3,7 @@ package cbytetpl
 import (
 	"io"
 
+	"github.com/koykov/fastconv"
 	"github.com/koykov/inspector"
 )
 
@@ -24,8 +25,16 @@ func NewRangeLoop(node Node, tpl *Tpl, ctx *Ctx, w io.Writer) *RangeLoop {
 	return &rl
 }
 
-func (rl *RangeLoop) Set(key string, val interface{}, ins inspector.Inspector) {
-	rl.ctx.Set(key, val, ins)
+func (rl *RangeLoop) RequireKey() bool {
+	return len(rl.node.loopKey) > 0
+}
+
+func (rl *RangeLoop) SetKey(val interface{}, ins inspector.Inspector) {
+	rl.ctx.Set(fastconv.B2S(rl.node.loopKey), val, ins)
+}
+
+func (rl *RangeLoop) SetVal(val interface{}, ins inspector.Inspector) {
+	rl.ctx.Set(fastconv.B2S(rl.node.loopVal), val, ins)
 }
 
 func (rl *RangeLoop) Loop() {
