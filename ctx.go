@@ -103,8 +103,12 @@ func (c *Ctx) loop(path []byte, node Node, tpl *Tpl, w io.Writer) {
 		if v.key == c.ssbuf[0] {
 			if c.rl == nil {
 				c.rl = NewRangeLoop(node, tpl, c, w)
+			} else {
+				c.rl.cntr = 0
+				c.rl.node = node
+				c.rl.tpl = tpl
+				c.rl.w = w
 			}
-			c.rl.cntr = 0
 			c.Err = v.ins.Loop(v.val, c.rl, &c.bbuf1, c.ssbuf[1:]...)
 			return
 		}
