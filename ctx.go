@@ -15,7 +15,7 @@ type Ctx struct {
 	bbuf1 []byte
 	cbuf  bool
 	buf   interface{}
-	rlp   *RangeLoopPool
+	rl    *RangeLoop
 	Err   error
 }
 
@@ -93,10 +93,6 @@ func (c *Ctx) cmp(path []byte, cond Op, right []byte) bool {
 	return false
 }
 
-func (c *Ctx) SetRLP(rlp *RangeLoopPool) {
-	c.rlp = rlp
-}
-
 func (c *Ctx) loop(path []byte, node Node, tpl *Tpl, w io.Writer) {
 	c.ssbuf = c.ssbuf[:0]
 	c.ssbuf = cbytealg.AppendSplitStr(c.ssbuf, fastconv.B2S(path), ".", -1)
@@ -105,12 +101,11 @@ func (c *Ctx) loop(path []byte, node Node, tpl *Tpl, w io.Writer) {
 	}
 	for _, v := range c.vars {
 		if v.key == c.ssbuf[0] {
-			if c.rlp == nil {
-				c.rlp = &RLP
+			if c.rl == nil {
+				c.rl = NewRangeLoop(node, tpl, c, w)
 			}
-			rl := c.rlp.Get(node, tpl, c, w)
-			c.Err = v.ins.Loop(v.val, rl, &c.bbuf1, c.ssbuf[1:]...)
-			c.rlp.Put(rl)
+			c.rl.cntr = 0
+			c.Err = v.ins.Loop(v.val, c.rl, &c.bbuf1, c.ssbuf[1:]...)
 			return
 		}
 	}
@@ -123,6 +118,4 @@ func (c *Ctx) Reset() {
 	c.ssbuf = c.ssbuf[:0]
 	c.bbuf = c.bbuf[:0]
 	c.bbuf1 = c.bbuf1[:0]
-	// Clear redundant pointer.
-	c.rlp = nil
 }
