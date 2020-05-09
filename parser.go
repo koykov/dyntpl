@@ -65,7 +65,7 @@ var (
 
 	reLoop      = regexp.MustCompile(`for .*`)
 	reLoopRange = regexp.MustCompile(`for ([^:]+)\s*:*=\s*range\s*([^\s]*)\s*(?:separator|sep)*\s*(.*)`)
-	reLoopCount = regexp.MustCompile(`for (\w*)\s*:*=\s*(\d+)\s*;\s*\w+\s*(<|<=|>|>=|!=)+\s*([^;]+)\s*;\s*\w*(--|\+\+)+\s*(?:separator|sep)*\s*(.*)`)
+	reLoopCount = regexp.MustCompile(`for (\w*)\s*:*=\s*(\w+)\s*;\s*\w+\s*(<|<=|>|>=|!=)+\s*([^;]+)\s*;\s*\w*(--|\+\+)+\s*(?:separator|sep)*\s*(.*)`)
 
 	reSwitch     = regexp.MustCompile(`^switch\s*(.*)`)
 	reSwitchCase = regexp.MustCompile(`case ([^<=>!]+)([<=>!]{2})*(.*)`)
