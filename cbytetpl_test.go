@@ -75,10 +75,13 @@ var (
 	tplLoopCountStatic = []byte(`<h2>History</h2>
 <ul>
 	{% for i := 0; i < 3; i++ %}
-	<li>{%= user.Finance.History[i].Cost %}</li>
+	<li>Amount: {%= user.Finance.History[i].Cost %}<br/>
+		Description: {%= user.Finance.History[i].Comment %}<br/>
+		Date: {%= user.Finance.History[i].DateUnix %}
+	</li>
 	{% endfor %}
 </ul>`)
-	expectLoopCountStatic = []byte(`<h2>History</h2><ul><li>14.345241</li><li>-3.0000342543</li><li>2325242534.3532453</li></ul>`)
+	expectLoopCountStatic = []byte(`<h2>History</h2><ul><li>Amount: 14.345241<br/>Description: pay for domain<br/>Date: 152354345634</li><li>Amount: -3.0000342543<br/>Description: got refund<br/>Date: 153465345246</li><li>Amount: 2325242534.3532453<br/>Description: maintenance<br/>Date: 156436535640</li></ul>`)
 )
 
 func pretest() {
