@@ -43,6 +43,6 @@ func (rl *RangeLoop) Loop() {
 	}
 	rl.cntr++
 	for _, ch := range rl.node.child {
-		_ = rl.tpl.renderNode(rl.w, &ch, rl.ctx)
+		_ = rl.tpl.renderNode(rl.w, ch, rl.ctx)
 	}
 }

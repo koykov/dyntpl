@@ -43,7 +43,7 @@ func RenderTo(w io.Writer, id string, ctx *Ctx) (err error) {
 		return
 	}
 	for _, node := range tpl.tree.nodes {
-		err = tpl.renderNode(w, &node, ctx)
+		err = tpl.renderNode(w, node, ctx)
 		if err != nil {
 			return
 		}
@@ -52,7 +52,7 @@ func RenderTo(w io.Writer, id string, ctx *Ctx) (err error) {
 	return
 }
 
-func (t *Tpl) renderNode(w io.Writer, node *Node, ctx *Ctx) (err error) {
+func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 	switch node.typ {
 	case TypeRaw:
 		_, err = w.Write(node.raw)
@@ -94,28 +94,28 @@ func (t *Tpl) renderNode(w io.Writer, node *Node, ctx *Ctx) (err error) {
 		}
 		if r {
 			if len(node.child) > 0 {
-				err = t.renderNode(w, &node.child[0], ctx)
+				err = t.renderNode(w, node.child[0], ctx)
 			}
 		} else {
 			if len(node.child) > 1 {
-				err = t.renderNode(w, &node.child[0], ctx)
+				err = t.renderNode(w, node.child[0], ctx)
 			}
 		}
 	case TypeCondTrue, TypeCondFalse:
 		for _, ch := range node.child {
-			err = t.renderNode(w, &ch, ctx)
+			err = t.renderNode(w, ch, ctx)
 			if err != nil {
 				return
 			}
 		}
 	case TypeLoopCount:
-		ctx.cloop(*node, t, w)
+		ctx.cloop(node, t, w)
 		if ctx.Err != nil {
 			err = ctx.Err
 			return
 		}
 	case TypeLoopRange:
-		ctx.rloop(node.loopSrc, *node, t, w)
+		ctx.rloop(node.loopSrc, node, t, w)
 		if ctx.Err != nil {
 			err = ctx.Err
 			return

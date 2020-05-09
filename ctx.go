@@ -194,7 +194,7 @@ func (c *Ctx) cloop(node Node, tpl *Tpl, w io.Writer) {
 		cntr++
 		c.chQB = true
 		for _, ch := range node.child {
-			_ = tpl.renderNode(w, &ch, c)
+			_ = tpl.renderNode(w, ch, c)
 		}
 		c.chQB = false
 
