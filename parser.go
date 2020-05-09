@@ -65,7 +65,7 @@ var (
 
 	reLoop      = regexp.MustCompile(`for .*`)
 	reLoopRange = regexp.MustCompile(`for ([^:]+)\s*:*=\s*range\s*([^\s]*)\s*(?:separator|sep)*\s*(.*)`)
-	reLoopCount = regexp.MustCompile(`for (\w*)\s*:*=\d+\s*;\s*\w+\s*(<|<=|>|>=|!=)+\s*([^;]+)\s*;\s*\w*(--|\+\+)+\s*(?:separator|sep)*\s*(.*)`)
+	reLoopCount = regexp.MustCompile(`for (\w*)\s*:*=\s*(\d+)\s*;\s*\w+\s*(<|<=|>|>=|!=)+\s*([^;]+)\s*;\s*\w*(--|\+\+)+\s*(?:separator|sep)*\s*(.*)`)
 
 	reSwitch     = regexp.MustCompile(`^switch\s*(.*)`)
 	reSwitchCase = regexp.MustCompile(`case ([^<=>!]+)([<=>!]{2})*(.*)`)
@@ -245,11 +245,14 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 		} else if m := reLoopCount.FindSubmatch(t); m != nil {
 			root.typ = TypeLoopCount
 			root.loopCnt = m[1]
-			root.loopCondOp = p.parseOp(m[2])
-			root.loopLim = m[3]
-			root.loopCntOp = p.parseOp(m[4])
-			if len(m) > 4 {
-				root.loopSep = m[5]
+			root.loopCntInit = m[2]
+			root.loopCntStatic = isStatic(m[2])
+			root.loopCondOp = p.parseOp(m[3])
+			root.loopLim = m[4]
+			root.loopLimStatic = isStatic(m[4])
+			root.loopCntOp = p.parseOp(m[5])
+			if len(m) > 5 {
+				root.loopSep = m[6]
 			}
 		} else {
 			return nodes, 0, up, ErrLoopParse

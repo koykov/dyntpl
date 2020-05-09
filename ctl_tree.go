@@ -117,14 +117,17 @@ type Node struct {
 	condStaticR bool
 	condOp      Op
 
-	loopKey    []byte
-	loopVal    []byte
-	loopSrc    []byte
-	loopCnt    []byte
-	loopCntOp  Op
-	loopCondOp Op
-	loopLim    []byte
-	loopSep    []byte
+	loopKey       []byte
+	loopVal       []byte
+	loopSrc       []byte
+	loopCnt       []byte
+	loopCntInit   []byte
+	loopCntStatic bool
+	loopCntOp     Op
+	loopCondOp    Op
+	loopLim       []byte
+	loopLimStatic bool
+	loopSep       []byte
 
 	switchArg []byte
 

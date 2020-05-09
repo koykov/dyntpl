@@ -109,9 +109,17 @@ func (t *Tpl) renderNode(w io.Writer, node *Node, ctx *Ctx) (err error) {
 			}
 		}
 	case TypeLoopCount:
-		// todo implement me
+		ctx.cloop(*node, t, w)
+		if ctx.Err != nil {
+			err = ctx.Err
+			return
+		}
 	case TypeLoopRange:
-		ctx.loop(node.loopSrc, *node, t, w)
+		ctx.rloop(node.loopSrc, *node, t, w)
+		if ctx.Err != nil {
+			err = ctx.Err
+			return
+		}
 	default:
 		err = ErrUnknownCtl
 	}

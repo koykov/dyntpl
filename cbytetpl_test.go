@@ -71,6 +71,14 @@ var (
 	]
 }`)
 	expectLoopRange = []byte(`{"id":"115","name":"John","fin_history":[0:{"utime":152354345634,"cost":14.345241,"desc":"pay for domain"},1:{"utime":153465345246,"cost":-3.0000342543,"desc":"got refund"},2:{"utime":156436535640,"cost":2325242534.3532453,"desc":"maintenance"}]}`)
+
+	tplLoopCountStatic = []byte(`<h2>History</h2>
+<ul>
+	{% for i := 0; i < 3; i++ %}
+	<li>{%= user.Finance.History[i].Cost %}</li>
+	{% endfor %}
+</ul>`)
+	expectLoopCountStatic = []byte(`<h2>History</h2><ul><li>14.345241</li><li>-3.0000342543</li><li>2325242534.3532453</li></ul>`)
 )
 
 func pretest() {
@@ -85,6 +93,9 @@ func pretest() {
 
 	tree, _ = Parse(tplLoopRange, false)
 	RegisterTpl("tplLoopRange", tree)
+
+	tree, _ = Parse(tplLoopCountStatic, false)
+	RegisterTpl("tplLoopCountStatic", tree)
 }
 
 func TestTplRaw(t *testing.T) {
@@ -141,6 +152,20 @@ func TestTplLoopRange(t *testing.T) {
 	}
 }
 
+func TestTplLoopCountStatic(t *testing.T) {
+	pretest()
+
+	ctx := NewCtx()
+	ctx.Set("user", user, &ins)
+	result, err := Render("tplLoopCountStatic", ctx)
+	if err != nil {
+		t.Error(err)
+	}
+	if !bytes.Equal(result, expectLoopCountStatic) {
+		t.Error("loop count static tpl mismatch")
+	}
+}
+
 func BenchmarkTplSimple(b *testing.B) {
 	pretest()
 
@@ -193,6 +218,25 @@ func BenchmarkTplLoopRange(b *testing.B) {
 		}
 		if !bytes.Equal(buf.Bytes(), expectLoopRange) {
 			b.Error("loop range tpl mismatch")
+		}
+		CP.Put(ctx)
+	}
+}
+
+func BenchmarkTplLoopCountStatic(b *testing.B) {
+	pretest()
+
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		ctx := CP.Get()
+		buf.Reset()
+		ctx.Set("user", user, &ins)
+		err := RenderTo(&buf, "tplLoopCountStatic", ctx)
+		if err != nil {
+			b.Error(err)
+		}
+		if !bytes.Equal(buf.Bytes(), expectLoopCountStatic) {
+			b.Error("loop count static tpl mismatch")
 		}
 		CP.Put(ctx)
 	}

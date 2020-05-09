@@ -1,7 +1,9 @@
 package cbytetpl
 
 import (
+	"bytes"
 	"io"
+	"strconv"
 
 	"github.com/koykov/cbytealg"
 	"github.com/koykov/fastconv"
@@ -14,6 +16,8 @@ type Ctx struct {
 	bbuf  []byte
 	bbuf1 []byte
 	cbuf  bool
+	ibuf  int64
+	chQB  bool
 	buf   interface{}
 	rl    *RangeLoop
 	Err   error
@@ -53,7 +57,35 @@ func (c *Ctx) Get(path string) interface{} {
 	return c.get(fastconv.S2B(path))
 }
 
+var (
+	sqL = []byte("[")
+	sqR = []byte("]")
+	dot = []byte(".")
+)
+
 func (c *Ctx) get(path []byte) interface{} {
+	if c.chQB {
+		sqLi := bytes.Index(path, sqL)
+		sqRi := bytes.Index(path, sqR)
+		if sqLi != -1 && sqRi != -1 && sqLi < sqRi && sqRi < len(path) {
+			c.bbuf = append(c.bbuf[:0], path[0:sqLi]...)
+			c.bbuf = append(c.bbuf, dot...)
+			c.chQB = false
+			c.buf = c.get(path[sqLi+1 : sqRi])
+			if c.buf != nil {
+				c.bbuf1, c.Err = cbytealg.AnyToBytes(c.bbuf1[:0], c.buf)
+				if c.Err != nil {
+					c.chQB = true
+					return nil
+				}
+				c.bbuf = append(c.bbuf, c.bbuf1...)
+			}
+			c.chQB = true
+			c.bbuf = append(c.bbuf, path[sqRi+1:]...)
+			path = c.bbuf
+		}
+	}
+
 	c.ssbuf = c.ssbuf[:0]
 	c.ssbuf = cbytealg.AppendSplitStr(c.ssbuf, fastconv.B2S(path), ".", -1)
 	if len(c.ssbuf) == 0 {
@@ -93,7 +125,7 @@ func (c *Ctx) cmp(path []byte, cond Op, right []byte) bool {
 	return false
 }
 
-func (c *Ctx) loop(path []byte, node Node, tpl *Tpl, w io.Writer) {
+func (c *Ctx) rloop(path []byte, node Node, tpl *Tpl, w io.Writer) {
 	c.ssbuf = c.ssbuf[:0]
 	c.ssbuf = cbytealg.AppendSplitStr(c.ssbuf, fastconv.B2S(path), ".", -1)
 	if len(c.ssbuf) == 0 {
@@ -115,9 +147,95 @@ func (c *Ctx) loop(path []byte, node Node, tpl *Tpl, w io.Writer) {
 	}
 }
 
+func (c *Ctx) cloop(node Node, tpl *Tpl, w io.Writer) {
+	var (
+		cnt, lim  int64
+		cntr      int
+		allowIter bool
+	)
+	cnt = c.cloopRange(node.loopCntStatic, node.loopCntInit)
+	if c.Err != nil {
+		return
+	}
+	lim = c.cloopRange(node.loopLimStatic, node.loopLim)
+	if c.Err != nil {
+		return
+	}
+	c.ibuf = cnt
+	allowIter = false
+	cntr = 0
+	for {
+		switch node.loopCondOp {
+		case OpLt:
+			allowIter = c.ibuf < lim
+		case OpLtq:
+			allowIter = c.ibuf <= lim
+		case OpGt:
+			allowIter = c.ibuf > lim
+		case OpGtq:
+			allowIter = c.ibuf >= lim
+		case OpEq:
+			allowIter = c.ibuf == lim
+		case OpNq:
+			allowIter = c.ibuf != lim
+		default:
+			c.Err = ErrWrongLoopCond
+			break
+		}
+		if !allowIter {
+			break
+		}
+
+		c.Set(fastconv.B2S(node.loopCnt), &c.ibuf, &inspector.StaticInspector{})
+
+		if cntr > 0 && len(node.loopSep) > 0 {
+			_, _ = w.Write(node.loopSep)
+		}
+		cntr++
+		c.chQB = true
+		for _, ch := range node.child {
+			_ = tpl.renderNode(w, &ch, c)
+		}
+		c.chQB = false
+
+		switch node.loopCntOp {
+		case OpInc:
+			c.ibuf++
+		case OpDec:
+			c.ibuf--
+		default:
+			c.Err = ErrWrongLoopOp
+			break
+		}
+	}
+	return
+}
+
+func (c *Ctx) cloopRange(static bool, b []byte) (r int64) {
+	if static {
+		r, c.Err = strconv.ParseInt(fastconv.B2S(b), 0, 0)
+		if c.Err != nil {
+			return
+		}
+	} else {
+		var ok bool
+		raw := c.get(b)
+		if c.Err != nil {
+			return
+		}
+		r, ok = lim2int(raw)
+		if !ok {
+			c.Err = ErrWrongLoopLim
+			return
+		}
+	}
+	return
+}
+
 func (c *Ctx) Reset() {
 	c.Err = nil
 	c.buf = nil
+	c.chQB = false
 	c.vars = c.vars[:0]
 	c.ssbuf = c.ssbuf[:0]
 	c.bbuf = c.bbuf[:0]
