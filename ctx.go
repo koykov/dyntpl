@@ -29,6 +29,12 @@ type ctxVar struct {
 	ins inspector.Inspector
 }
 
+var (
+	sqL = []byte("[")
+	sqR = []byte("]")
+	dot = []byte(".")
+)
+
 func NewCtx() *Ctx {
 	ctx := Ctx{
 		vars:  make([]ctxVar, 0),
@@ -57,33 +63,19 @@ func (c *Ctx) Get(path string) interface{} {
 	return c.get(fastconv.S2B(path))
 }
 
-var (
-	sqL = []byte("[")
-	sqR = []byte("]")
-	dot = []byte(".")
-)
+func (c *Ctx) Reset() {
+	c.Err = nil
+	c.buf = nil
+	c.chQB = false
+	c.vars = c.vars[:0]
+	c.ssbuf = c.ssbuf[:0]
+	c.bbuf = c.bbuf[:0]
+	c.bbuf1 = c.bbuf1[:0]
+}
 
 func (c *Ctx) get(path []byte) interface{} {
 	if c.chQB {
-		sqLi := bytes.Index(path, sqL)
-		sqRi := bytes.Index(path, sqR)
-		if sqLi != -1 && sqRi != -1 && sqLi < sqRi && sqRi < len(path) {
-			c.bbuf = append(c.bbuf[:0], path[0:sqLi]...)
-			c.bbuf = append(c.bbuf, dot...)
-			c.chQB = false
-			c.buf = c.get(path[sqLi+1 : sqRi])
-			if c.buf != nil {
-				c.bbuf1, c.Err = cbytealg.AnyToBytes(c.bbuf1[:0], c.buf)
-				if c.Err != nil {
-					c.chQB = true
-					return nil
-				}
-				c.bbuf = append(c.bbuf, c.bbuf1...)
-			}
-			c.chQB = true
-			c.bbuf = append(c.bbuf, path[sqRi+1:]...)
-			path = c.bbuf
-		}
+		path = c.replaceQB(path)
 	}
 
 	c.ssbuf = c.ssbuf[:0]
@@ -232,12 +224,25 @@ func (c *Ctx) cloopRange(static bool, b []byte) (r int64) {
 	return
 }
 
-func (c *Ctx) Reset() {
-	c.Err = nil
-	c.buf = nil
-	c.chQB = false
-	c.vars = c.vars[:0]
-	c.ssbuf = c.ssbuf[:0]
-	c.bbuf = c.bbuf[:0]
-	c.bbuf1 = c.bbuf1[:0]
+func (c *Ctx) replaceQB(path []byte) []byte {
+	sqLi := bytes.Index(path, sqL)
+	sqRi := bytes.Index(path, sqR)
+	if sqLi != -1 && sqRi != -1 && sqLi < sqRi && sqRi < len(path) {
+		c.bbuf = append(c.bbuf[:0], path[0:sqLi]...)
+		c.bbuf = append(c.bbuf, dot...)
+		c.chQB = false
+		c.buf = c.get(path[sqLi+1 : sqRi])
+		if c.buf != nil {
+			c.bbuf1, c.Err = cbytealg.AnyToBytes(c.bbuf1[:0], c.buf)
+			if c.Err != nil {
+				c.chQB = true
+				return nil
+			}
+			c.bbuf = append(c.bbuf, c.bbuf1...)
+		}
+		c.chQB = true
+		c.bbuf = append(c.bbuf, path[sqRi+1:]...)
+		path = c.bbuf
+	}
+	return path
 }
