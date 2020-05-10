@@ -36,11 +36,12 @@ var (
 	ctlClose   = []byte("%}")
 	ctlTrim    = []byte("{}% ")
 	ctlTrimAll = []byte("{}%= ")
-	condElse   = []byte(`else`)
-	condEnd    = []byte(`endif`)
-	loopEnd    = []byte(`endfor`)
-	swDefault  = []byte(`default`)
-	swEnd      = []byte(`endswitch`)
+	ctxStatic  = []byte("static")
+	condElse   = []byte("else")
+	condEnd    = []byte("endif")
+	loopEnd    = []byte("endfor")
+	swDefault  = []byte("default")
+	swEnd      = []byte("endswitch")
 
 	opEq  = []byte("==")
 	opNq  = []byte("!=")
@@ -58,6 +59,8 @@ var (
 	reTplP  = regexp.MustCompile(`^=\s*(.*) (?:prefix|pfx) (.*)`)
 	reTplS  = regexp.MustCompile(`^=\s*(.*) (?:suffix|sfx) (.*)`)
 	reTpl   = regexp.MustCompile(`^= (.*)`)
+
+	reCtx = regexp.MustCompile(`ctx (\w+)\s*=\s*([\w.]+)\s*as*\s*(\w*)`)
 
 	reCond        = regexp.MustCompile(`if .*`)
 	reCondExpr    = regexp.MustCompile(`if (.*)(==|!=|>=|<=|>|<)(.*)`)
@@ -177,6 +180,23 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 			root.suffix = m[2]
 		} else {
 			root.raw = cbytealg.Trim(t, ctlTrimAll)
+		}
+		nodes = addNode(nodes, *root)
+		offset = pos + len(ctl)
+		return nodes, offset, up, err
+	}
+
+	// Check context structure.
+	if reCtx.Match(t) {
+		root.typ = TypeCtx
+		if m := reCtx.FindSubmatch(t); m != nil {
+			root.ctxVar = m[1]
+			root.ctxSrc = m[2]
+			if len(m) > 3 {
+				root.ctxIns = m[3]
+			} else {
+				root.ctxIns = ctxStatic
+			}
 		}
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)

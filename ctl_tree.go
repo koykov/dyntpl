@@ -111,6 +111,10 @@ type Node struct {
 	prefix []byte
 	suffix []byte
 
+	ctxVar []byte
+	ctxSrc []byte
+	ctxIns []byte
+
 	condL       []byte
 	condR       []byte
 	condStaticL bool
@@ -161,6 +165,17 @@ func (t *Tree) hrHelper(buf *bytes.Buffer, nodes []Node, indent []byte, depth in
 		if len(node.suffix) > 0 {
 			buf.WriteString(" sfx ")
 			buf.Write(node.suffix)
+		}
+
+		if len(node.ctxVar) > 0 && len(node.ctxSrc) > 0 {
+			buf.WriteString("var ")
+			buf.Write(node.ctxVar)
+			buf.WriteString(" src ")
+			buf.Write(node.ctxSrc)
+			if len(node.ctxIns) > 0 {
+				buf.WriteString(" ins ")
+				buf.Write(node.ctxIns)
+			}
 		}
 
 		if len(node.condL) > 0 {

@@ -53,6 +53,14 @@ tpl: val3 pfx "key4" sfx ,
 raw: "key5": "foo bar"}
 `)
 
+	ctxOrigin = []byte(`{% ctx var0 = obj.Key as static %}
+{% ctx var1=user.Id as static %}
+{%= var1 %}`)
+	ctxExpect = []byte(`ctx: var var0 src obj.Key ins static
+ctx: var var1 src user.Id ins static
+tpl: var1
+`)
+
 	condOrigin = []byte(`
 <h1>Profile</h1>
 {% if user.Id == 0 %}
@@ -255,6 +263,14 @@ func TestParse_PrefixSuffix(t *testing.T) {
 	r := tree.humanReadable()
 	if !bytes.Equal(r, tplPSExpect) {
 		t.Errorf("prefix/suffix test failed\nexp: %s\ngot: %s", string(tplPSExpect), string(r))
+	}
+}
+
+func TestParse_Ctx(t *testing.T) {
+	tree, _ := Parse(ctxOrigin, false)
+	r := tree.humanReadable()
+	if !bytes.Equal(r, ctxExpect) {
+		t.Errorf("ctx test failed\nexp: %s\ngot: %s", string(ctxExpect), string(r))
 	}
 }
 
