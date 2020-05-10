@@ -136,9 +136,11 @@ type Node struct {
 
 	switchArg []byte
 
-	caseL  []byte
-	caseR  []byte
-	caseOp Op
+	caseL       []byte
+	caseR       []byte
+	caseStaticL bool
+	caseStaticR bool
+	caseOp      Op
 
 	child []Node
 }

@@ -55,7 +55,25 @@ var (
 	tplCond = []byte(`<h2>Status</h2><p>
 {% if user.Status >= 60 %}Privileged user, your balance: {%= user.Finance.Balance %}.
 {% else %}You don't have enough privileges.{% endif %}</p>`)
+	tplCondNoStatic = []byte(`<h2>Status</h2><p>
+{%ctx permissionLimit = 60 %}
+{% if user.Status >= permissionLimit %}Privileged user, your balance: {%= user.Finance.Balance %}.
+{% else %}You don't have enough privileges.{% endif %}</p>`)
 	expectCond = []byte(`<h2>Status</h2><p>Privileged user, your balance: 9000.015.</p>`)
+
+	tplSwitch = []byte(`{%ctx exactStatus = 78 %}{
+	"permission": "{% switch user.Status %}
+	{% case 10 %}
+		anonymous
+	{% case 45 %}
+		logged in
+	{% case exactStatus %}
+		privileged
+	{% default %}
+		unknown
+{% endswitch %}"
+}`)
+	expectSwitch = []byte(`{"permission": "privileged"}`)
 
 	tplLoopRange = []byte(`{
 	"id":"{%= user.Id %}",
@@ -113,6 +131,11 @@ func pretest() {
 
 	tree, _ = Parse(tplCond, false)
 	RegisterTpl("tplCond", tree)
+	tree, _ = Parse(tplCondNoStatic, false)
+	RegisterTpl("tplCondNoStatic", tree)
+
+	tree, _ = Parse(tplSwitch, false)
+	RegisterTpl("tplSwitch", tree)
 
 	tree, _ = Parse(tplLoopRange, false)
 	RegisterTpl("tplLoopRange", tree)
@@ -162,6 +185,34 @@ func TestTplCond(t *testing.T) {
 	}
 	if !bytes.Equal(result, expectCond) {
 		t.Error("cond tpl mismatch")
+	}
+}
+
+func TestTplCondNoStatic(t *testing.T) {
+	pretest()
+
+	ctx := NewCtx()
+	ctx.Set("user", user, &ins)
+	result, err := Render("tplCondNoStatic", ctx)
+	if err != nil {
+		t.Error(err)
+	}
+	if !bytes.Equal(result, expectCond) {
+		t.Error("cond no static tpl mismatch")
+	}
+}
+
+func TestTplSwitch(t *testing.T) {
+	pretest()
+
+	ctx := NewCtx()
+	ctx.Set("user", user, &ins)
+	result, err := Render("tplSwitch", ctx)
+	if err != nil {
+		t.Error(err)
+	}
+	if !bytes.Equal(result, expectSwitch) {
+		t.Error("switch tpl mismatch")
 	}
 }
 
@@ -256,6 +307,44 @@ func BenchmarkTplCond(b *testing.B) {
 		}
 		if !bytes.Equal(buf.Bytes(), expectCond) {
 			b.Error("cond tpl mismatch")
+		}
+		CP.Put(ctx)
+	}
+}
+
+func BenchmarkTplCondNoStatic(b *testing.B) {
+	pretest()
+
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		ctx := CP.Get()
+		ctx.Set("user", user, &ins)
+		buf.Reset()
+		err := RenderTo(&buf, "tplCondNoStatic", ctx)
+		if err != nil {
+			b.Error(err)
+		}
+		if !bytes.Equal(buf.Bytes(), expectCond) {
+			b.Error("cond no static tpl mismatch")
+		}
+		CP.Put(ctx)
+	}
+}
+
+func BenchmarkTplSwitch(b *testing.B) {
+	pretest()
+
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		ctx := CP.Get()
+		ctx.Set("user", user, &ins)
+		buf.Reset()
+		err := RenderTo(&buf, "tplSwitch", ctx)
+		if err != nil {
+			b.Error(err)
+		}
+		if !bytes.Equal(buf.Bytes(), expectSwitch) {
+			b.Error("switch tpl mismatch")
 		}
 		CP.Put(ctx)
 	}

@@ -157,7 +157,10 @@ func (c *Ctx) cmp(path []byte, cond Op, right []byte) bool {
 		return false
 	}
 
-	for _, v := range c.vars {
+	for i, v := range c.vars {
+		if i == c.ln {
+			break
+		}
 		if v.key == c.ssbuf[0] {
 			c.Err = v.ins.Cmp(v.val, inspector.Op(cond), fastconv.B2S(right), &c.cbuf, c.ssbuf[1:]...)
 			if c.Err != nil {
@@ -176,7 +179,10 @@ func (c *Ctx) rloop(path []byte, node Node, tpl *Tpl, w io.Writer) {
 	if len(c.ssbuf) == 0 {
 		return
 	}
-	for _, v := range c.vars {
+	for i, v := range c.vars {
+		if i == c.ln {
+			break
+		}
 		if v.key == c.ssbuf[0] {
 			if c.rl == nil {
 				c.rl = NewRangeLoop(node, tpl, c, w)

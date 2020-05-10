@@ -91,14 +91,21 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 		}
 		var r bool
 		if sr {
+			// Right side is static.
 			r = ctx.cmp(node.condL, node.condOp, node.condR)
-		}
-		if ctx.Err != nil {
-			err = ctx.Err
-			return
-		}
-		if sl {
+		} else if sl {
+			// Left side is static.
 			r = ctx.cmp(node.condR, node.condOp.Swap(), node.condL)
+		} else {
+			// Both sides isn't static.
+			ctx.get(node.condR)
+			if ctx.Err == nil {
+				ctx.bbuf, err = cbytealg.AnyToBytes(ctx.bbuf[:0], ctx.buf)
+				if err != nil {
+					return
+				}
+				r = ctx.cmp(node.condL, node.condOp, ctx.bbuf)
+			}
 		}
 		if ctx.Err != nil {
 			err = ctx.Err
@@ -113,7 +120,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 				err = t.renderNode(w, node.child[0], ctx)
 			}
 		}
-	case TypeCondTrue, TypeCondFalse:
+	case TypeCondTrue, TypeCondFalse, TypeCase, TypeDefault:
 		for _, ch := range node.child {
 			err = t.renderNode(w, ch, ctx)
 			if err != nil {
@@ -131,6 +138,41 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 		if ctx.Err != nil {
 			err = ctx.Err
 			return
+		}
+	case TypeSwitch:
+		r := false
+		if len(node.switchArg) > 0 {
+			// Classic switch case.
+			for _, ch := range node.child {
+				if ch.typ == TypeCase {
+					if ch.caseStaticL {
+						r = ctx.cmp(node.switchArg, OpEq, ch.caseL)
+					} else {
+						ctx.get(ch.caseL)
+						if ctx.Err == nil {
+							ctx.bbuf, err = cbytealg.AnyToBytes(ctx.bbuf[:0], ctx.buf)
+							if err != nil {
+								return
+							}
+							r = ctx.cmp(node.switchArg, OpEq, ctx.bbuf)
+						}
+					}
+				}
+				if r {
+					err = t.renderNode(w, ch, ctx)
+					break
+				}
+			}
+			if !r {
+				for _, ch := range node.child {
+					if ch.typ == TypeDefault {
+						err = t.renderNode(w, ch, ctx)
+						break
+					}
+				}
+			}
+		} else {
+			// Switch without condition case.
 		}
 	default:
 		err = ErrUnknownCtl

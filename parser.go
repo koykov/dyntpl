@@ -315,7 +315,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 	// Check switch's case.
 	if reSwitchCase.Match(t) {
 		root.typ = TypeCase
-		root.caseL, root.caseR, root.caseOp = p.parseCaseExpr(t)
+		root.caseL, root.caseR, root.caseStaticL, root.caseStaticR, root.caseOp = p.parseCaseExpr(t)
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
 		return nodes, offset, up, err
@@ -349,12 +349,14 @@ func (p *Parser) parseCondExpr(expr []byte) (l, r []byte, sl, sr bool, op Op) {
 	return
 }
 
-func (p *Parser) parseCaseExpr(expr []byte) (l, r []byte, op Op) {
+func (p *Parser) parseCaseExpr(expr []byte) (l, r []byte, sl, sr bool, op Op) {
 	if m := reSwitchCase.FindSubmatch(expr); m != nil {
 		l = cbytealg.Trim(m[1], space)
+		sl = isStatic(l)
 		if len(m) > 1 {
 			op = p.parseOp(m[2])
 			r = cbytealg.Trim(m[3], space)
+			sr = isStatic(r)
 		}
 	}
 	return
