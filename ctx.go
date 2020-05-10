@@ -12,6 +12,7 @@ import (
 
 type Ctx struct {
 	vars  []ctxVar
+	ln    int
 	ssbuf []string
 	bbuf  []byte
 	bbuf1 []byte
@@ -26,6 +27,7 @@ type Ctx struct {
 type ctxVar struct {
 	key string
 	val interface{}
+	buf []byte
 	ins inspector.Inspector
 }
 
@@ -45,18 +47,24 @@ func NewCtx() *Ctx {
 }
 
 func (c *Ctx) Set(key string, val interface{}, ins inspector.Inspector) {
-	for i := range c.vars {
+	for i := 0; i < c.ln; i++ {
 		if c.vars[i].key == key {
 			c.vars[i].val = val
 			c.vars[i].ins = ins
 			return
 		}
 	}
-	c.vars = append(c.vars, ctxVar{
-		key: key,
-		val: val,
-		ins: ins,
-	})
+	if c.ln < len(c.vars) {
+		c.vars[c.ln].val = val
+		c.vars[c.ln].ins = ins
+	} else {
+		c.vars = append(c.vars, ctxVar{
+			key: key,
+			val: val,
+			ins: ins,
+		})
+	}
+	c.ln++
 }
 
 func (c *Ctx) SetStatic(key string, val interface{}) {
@@ -68,6 +76,34 @@ func (c *Ctx) SetStatic(key string, val interface{}) {
 	c.Set(key, val, ins)
 }
 
+func (c *Ctx) SetBytes(key string, val []byte) {
+	ins, err := inspector.GetInspector("static")
+	if err != nil {
+		c.Err = err
+		return
+	}
+	for i := 0; i < c.ln; i++ {
+		if c.vars[i].key == key {
+			c.vars[i].buf = append(c.vars[i].buf[:0], val...)
+			c.vars[i].ins = ins
+			return
+		}
+	}
+	if c.ln < len(c.vars) {
+		c.vars[c.ln].key = key
+		c.vars[c.ln].buf = append(c.vars[c.ln].buf[:0], val...)
+		c.vars[c.ln].ins = ins
+	} else {
+		v := ctxVar{
+			key: key,
+			buf: val,
+			ins: ins,
+		}
+		c.vars = append(c.vars, v)
+	}
+	c.ln++
+}
+
 func (c *Ctx) Get(path string) interface{} {
 	return c.get(fastconv.S2B(path))
 }
@@ -76,7 +112,7 @@ func (c *Ctx) Reset() {
 	c.Err = nil
 	c.buf = nil
 	c.chQB = false
-	c.vars = c.vars[:0]
+	c.ln = 0
 	c.ssbuf = c.ssbuf[:0]
 	c.bbuf = c.bbuf[:0]
 	c.bbuf1 = c.bbuf1[:0]
@@ -93,8 +129,16 @@ func (c *Ctx) get(path []byte) interface{} {
 		return nil
 	}
 
-	for _, v := range c.vars {
+	for i, v := range c.vars {
+		if i == c.ln {
+			break
+		}
 		if v.key == c.ssbuf[0] {
+			if v.val == nil && v.buf != nil {
+				c.bbuf = append(c.bbuf[:0], v.buf...)
+				c.buf = &c.bbuf
+				return c.buf
+			}
 			c.Err = v.ins.GetTo(v.val, &c.buf, c.ssbuf[1:]...)
 			if c.Err != nil {
 				return nil

@@ -91,8 +91,8 @@ var (
 	{% endfor %}
 </ul>`)
 	tplLoopCountCtx = []byte(`<h2>History</h2>
-{% ctx begin = 0 %}
-{% ctx end = 3 %}
+{%ctx begin = 0 %}
+{%ctx end = 3 %}
 <ul>
 	{% for i := begin; i < end; i++ %}
 	<li>Amount: {%= user.Finance.History[i].Cost %}<br/>

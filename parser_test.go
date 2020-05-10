@@ -54,7 +54,7 @@ raw: "key5": "foo bar"}
 `)
 
 	ctxOrigin = []byte(`{% ctx var0 = obj.Key as static %}
-{% ctx var1=user.Id as static %}
+{%ctx var1=user.Id as static %}
 {%= var1 %}`)
 	ctxExpect = []byte(`ctx: var var0 src obj.Key ins static
 ctx: var var1 src user.Id ins static

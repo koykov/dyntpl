@@ -192,6 +192,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 		if m := reCtx.FindSubmatch(t); m != nil {
 			root.ctxVar = m[1]
 			root.ctxSrc = m[2]
+			root.ctxSrcStatic = isStatic(m[2])
 			if len(m) > 3 && len(m[3]) > 0 {
 				root.ctxIns = m[3]
 			} else {

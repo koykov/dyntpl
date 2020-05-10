@@ -73,8 +73,8 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			_, err = w.Write(ctx.bbuf)
 		}
 	case TypeCtx:
-		if bytes.Equal(node.ctxIns, ctxStatic) {
-			ctx.SetStatic(fastconv.B2S(node.ctxVar), node.ctxSrc)
+		if node.ctxSrcStatic {
+			ctx.SetBytes(fastconv.B2S(node.ctxVar), node.ctxSrc)
 		} else {
 			ins, err := inspector.GetInspector(fastconv.B2S(node.ctxIns))
 			if err != nil {

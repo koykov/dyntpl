@@ -111,9 +111,10 @@ type Node struct {
 	prefix []byte
 	suffix []byte
 
-	ctxVar []byte
-	ctxSrc []byte
-	ctxIns []byte
+	ctxVar       []byte
+	ctxSrc       []byte
+	ctxSrcStatic bool
+	ctxIns       []byte
 
 	condL       []byte
 	condR       []byte
