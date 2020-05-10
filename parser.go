@@ -60,7 +60,7 @@ var (
 	reTplS  = regexp.MustCompile(`^=\s*(.*) (?:suffix|sfx) (.*)`)
 	reTpl   = regexp.MustCompile(`^= (.*)`)
 
-	reCtx = regexp.MustCompile(`ctx (\w+)\s*=\s*([\w.]+)\s*as*\s*(\w*)`)
+	reCtx = regexp.MustCompile(`ctx (\w+)\s*=\s*([\w.]+)\s*[as]*\s*(\w*)`)
 
 	reCond        = regexp.MustCompile(`if .*`)
 	reCondExpr    = regexp.MustCompile(`if (.*)(==|!=|>=|<=|>|<)(.*)`)
@@ -192,7 +192,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 		if m := reCtx.FindSubmatch(t); m != nil {
 			root.ctxVar = m[1]
 			root.ctxSrc = m[2]
-			if len(m) > 3 {
+			if len(m) > 3 && len(m[3]) > 0 {
 				root.ctxIns = m[3]
 			} else {
 				root.ctxIns = ctxStatic

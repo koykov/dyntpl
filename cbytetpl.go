@@ -6,6 +6,8 @@ import (
 	"sync"
 
 	"github.com/koykov/cbytealg"
+	"github.com/koykov/fastconv"
+	"github.com/koykov/inspector"
 )
 
 type Tpl struct {
@@ -69,6 +71,16 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 		ctx.bbuf, err = cbytealg.AnyToBytes(ctx.bbuf, raw)
 		if err == nil {
 			_, err = w.Write(ctx.bbuf)
+		}
+	case TypeCtx:
+		if bytes.Equal(node.ctxIns, ctxStatic) {
+			ctx.SetStatic(fastconv.B2S(node.ctxVar), node.ctxSrc)
+		} else {
+			ins, err := inspector.GetInspector(fastconv.B2S(node.ctxIns))
+			if err != nil {
+				return err
+			}
+			ctx.Set(fastconv.B2S(node.ctxVar), ctx.get(node.ctxSrc), ins)
 		}
 	case TypeCond:
 		sl := node.condStaticL

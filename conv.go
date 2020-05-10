@@ -1,5 +1,11 @@
 package cbytetpl
 
+import (
+	"strconv"
+
+	"github.com/koykov/fastconv"
+)
+
 func lim2int(raw interface{}) (lim int64, ok bool) {
 	ok = true
 	switch raw.(type) {
@@ -43,6 +49,14 @@ func lim2int(raw interface{}) (lim int64, ok bool) {
 		lim = int64(raw.(uint64))
 	case *uint64:
 		lim = int64(*raw.(*uint64))
+	case []byte:
+		lim, _ = strconv.ParseInt(fastconv.B2S(raw.([]byte)), 0, 0)
+	case *[]byte:
+		lim, _ = strconv.ParseInt(fastconv.B2S(*raw.(*[]byte)), 0, 0)
+	case string:
+		lim, _ = strconv.ParseInt(raw.(string), 0, 0)
+	case *string:
+		lim, _ = strconv.ParseInt(*raw.(*string), 0, 0)
 	default:
 		ok = false
 	}

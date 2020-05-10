@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/koykov/inspector"
 	"github.com/koykov/inspector/testobj"
 	"github.com/koykov/inspector/testobj_ins"
 )
@@ -91,6 +90,17 @@ var (
 	</li>
 	{% endfor %}
 </ul>`)
+	tplLoopCountCtx = []byte(`<h2>History</h2>
+{% ctx begin = 0 %}
+{% ctx end = 3 %}
+<ul>
+	{% for i := begin; i < end; i++ %}
+	<li>Amount: {%= user.Finance.History[i].Cost %}<br/>
+		Description: {%= user.Finance.History[i].Comment %}<br/>
+		Date: {%= user.Finance.History[i].DateUnix %}
+	</li>
+	{% endfor %}
+</ul>`)
 	expectLoopCount = []byte(`<h2>History</h2><ul><li>Amount: 14.345241<br/>Description: pay for domain<br/>Date: 152354345634</li><li>Amount: -3.0000342543<br/>Description: got refund<br/>Date: 153465345246</li><li>Amount: 2325242534.3532453<br/>Description: maintenance<br/>Date: 156436535640</li></ul>`)
 )
 
@@ -109,9 +119,10 @@ func pretest() {
 
 	tree, _ = Parse(tplLoopCountStatic, false)
 	RegisterTpl("tplLoopCountStatic", tree)
-
 	tree, _ = Parse(tplLoopCount, false)
 	RegisterTpl("tplLoopCount", tree)
+	tree, _ = Parse(tplLoopCountCtx, false)
+	RegisterTpl("tplLoopCountCtx", tree)
 }
 
 func TestTplRaw(t *testing.T) {
@@ -187,14 +198,28 @@ func TestTplLoopCount(t *testing.T) {
 
 	ctx := NewCtx()
 	ctx.Set("user", user, &ins)
-	ctx.Set("begin", 0, &inspector.StaticInspector{})
-	ctx.Set("end", 3, &inspector.StaticInspector{})
+	ctx.SetStatic("begin", 0)
+	ctx.SetStatic("end", 3)
 	result, err := Render("tplLoopCount", ctx)
 	if err != nil {
 		t.Error(err)
 	}
 	if !bytes.Equal(result, expectLoopCount) {
 		t.Error("loop count tpl mismatch")
+	}
+}
+
+func TestTplLoopCountCtx(t *testing.T) {
+	pretest()
+
+	ctx := NewCtx()
+	ctx.Set("user", user, &ins)
+	result, err := Render("tplLoopCountCtx", ctx)
+	if err != nil {
+		t.Error(err)
+	}
+	if !bytes.Equal(result, expectLoopCount) {
+		t.Error("loop count ctx tpl mismatch")
 	}
 }
 
@@ -282,14 +307,33 @@ func BenchmarkTplLoopCount(b *testing.B) {
 		ctx := CP.Get()
 		buf.Reset()
 		ctx.Set("user", user, &ins)
-		ctx.Set("begin", 0, &inspector.StaticInspector{})
-		ctx.Set("end", 3, &inspector.StaticInspector{})
+		ctx.SetStatic("begin", 0)
+		ctx.SetStatic("end", 3)
 		err := RenderTo(&buf, "tplLoopCount", ctx)
 		if err != nil {
 			b.Error(err)
 		}
 		if !bytes.Equal(buf.Bytes(), expectLoopCount) {
 			b.Error("loop count tpl mismatch")
+		}
+		CP.Put(ctx)
+	}
+}
+
+func BenchmarkTplLoopCountCtx(b *testing.B) {
+	pretest()
+
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		ctx := CP.Get()
+		buf.Reset()
+		ctx.Set("user", user, &ins)
+		err := RenderTo(&buf, "tplLoopCountCtx", ctx)
+		if err != nil {
+			b.Error(err)
+		}
+		if !bytes.Equal(buf.Bytes(), expectLoopCount) {
+			b.Error("loop count ctx tpl mismatch")
 		}
 		CP.Put(ctx)
 	}

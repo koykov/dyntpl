@@ -59,6 +59,15 @@ func (c *Ctx) Set(key string, val interface{}, ins inspector.Inspector) {
 	})
 }
 
+func (c *Ctx) SetStatic(key string, val interface{}) {
+	ins, err := inspector.GetInspector("static")
+	if err != nil {
+		c.Err = err
+		return
+	}
+	c.Set(key, val, ins)
+}
+
 func (c *Ctx) Get(path string) interface{} {
 	return c.get(fastconv.S2B(path))
 }
