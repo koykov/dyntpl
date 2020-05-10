@@ -163,16 +163,51 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 					break
 				}
 			}
-			if !r {
-				for _, ch := range node.child {
-					if ch.typ == TypeDefault {
+		} else {
+			// Switch without condition case.
+			for _, ch := range node.child {
+				if ch.typ == TypeCase {
+					sl := ch.caseStaticL
+					sr := ch.caseStaticR
+					if sl && sr {
+						err = ErrSenselessCond
+						return
+					}
+					if sr {
+						// Right side is static.
+						r = ctx.cmp(ch.caseL, ch.caseOp, ch.caseR)
+					} else if sl {
+						// Left side is static.
+						r = ctx.cmp(ch.caseR, ch.caseOp.Swap(), ch.caseL)
+					} else {
+						// Both sides isn't static.
+						ctx.get(ch.caseR)
+						if ctx.Err == nil {
+							ctx.bbuf, err = cbytealg.AnyToBytes(ctx.bbuf[:0], ctx.buf)
+							if err != nil {
+								return
+							}
+							r = ctx.cmp(ch.caseL, ch.caseOp, ctx.bbuf)
+						}
+					}
+					if ctx.Err != nil {
+						err = ctx.Err
+						return
+					}
+					if r {
 						err = t.renderNode(w, ch, ctx)
 						break
 					}
 				}
 			}
-		} else {
-			// Switch without condition case.
+		}
+		if !r {
+			for _, ch := range node.child {
+				if ch.typ == TypeDefault {
+					err = t.renderNode(w, ch, ctx)
+					break
+				}
+			}
 		}
 	default:
 		err = ErrUnknownCtl

@@ -73,6 +73,18 @@ var (
 		unknown
 {% endswitch %}"
 }`)
+	tplSwitchNoCond = []byte(`{
+	"permission": "{% switch %}
+	{% case user.Status <= 10 %}
+		anonymous
+	{% case user.Status <= 45 %}
+		logged in
+	{% case user.Status >= 60 %}
+		privileged
+	{% default %}
+		unknown
+{% endswitch %}"
+}`)
 	expectSwitch = []byte(`{"permission": "privileged"}`)
 
 	tplLoopRange = []byte(`{
@@ -136,6 +148,8 @@ func pretest() {
 
 	tree, _ = Parse(tplSwitch, false)
 	RegisterTpl("tplSwitch", tree)
+	tree, _ = Parse(tplSwitchNoCond, false)
+	RegisterTpl("tplSwitchNoCond", tree)
 
 	tree, _ = Parse(tplLoopRange, false)
 	RegisterTpl("tplLoopRange", tree)
@@ -208,6 +222,20 @@ func TestTplSwitch(t *testing.T) {
 	ctx := NewCtx()
 	ctx.Set("user", user, &ins)
 	result, err := Render("tplSwitch", ctx)
+	if err != nil {
+		t.Error(err)
+	}
+	if !bytes.Equal(result, expectSwitch) {
+		t.Error("switch tpl mismatch")
+	}
+}
+
+func TestTplSwitchNoCond(t *testing.T) {
+	pretest()
+
+	ctx := NewCtx()
+	ctx.Set("user", user, &ins)
+	result, err := Render("tplSwitchNoCond", ctx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -345,6 +373,25 @@ func BenchmarkTplSwitch(b *testing.B) {
 		}
 		if !bytes.Equal(buf.Bytes(), expectSwitch) {
 			b.Error("switch tpl mismatch")
+		}
+		CP.Put(ctx)
+	}
+}
+
+func BenchmarkTplSwitchNoCond(b *testing.B) {
+	pretest()
+
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		ctx := CP.Get()
+		ctx.Set("user", user, &ins)
+		buf.Reset()
+		err := RenderTo(&buf, "tplSwitchNoCond", ctx)
+		if err != nil {
+			b.Error(err)
+		}
+		if !bytes.Equal(buf.Bytes(), expectSwitch) {
+			b.Error("switch no cond tpl mismatch")
 		}
 		CP.Put(ctx)
 	}
