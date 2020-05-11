@@ -135,141 +135,87 @@ var (
 )
 
 func pretest() {
-	tree, _ := Parse(tplRaw, false)
-	RegisterTpl("tplRaw", tree)
+	tpl := map[string][]byte{
+		"tplRaw":             tplRaw,
+		"tplSimple":          tplSimple,
+		"tplCond":            tplCond,
+		"tplCondNoStatic":    tplCondNoStatic,
+		"tplSwitch":          tplSwitch,
+		"tplSwitchNoCond":    tplSwitchNoCond,
+		"tplLoopRange":       tplLoopRange,
+		"tplLoopCountStatic": tplLoopCountStatic,
+		"tplLoopCount":       tplLoopCount,
+		"tplLoopCountCtx":    tplLoopCountCtx,
+	}
+	for name, body := range tpl {
+		tree, _ := Parse(body, false)
+		RegisterTpl(name, tree)
+	}
+}
 
-	tree, _ = Parse(tplSimple, false)
-	RegisterTpl("tplSimple", tree)
+func testBase(t *testing.T, tplName string, expectResult []byte, errMsg string) {
+	pretest()
 
-	tree, _ = Parse(tplCond, false)
-	RegisterTpl("tplCond", tree)
-	tree, _ = Parse(tplCondNoStatic, false)
-	RegisterTpl("tplCondNoStatic", tree)
+	ctx := NewCtx()
+	ctx.Set("user", user, &ins)
+	result, err := Render(tplName, ctx)
+	if err != nil {
+		t.Error(err)
+	}
+	if !bytes.Equal(result, expectResult) {
+		t.Error(errMsg)
+	}
+}
 
-	tree, _ = Parse(tplSwitch, false)
-	RegisterTpl("tplSwitch", tree)
-	tree, _ = Parse(tplSwitchNoCond, false)
-	RegisterTpl("tplSwitchNoCond", tree)
+func benchBase(b *testing.B, tplName string, expectResult []byte, errMsg string) {
+	pretest()
 
-	tree, _ = Parse(tplLoopRange, false)
-	RegisterTpl("tplLoopRange", tree)
-
-	tree, _ = Parse(tplLoopCountStatic, false)
-	RegisterTpl("tplLoopCountStatic", tree)
-	tree, _ = Parse(tplLoopCount, false)
-	RegisterTpl("tplLoopCount", tree)
-	tree, _ = Parse(tplLoopCountCtx, false)
-	RegisterTpl("tplLoopCountCtx", tree)
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		ctx := CP.Get()
+		ctx.Set("user", user, &ins)
+		buf.Reset()
+		err := RenderTo(&buf, tplName, ctx)
+		if err != nil {
+			b.Error(err)
+		}
+		if !bytes.Equal(buf.Bytes(), expectResult) {
+			b.Error(errMsg)
+		}
+		CP.Put(ctx)
+	}
 }
 
 func TestTplRaw(t *testing.T) {
-	pretest()
-
-	result, err := Render("tplRaw", nil)
-	if err != nil {
-		t.Error(err)
-	}
-	if !bytes.Equal(result, tplRaw) {
-		t.Error("raw tpl mismatch")
-	}
+	testBase(t, "tplRaw", tplRaw, "raw tpl mismatch")
 }
 
 func TestTplSimple(t *testing.T) {
-	pretest()
-
-	ctx := NewCtx()
-	ctx.Set("user", user, &ins)
-	result, err := Render("tplSimple", ctx)
-	if err != nil {
-		t.Error(err)
-	}
-	if !bytes.Equal(result, expectSimple) {
-		t.Error("simple tpl mismatch")
-	}
+	testBase(t, "tplSimple", expectSimple, "simple tpl mismatch")
 }
 
 func TestTplCond(t *testing.T) {
-	pretest()
-
-	ctx := NewCtx()
-	ctx.Set("user", user, &ins)
-	result, err := Render("tplCond", ctx)
-	if err != nil {
-		t.Error(err)
-	}
-	if !bytes.Equal(result, expectCond) {
-		t.Error("cond tpl mismatch")
-	}
+	testBase(t, "tplCond", expectCond, "cond tpl mismatch")
 }
 
 func TestTplCondNoStatic(t *testing.T) {
-	pretest()
-
-	ctx := NewCtx()
-	ctx.Set("user", user, &ins)
-	result, err := Render("tplCondNoStatic", ctx)
-	if err != nil {
-		t.Error(err)
-	}
-	if !bytes.Equal(result, expectCond) {
-		t.Error("cond no static tpl mismatch")
-	}
+	testBase(t, "tplCondNoStatic", expectCond, "cond (no static) tpl mismatch")
 }
 
 func TestTplSwitch(t *testing.T) {
-	pretest()
-
-	ctx := NewCtx()
-	ctx.Set("user", user, &ins)
-	result, err := Render("tplSwitch", ctx)
-	if err != nil {
-		t.Error(err)
-	}
-	if !bytes.Equal(result, expectSwitch) {
-		t.Error("switch tpl mismatch")
-	}
+	testBase(t, "tplSwitch", expectSwitch, "switch tpl mismatch")
 }
 
 func TestTplSwitchNoCond(t *testing.T) {
-	pretest()
-
-	ctx := NewCtx()
-	ctx.Set("user", user, &ins)
-	result, err := Render("tplSwitchNoCond", ctx)
-	if err != nil {
-		t.Error(err)
-	}
-	if !bytes.Equal(result, expectSwitch) {
-		t.Error("switch tpl mismatch")
-	}
+	testBase(t, "tplSwitchNoCond", expectSwitch, "switch (no cond) tpl mismatch")
 }
 
 func TestTplLoopRange(t *testing.T) {
-	pretest()
-
-	ctx := NewCtx()
-	ctx.Set("user", user, &ins)
-	result, err := Render("tplLoopRange", ctx)
-	if err != nil {
-		t.Error(err)
-	}
-	if !bytes.Equal(result, expectLoopRange) {
-		t.Error("loop range tpl mismatch")
-	}
+	testBase(t, "tplLoopRange", expectLoopRange, "loop range tpl mismatch")
 }
 
 func TestTplLoopCountStatic(t *testing.T) {
-	pretest()
-
-	ctx := NewCtx()
-	ctx.Set("user", user, &ins)
-	result, err := Render("tplLoopCountStatic", ctx)
-	if err != nil {
-		t.Error(err)
-	}
-	if !bytes.Equal(result, expectLoopCount) {
-		t.Error("loop count static tpl mismatch")
-	}
+	testBase(t, "tplLoopCountStatic", expectLoopCount, "loop count static tpl mismatch")
 }
 
 func TestTplLoopCount(t *testing.T) {
@@ -289,150 +235,35 @@ func TestTplLoopCount(t *testing.T) {
 }
 
 func TestTplLoopCountCtx(t *testing.T) {
-	pretest()
-
-	ctx := NewCtx()
-	ctx.Set("user", user, &ins)
-	result, err := Render("tplLoopCountCtx", ctx)
-	if err != nil {
-		t.Error(err)
-	}
-	if !bytes.Equal(result, expectLoopCount) {
-		t.Error("loop count ctx tpl mismatch")
-	}
+	testBase(t, "tplLoopCountCtx", expectLoopCount, "loop count ctx tpl mismatch")
 }
 
 func BenchmarkTplSimple(b *testing.B) {
-	pretest()
-
-	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
-		ctx := CP.Get()
-		ctx.Set("user", user, &ins)
-		buf.Reset()
-		err := RenderTo(&buf, "tplSimple", ctx)
-		if err != nil {
-			b.Error(err)
-		}
-		if !bytes.Equal(buf.Bytes(), expectSimple) {
-			b.Error("simple tpl mismatch")
-		}
-		CP.Put(ctx)
-	}
+	benchBase(b, "tplSimple", expectSimple, "simple tpl mismatch")
 }
 
 func BenchmarkTplCond(b *testing.B) {
-	pretest()
-
-	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
-		ctx := CP.Get()
-		ctx.Set("user", user, &ins)
-		buf.Reset()
-		err := RenderTo(&buf, "tplCond", ctx)
-		if err != nil {
-			b.Error(err)
-		}
-		if !bytes.Equal(buf.Bytes(), expectCond) {
-			b.Error("cond tpl mismatch")
-		}
-		CP.Put(ctx)
-	}
+	benchBase(b, "tplCond", expectCond, "cond tpl mismatch")
 }
 
 func BenchmarkTplCondNoStatic(b *testing.B) {
-	pretest()
-
-	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
-		ctx := CP.Get()
-		ctx.Set("user", user, &ins)
-		buf.Reset()
-		err := RenderTo(&buf, "tplCondNoStatic", ctx)
-		if err != nil {
-			b.Error(err)
-		}
-		if !bytes.Equal(buf.Bytes(), expectCond) {
-			b.Error("cond no static tpl mismatch")
-		}
-		CP.Put(ctx)
-	}
+	benchBase(b, "tplCondNoStatic", expectCond, "cond no static tpl mismatch")
 }
 
 func BenchmarkTplSwitch(b *testing.B) {
-	pretest()
-
-	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
-		ctx := CP.Get()
-		ctx.Set("user", user, &ins)
-		buf.Reset()
-		err := RenderTo(&buf, "tplSwitch", ctx)
-		if err != nil {
-			b.Error(err)
-		}
-		if !bytes.Equal(buf.Bytes(), expectSwitch) {
-			b.Error("switch tpl mismatch")
-		}
-		CP.Put(ctx)
-	}
+	benchBase(b, "tplSwitch", expectSwitch, "switch tpl mismatch")
 }
 
 func BenchmarkTplSwitchNoCond(b *testing.B) {
-	pretest()
-
-	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
-		ctx := CP.Get()
-		ctx.Set("user", user, &ins)
-		buf.Reset()
-		err := RenderTo(&buf, "tplSwitchNoCond", ctx)
-		if err != nil {
-			b.Error(err)
-		}
-		if !bytes.Equal(buf.Bytes(), expectSwitch) {
-			b.Error("switch no cond tpl mismatch")
-		}
-		CP.Put(ctx)
-	}
+	benchBase(b, "tplSwitchNoCond", expectSwitch, "switch no cond tpl mismatch")
 }
 
 func BenchmarkTplLoopRange(b *testing.B) {
-	pretest()
-
-	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
-		ctx := CP.Get()
-		buf.Reset()
-		ctx.Set("user", user, &ins)
-		err := RenderTo(&buf, "tplLoopRange", ctx)
-		if err != nil {
-			b.Error(err)
-		}
-		if !bytes.Equal(buf.Bytes(), expectLoopRange) {
-			b.Error("loop range tpl mismatch")
-		}
-		CP.Put(ctx)
-	}
+	benchBase(b, "tplLoopRange", expectLoopRange, "loop range tpl mismatch")
 }
 
 func BenchmarkTplLoopCountStatic(b *testing.B) {
-	pretest()
-
-	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
-		ctx := CP.Get()
-		buf.Reset()
-		ctx.Set("user", user, &ins)
-		err := RenderTo(&buf, "tplLoopCountStatic", ctx)
-		if err != nil {
-			b.Error(err)
-		}
-		if !bytes.Equal(buf.Bytes(), expectLoopCount) {
-			b.Error("loop count static tpl mismatch")
-		}
-		CP.Put(ctx)
-	}
+	benchBase(b, "tplLoopCountStatic", expectLoopCount, "loop count tpl mismatch")
 }
 
 func BenchmarkTplLoopCount(b *testing.B) {
@@ -457,20 +288,5 @@ func BenchmarkTplLoopCount(b *testing.B) {
 }
 
 func BenchmarkTplLoopCountCtx(b *testing.B) {
-	pretest()
-
-	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
-		ctx := CP.Get()
-		buf.Reset()
-		ctx.Set("user", user, &ins)
-		err := RenderTo(&buf, "tplLoopCountCtx", ctx)
-		if err != nil {
-			b.Error(err)
-		}
-		if !bytes.Equal(buf.Bytes(), expectLoopCount) {
-			b.Error("loop count ctx tpl mismatch")
-		}
-		CP.Put(ctx)
-	}
+	benchBase(b, "tplLoopCountCtx", expectLoopCount, "loop count ctx tpl mismatch")
 }
