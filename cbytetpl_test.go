@@ -50,9 +50,10 @@ var (
 	tplSimple = []byte(`<h1>Welcome, {%= user.Name %}!</h1>
 <p>Status: {%= user.Status %}</p>
 <p>Your balance: {%= user.Finance.Balance %}; buy allowance: {%= user.Finance.AllowBuy %}</p>`)
-	expectSimple = []byte(`<h1>Welcome, John!</h1><p>Status: 78</p><p>Your balance: 9000.015; buy allowance: false</p>`)
-	tplModDef    = []byte(`Cost is: {%= user.Cost|default(999.99) %} USD`)
-	expectModDef = []byte(`Cost is: 999.99 USD`)
+	expectSimple    = []byte(`<h1>Welcome, John!</h1><p>Status: 78</p><p>Your balance: 9000.015; buy allowance: false</p>`)
+	tplModDef       = []byte(`Cost is: {%= user.Cost|default(999.99) %} USD`)
+	tplModDefStatic = []byte(`{%ctx defaultCost = 999.99 %}Cost is: {%= user.Cost|default(defaultCost) %} USD`)
+	expectModDef    = []byte(`Cost is: 999.99 USD`)
 
 	tplCond = []byte(`<h2>Status</h2><p>
 {% if user.Status >= 60 %}Privileged user, your balance: {%= user.Finance.Balance %}.
@@ -141,6 +142,7 @@ func pretest() {
 		"tplRaw":             tplRaw,
 		"tplSimple":          tplSimple,
 		"tplModDef":          tplModDef,
+		"tplModDefStatic":    tplModDefStatic,
 		"tplCond":            tplCond,
 		"tplCondNoStatic":    tplCondNoStatic,
 		"tplSwitch":          tplSwitch,
@@ -201,6 +203,10 @@ func TestTplModDef(t *testing.T) {
 	testBase(t, "tplModDef", expectModDef, "mod def tpl mismatch")
 }
 
+func TestTplModDefStatic(t *testing.T) {
+	testBase(t, "tplModDefStatic", expectModDef, "mod def static tpl mismatch")
+}
+
 func TestTplCond(t *testing.T) {
 	testBase(t, "tplCond", expectCond, "cond tpl mismatch")
 }
@@ -251,6 +257,10 @@ func BenchmarkTplSimple(b *testing.B) {
 
 func BenchmarkTplModDef(b *testing.B) {
 	benchBase(b, "tplModDef", expectModDef, "mod def tpl mismatch")
+}
+
+func BenchmarkTplModDefStatic(b *testing.B) {
+	benchBase(b, "tplModDefStatic", expectModDef, "mod def static tpl mismatch")
 }
 
 func BenchmarkTplCond(b *testing.B) {
