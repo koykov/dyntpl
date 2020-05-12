@@ -401,12 +401,12 @@ func (p *Parser) extractMods(t []byte) ([]byte, []mod) {
 				if fn == nil {
 					continue
 				}
-				arg := make([]modArg, 0)
+				arg := make([]*modArg, 0)
 				if len(m) > 1 {
 					args := bytes.Split(m[2], comma)
 					for _, a := range args {
 						a = cbytealg.Trim(a, space)
-						arg = append(arg, modArg{
+						arg = append(arg, &modArg{
 							val:    cbytealg.Trim(a, quotes),
 							static: isStatic(a),
 						})

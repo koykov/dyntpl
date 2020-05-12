@@ -14,4 +14,6 @@ var (
 	ErrWrongLoopLim  = errors.New("wrong count loop limit argument")
 	ErrWrongLoopCond = errors.New("wrong loop condition operation")
 	ErrWrongLoopOp   = errors.New("wrong loop operation")
+
+	ErrModNoArgs = errors.New("empty arguments list")
 )

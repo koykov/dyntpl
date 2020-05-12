@@ -64,6 +64,23 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			err = ctx.Err
 			return
 		}
+		if len(node.mod) > 0 {
+			for _, mod := range node.mod {
+				ctx.modA = ctx.modA[:0]
+				if len(mod.arg) > 0 {
+					for _, arg := range mod.arg {
+						if arg.static {
+							ctx.modA = append(ctx.modA, &arg.val)
+						} else {
+							val := ctx.get(arg.val)
+							ctx.modA = append(ctx.modA, val)
+						}
+					}
+				}
+				ctx.buf = raw
+				raw, ctx.Err = (*mod.fn)(ctx, ctx.buf, ctx.modA)
+			}
+		}
 		if raw == nil || raw == "" {
 			err = ErrEmptyArg
 			return

@@ -1,11 +1,11 @@
 package cbytetpl
 
-type ModFn func(ctx *Ctx, val interface{}, args []interface{}) error
+type ModFn func(ctx *Ctx, val interface{}, args []interface{}) (interface{}, error)
 
 type mod struct {
 	id  []byte
 	fn  *ModFn
-	arg []modArg
+	arg []*modArg
 }
 
 type modArg struct {

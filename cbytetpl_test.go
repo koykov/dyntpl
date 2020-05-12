@@ -51,6 +51,8 @@ var (
 <p>Status: {%= user.Status %}</p>
 <p>Your balance: {%= user.Finance.Balance %}; buy allowance: {%= user.Finance.AllowBuy %}</p>`)
 	expectSimple = []byte(`<h1>Welcome, John!</h1><p>Status: 78</p><p>Your balance: 9000.015; buy allowance: false</p>`)
+	tplModDef    = []byte(`Cost is: {%= user.Cost|default(999.99) %} USD`)
+	expectModDef = []byte(`Cost is: 999.99 USD`)
 
 	tplCond = []byte(`<h2>Status</h2><p>
 {% if user.Status >= 60 %}Privileged user, your balance: {%= user.Finance.Balance %}.
@@ -138,6 +140,7 @@ func pretest() {
 	tpl := map[string][]byte{
 		"tplRaw":             tplRaw,
 		"tplSimple":          tplSimple,
+		"tplModDef":          tplModDef,
 		"tplCond":            tplCond,
 		"tplCondNoStatic":    tplCondNoStatic,
 		"tplSwitch":          tplSwitch,
@@ -194,6 +197,10 @@ func TestTplSimple(t *testing.T) {
 	testBase(t, "tplSimple", expectSimple, "simple tpl mismatch")
 }
 
+func TestTplModDef(t *testing.T) {
+	testBase(t, "tplModDef", expectModDef, "mod def tpl mismatch")
+}
+
 func TestTplCond(t *testing.T) {
 	testBase(t, "tplCond", expectCond, "cond tpl mismatch")
 }
@@ -240,6 +247,10 @@ func TestTplLoopCountCtx(t *testing.T) {
 
 func BenchmarkTplSimple(b *testing.B) {
 	benchBase(b, "tplSimple", expectSimple, "simple tpl mismatch")
+}
+
+func BenchmarkTplModDef(b *testing.B) {
+	benchBase(b, "tplModDef", expectModDef, "mod def tpl mismatch")
 }
 
 func BenchmarkTplCond(b *testing.B) {
