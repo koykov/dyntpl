@@ -142,6 +142,8 @@ type Node struct {
 	caseStaticR bool
 	caseOp      Op
 
+	mod []mod
+
 	child []Node
 }
 
@@ -244,6 +246,34 @@ func (t *Tree) hrHelper(buf *bytes.Buffer, nodes []Node, indent []byte, depth in
 			buf.Write(node.caseL)
 		}
 
+		if len(node.mod) > 0 {
+			buf.WriteString(" mod")
+			for i, mod := range node.mod {
+				if i > 0 {
+					buf.WriteByte(',')
+				}
+				buf.WriteByte(' ')
+				buf.Write(mod.id)
+				if len(mod.arg) > 0 {
+					buf.WriteByte('(')
+					for j, a := range mod.arg {
+						if j > 0 {
+							buf.WriteByte(',')
+							buf.WriteByte(' ')
+						}
+						if a.static {
+							buf.WriteByte('"')
+							buf.Write(a.val)
+							buf.WriteByte('"')
+						} else {
+							buf.Write(a.val)
+						}
+					}
+					buf.WriteByte(')')
+				}
+			}
+		}
+
 		buf.WriteByte('\n')
 		if len(node.child) > 0 {
 			t.hrHelper(buf, node.child, indent, depth+1)
@@ -261,11 +291,6 @@ func addRaw(nodes []Node, raw []byte) []Node {
 		return nodes
 	}
 	nodes = append(nodes, Node{typ: TypeRaw, raw: raw})
-	return nodes
-}
-
-func addTpl(nodes []Node, tpl []byte) []Node {
-	nodes = append(nodes, Node{typ: TypeTpl, raw: tpl})
 	return nodes
 }
 

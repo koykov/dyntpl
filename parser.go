@@ -8,6 +8,7 @@ import (
 	"regexp"
 
 	"github.com/koykov/cbytealg"
+	"github.com/koykov/fastconv"
 )
 
 const (
@@ -31,6 +32,8 @@ var (
 	space      = []byte(" ")
 	comma      = []byte(",")
 	uscore     = []byte("_")
+	vline      = []byte("|")
+	quotes     = []byte("\"'`")
 	noFmt      = []byte(" \t\n")
 	ctlOpen    = []byte("{%")
 	ctlClose   = []byte("%}")
@@ -59,6 +62,7 @@ var (
 	reTplP  = regexp.MustCompile(`^=\s*(.*) (?:prefix|pfx) (.*)`)
 	reTplS  = regexp.MustCompile(`^=\s*(.*) (?:suffix|sfx) (.*)`)
 	reTpl   = regexp.MustCompile(`^= (.*)`)
+	reMod   = regexp.MustCompile(`([^(]+)\(*([^)]*)\)*`)
 
 	reCtx = regexp.MustCompile(`ctx (\w+)\s*=\s*([\w.]+)\s*[as]*\s*(\w*)`)
 
@@ -169,17 +173,17 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 	if reTplPS.Match(t) || reTplP.Match(t) || reTplS.Match(t) || reTpl.Match(t) {
 		root.typ = TypeTpl
 		if m := reTplPS.FindSubmatch(t); m != nil {
-			root.raw = m[1]
+			root.raw, root.mod = p.extractMods(m[1])
 			root.prefix = m[2]
 			root.suffix = m[3]
 		} else if m := reTplP.FindSubmatch(t); m != nil {
-			root.raw = m[1]
+			root.raw, root.mod = p.extractMods(m[1])
 			root.prefix = m[2]
 		} else if m := reTplS.FindSubmatch(t); m != nil {
-			root.raw = m[1]
+			root.raw, root.mod = p.extractMods(m[1])
 			root.suffix = m[2]
 		} else {
-			root.raw = cbytealg.Trim(t, ctlTrimAll)
+			root.raw, root.mod = p.extractMods(cbytealg.Trim(t, ctlTrimAll))
 		}
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
@@ -385,6 +389,40 @@ func (p *Parser) parseOp(src []byte) Op {
 		op = OpUnk
 	}
 	return op
+}
+
+func (p *Parser) extractMods(t []byte) ([]byte, []mod) {
+	if bytes.Contains(t, vline) {
+		chunks := bytes.Split(t, vline)
+		mods := make([]mod, 0, len(chunks)-1)
+		for i := 1; i < len(chunks); i++ {
+			if m := reMod.FindSubmatch(chunks[i]); m != nil {
+				fn := GetModFn(fastconv.B2S(m[1]))
+				if fn == nil {
+					continue
+				}
+				arg := make([]modArg, 0)
+				if len(m) > 1 {
+					args := bytes.Split(m[2], comma)
+					for _, a := range args {
+						a = cbytealg.Trim(a, space)
+						arg = append(arg, modArg{
+							val:    cbytealg.Trim(a, quotes),
+							static: isStatic(a),
+						})
+					}
+				}
+				mods = append(mods, mod{
+					id:  m[1],
+					fn:  fn,
+					arg: arg,
+				})
+			}
+		}
+		return chunks[0], mods
+	} else {
+		return t, nil
+	}
 }
 
 func newTarget(p *Parser) *target {

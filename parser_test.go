@@ -52,6 +52,11 @@ raw: ,
 tpl: val3 pfx "key4" sfx ,
 raw: "key5": "foo bar"}
 `)
+	tplModOrigin = []byte(`Welcome, {%= user.Name|default("anonymous") %}!`)
+	tplModExpect = []byte(`raw: Welcome, 
+tpl: user.Name mod default("anonymous")
+raw: !
+`)
 
 	ctxOrigin = []byte(`{% ctx var0 = obj.Key as static %}
 {%ctx var1=user.Id as static %}
@@ -263,6 +268,14 @@ func TestParse_PrefixSuffix(t *testing.T) {
 	r := tree.humanReadable()
 	if !bytes.Equal(r, tplPSExpect) {
 		t.Errorf("prefix/suffix test failed\nexp: %s\ngot: %s", string(tplPSExpect), string(r))
+	}
+}
+
+func TestParse_Mod(t *testing.T) {
+	tree, _ := Parse(tplModOrigin, false)
+	r := tree.humanReadable()
+	if !bytes.Equal(r, tplModExpect) {
+		t.Errorf("mod test failed\nexp: %s\ngot: %s", string(tplModExpect), string(r))
 	}
 }
 
