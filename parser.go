@@ -35,6 +35,7 @@ var (
 	vline      = []byte("|")
 	quotes     = []byte("\"'`")
 	noFmt      = []byte(" \t\n")
+	ctlExit    = []byte("exit")
 	ctlOpen    = []byte("{%")
 	ctlClose   = []byte("%}")
 	ctlTrim    = []byte("{}% ")
@@ -43,6 +44,8 @@ var (
 	condElse   = []byte("else")
 	condEnd    = []byte("endif")
 	loopEnd    = []byte("endfor")
+	loopBrk    = []byte("break")
+	loopCnt    = []byte("continue")
 	swDefault  = []byte("default")
 	swEnd      = []byte("endswitch")
 
@@ -211,7 +214,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 	// Check condition structure.
 	if reCond.Match(t) {
 		if reCondComplex.Match(t) {
-			return nodes, pos, up, ErrCondComplex
+			return nodes, pos, up, ErrComplexCond
 		}
 		target := newTarget(p)
 		p.cc++
@@ -299,6 +302,20 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 		up = true
 		return nodes, offset, up, err
 	}
+	// Check loop break.
+	if bytes.Equal(t, loopBrk) {
+		root.typ = TypeBreak
+		nodes = addNode(nodes, *root)
+		offset = pos + len(ctl)
+		return nodes, offset, up, err
+	}
+	// Check loop continue.
+	if bytes.Equal(t, loopCnt) {
+		root.typ = TypeContinue
+		nodes = addNode(nodes, *root)
+		offset = pos + len(ctl)
+		return nodes, offset, up, err
+	}
 
 	// Check switch structure.
 	if m := reSwitch.FindSubmatch(t); m != nil {
@@ -336,6 +353,14 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 		p.cs--
 		offset = pos + len(ctl)
 		up = true
+		return nodes, offset, up, err
+	}
+
+	// Check tpl interrupt.
+	if bytes.Equal(t, ctlExit) {
+		root.typ = TypeExit
+		nodes = addNode(nodes, *root)
+		offset = pos + len(ctl)
 		return nodes, offset, up, err
 	}
 

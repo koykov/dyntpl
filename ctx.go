@@ -247,8 +247,12 @@ func (c *Ctx) cloop(node Node, tpl *Tpl, w io.Writer) {
 		}
 		cntr++
 		c.chQB = true
+		var err error
 		for _, ch := range node.child {
-			_ = tpl.renderNode(w, ch, c)
+			err = tpl.renderNode(w, ch, c)
+			if err == ErrBreakLoop || err == ErrContLoop {
+				break
+			}
 		}
 		c.chQB = false
 
@@ -260,6 +264,13 @@ func (c *Ctx) cloop(node Node, tpl *Tpl, w io.Writer) {
 		default:
 			c.Err = ErrWrongLoopOp
 			break
+		}
+
+		if err == ErrBreakLoop {
+			break
+		}
+		if err == ErrContLoop {
+			continue
 		}
 	}
 	return

@@ -124,8 +124,8 @@ var (
 	{% endfor %}
 </ul>`)
 	tplLoopCountCtx = []byte(`<h2>History</h2>
-{%ctx begin = 0 %}
-{%ctx end = 3 %}
+{% ctx begin = 0 %}
+{% ctx end = 3 %}
 <ul>
 	{% for i := begin; i < end; i++ %}
 	<li>Amount: {%= user.Finance.History[i].Cost %}<br/>
@@ -134,23 +134,48 @@ var (
 	</li>
 	{% endfor %}
 </ul>`)
+	tplLoopCountBreak = []byte(`<h2>History</h2>
+<ul>
+	{% for i := 0; i < 10; i++ %}
+	<li>Amount: {%= user.Finance.History[i].Cost %}<br/>
+		Description: {%= user.Finance.History[i].Comment %}<br/>
+		Date: {%= user.Finance.History[i].DateUnix %}
+	</li>
+	{% if i == 2 %}{% break %}{% endif %}
+	{% endfor %}
+</ul>`)
+	tplLoopCountContinue = []byte(`<h2>History</h2>
+<ul>
+	{% for i := 0; i < 10; i++ %}
+	{% if i > 2 %}{% continue %}{% endif %}
+	<li>Amount: {%= user.Finance.History[i].Cost %}<br/>
+		Description: {%= user.Finance.History[i].Comment %}<br/>
+		Date: {%= user.Finance.History[i].DateUnix %}
+	</li>
+	{% endfor %}
+</ul>`)
 	expectLoopCount = []byte(`<h2>History</h2><ul><li>Amount: 14.345241<br/>Description: pay for domain<br/>Date: 152354345634</li><li>Amount: -3.0000342543<br/>Description: got refund<br/>Date: 153465345246</li><li>Amount: 2325242534.3532453<br/>Description: maintenance<br/>Date: 156436535640</li></ul>`)
+
+	tplExit = []byte(`{% if user.Status < 100 %}{% exit %}{% endif %}foobar`)
 )
 
 func pretest() {
 	tpl := map[string][]byte{
-		"tplRaw":             tplRaw,
-		"tplSimple":          tplSimple,
-		"tplModDef":          tplModDef,
-		"tplModDefStatic":    tplModDefStatic,
-		"tplCond":            tplCond,
-		"tplCondNoStatic":    tplCondNoStatic,
-		"tplSwitch":          tplSwitch,
-		"tplSwitchNoCond":    tplSwitchNoCond,
-		"tplLoopRange":       tplLoopRange,
-		"tplLoopCountStatic": tplLoopCountStatic,
-		"tplLoopCount":       tplLoopCount,
-		"tplLoopCountCtx":    tplLoopCountCtx,
+		"tplRaw":               tplRaw,
+		"tplSimple":            tplSimple,
+		"tplModDef":            tplModDef,
+		"tplModDefStatic":      tplModDefStatic,
+		"tplCond":              tplCond,
+		"tplCondNoStatic":      tplCondNoStatic,
+		"tplSwitch":            tplSwitch,
+		"tplSwitchNoCond":      tplSwitchNoCond,
+		"tplLoopRange":         tplLoopRange,
+		"tplLoopCountStatic":   tplLoopCountStatic,
+		"tplLoopCountBreak":    tplLoopCountBreak,
+		"tplLoopCountContinue": tplLoopCountContinue,
+		"tplLoopCount":         tplLoopCount,
+		"tplLoopCountCtx":      tplLoopCountCtx,
+		"tplExit":              tplExit,
 	}
 	for name, body := range tpl {
 		tree, _ := Parse(body, false)
@@ -166,6 +191,9 @@ func testBase(t *testing.T, tplName string, expectResult []byte, errMsg string) 
 	result, err := Render(tplName, ctx)
 	if err != nil {
 		t.Error(err)
+	}
+	if len(expectResult) == 0 && len(result) != 0 {
+		t.Error(errMsg)
 	}
 	if !bytes.Equal(result, expectResult) {
 		t.Error(errMsg)
@@ -183,6 +211,9 @@ func benchBase(b *testing.B, tplName string, expectResult []byte, errMsg string)
 		err := RenderTo(&buf, tplName, ctx)
 		if err != nil {
 			b.Error(err)
+		}
+		if len(expectResult) == 0 && buf.Len() != 0 {
+			b.Error(errMsg)
 		}
 		if !bytes.Equal(buf.Bytes(), expectResult) {
 			b.Error(errMsg)
@@ -231,6 +262,14 @@ func TestTplLoopCountStatic(t *testing.T) {
 	testBase(t, "tplLoopCountStatic", expectLoopCount, "loop count static tpl mismatch")
 }
 
+func TestTplLoopCountBreak(t *testing.T) {
+	testBase(t, "tplLoopCountBreak", expectLoopCount, "loop count break tpl mismatch")
+}
+
+func TestTplLoopCountContinue(t *testing.T) {
+	testBase(t, "tplLoopCountContinue", expectLoopCount, "loop count continue tpl mismatch")
+}
+
 func TestTplLoopCount(t *testing.T) {
 	pretest()
 
@@ -249,6 +288,10 @@ func TestTplLoopCount(t *testing.T) {
 
 func TestTplLoopCountCtx(t *testing.T) {
 	testBase(t, "tplLoopCountCtx", expectLoopCount, "loop count ctx tpl mismatch")
+}
+
+func TestTplExit(t *testing.T) {
+	testBase(t, "tplExit", nil, "exit tpl mismatch")
 }
 
 func BenchmarkTplSimple(b *testing.B) {
@@ -287,6 +330,14 @@ func BenchmarkTplLoopCountStatic(b *testing.B) {
 	benchBase(b, "tplLoopCountStatic", expectLoopCount, "loop count tpl mismatch")
 }
 
+func BenchmarkTplLoopCountBreak(b *testing.B) {
+	benchBase(b, "tplLoopCountBreak", expectLoopCount, "loop count break tpl mismatch")
+}
+
+func BenchmarkTplLoopCountContinue(b *testing.B) {
+	benchBase(b, "tplLoopCountContinue", expectLoopCount, "loop count continue tpl mismatch")
+}
+
 func BenchmarkTplLoopCount(b *testing.B) {
 	pretest()
 
@@ -310,4 +361,8 @@ func BenchmarkTplLoopCount(b *testing.B) {
 
 func BenchmarkTplLoopCountCtx(b *testing.B) {
 	benchBase(b, "tplLoopCountCtx", expectLoopCount, "loop count ctx tpl mismatch")
+}
+
+func BenchmarkTplExit(b *testing.B) {
+	benchBase(b, "tplExit", nil, "exit tpl mismatch")
 }

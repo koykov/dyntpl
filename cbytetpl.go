@@ -47,6 +47,9 @@ func RenderTo(w io.Writer, id string, ctx *Ctx) (err error) {
 	for _, node := range tpl.tree.nodes {
 		err = tpl.renderNode(w, node, ctx)
 		if err != nil {
+			if err == ErrInterrupt {
+				err = nil
+			}
 			return
 		}
 	}
@@ -156,6 +159,10 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			err = ctx.Err
 			return
 		}
+	case TypeBreak:
+		err = ErrBreakLoop
+	case TypeContinue:
+		err = ErrContLoop
 	case TypeSwitch:
 		r := false
 		if len(node.switchArg) > 0 {
@@ -226,6 +233,8 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 				}
 			}
 		}
+	case TypeExit:
+		err = ErrInterrupt
 	default:
 		err = ErrUnknownCtl
 	}

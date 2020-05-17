@@ -15,12 +15,16 @@ const (
 	TypeCondFalse Type = 4
 	TypeLoopRange Type = 5
 	TypeLoopCount Type = 6
-	TypeCtx       Type = 7
-	TypeSwitch    Type = 8
-	TypeCase      Type = 9
-	TypeDefault   Type = 10
-	TypeDiv       Type = 11
+	TypeBreak     Type = 7
+	TypeContinue  Type = 8
+	TypeCtx       Type = 9
+	TypeSwitch    Type = 10
+	TypeCase      Type = 11
+	TypeDefault   Type = 12
+	TypeDiv       Type = 13
+	TypeExit      Type = 99
 
+	// Must be in sync with inspector.Op type.
 	OpUnk Op = 0
 	OpEq  Op = 1
 	OpNq  Op = 2
@@ -48,6 +52,10 @@ func (typ Type) String() string {
 		return "rloop"
 	case TypeLoopCount:
 		return "cloop"
+	case TypeBreak:
+		return "break"
+	case TypeContinue:
+		return "cont"
 	case TypeCtx:
 		return "ctx"
 	case TypeSwitch:
@@ -58,6 +66,8 @@ func (typ Type) String() string {
 		return "def"
 	case TypeDiv:
 		return "div"
+	case TypeExit:
+		return "exit"
 	default:
 		return "unk"
 	}
@@ -160,9 +170,11 @@ func (t *Tree) hrHelper(buf *bytes.Buffer, nodes []Node, indent []byte, depth in
 	for _, node := range nodes {
 		buf.Write(bytes.Repeat(indent, depth))
 		buf.WriteString(node.typ.String())
-		buf.WriteByte(':')
-		buf.WriteByte(' ')
-		buf.Write(node.raw)
+		if node.typ != TypeExit && node.typ != TypeBreak && node.typ != TypeContinue {
+			buf.WriteByte(':')
+			buf.WriteByte(' ')
+			buf.Write(node.raw)
+		}
 		if len(node.prefix) > 0 {
 			buf.WriteString(" pfx ")
 			buf.Write(node.prefix)

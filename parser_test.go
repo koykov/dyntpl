@@ -58,8 +58,18 @@ tpl: user.Name mod default("anonymous")
 raw: !
 `)
 
+	tplExitOrigin = []byte(`{% if user.Status == 0 %}
+	{% exit %}
+{% endif %}
+Allowed items: ...`)
+	tplExitExpect = []byte(`cond: left user.Status op == right 0
+	true: 
+		exit
+raw: Allowed items: ...
+`)
+
 	ctxOrigin = []byte(`{% ctx var0 = obj.Key as static %}
-{%ctx var1=user.Id as static %}
+{% ctx var1=user.Id as static %}
 {%= var1 %}`)
 	ctxExpect = []byte(`ctx: var var0 src obj.Key ins static
 ctx: var var1 src user.Id ins static
@@ -268,6 +278,14 @@ func TestParse_PrefixSuffix(t *testing.T) {
 	r := tree.humanReadable()
 	if !bytes.Equal(r, tplPSExpect) {
 		t.Errorf("prefix/suffix test failed\nexp: %s\ngot: %s", string(tplPSExpect), string(r))
+	}
+}
+
+func TestParse_Exit(t *testing.T) {
+	tree, _ := Parse(tplExitOrigin, false)
+	r := tree.humanReadable()
+	if !bytes.Equal(r, tplExitExpect) {
+		t.Errorf("exit test failed\nexp: %s\ngot: %s", string(tplExitExpect), string(r))
 	}
 }
 
