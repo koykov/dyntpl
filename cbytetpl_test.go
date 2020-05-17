@@ -52,19 +52,19 @@ var (
 <p>Your balance: {%= user.Finance.Balance %}; buy allowance: {%= user.Finance.AllowBuy %}</p>`)
 	expectSimple    = []byte(`<h1>Welcome, John!</h1><p>Status: 78</p><p>Your balance: 9000.015; buy allowance: false</p>`)
 	tplModDef       = []byte(`Cost is: {%= user.Cost|default(999.99) %} USD`)
-	tplModDefStatic = []byte(`{%ctx defaultCost = 999.99 %}Cost is: {%= user.Cost|default(defaultCost) %} USD`)
+	tplModDefStatic = []byte(`{% ctx defaultCost = 999.99 %}Cost is: {%= user.Cost|default(defaultCost) %} USD`)
 	expectModDef    = []byte(`Cost is: 999.99 USD`)
 
 	tplCond = []byte(`<h2>Status</h2><p>
 {% if user.Status >= 60 %}Privileged user, your balance: {%= user.Finance.Balance %}.
 {% else %}You don't have enough privileges.{% endif %}</p>`)
 	tplCondNoStatic = []byte(`<h2>Status</h2><p>
-{%ctx permissionLimit = 60 %}
+{% ctx permissionLimit = 60 %}
 {% if user.Status >= permissionLimit %}Privileged user, your balance: {%= user.Finance.Balance %}.
 {% else %}You don't have enough privileges.{% endif %}</p>`)
 	expectCond = []byte(`<h2>Status</h2><p>Privileged user, your balance: 9000.015.</p>`)
 
-	tplSwitch = []byte(`{%ctx exactStatus = 78 %}{
+	tplSwitch = []byte(`{% ctx exactStatus = 78 %}{
 	"permission": "{% switch user.Status %}
 	{% case 10 %}
 		anonymous
