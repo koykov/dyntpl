@@ -1,4 +1,4 @@
-package cbytetpl
+package dyntpl
 
 type ModFn func(ctx *Ctx, val interface{}, args []interface{}) (interface{}, error)
 

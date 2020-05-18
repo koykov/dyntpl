@@ -1,4 +1,4 @@
-package cbytetpl
+package dyntpl
 
 func modDefault(_ *Ctx, val interface{}, args []interface{}) (interface{}, error) {
 	if len(args) == 0 {

@@ -1,4 +1,4 @@
-package cbytetpl
+package dyntpl
 
 import (
 	"bytes"
