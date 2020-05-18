@@ -14,6 +14,7 @@ var (
 	ErrInterrupt   = errors.New("tpl processing interrupted")
 	ErrEmptyArg    = errors.New("empty input param")
 	ErrModNoArgs   = errors.New("empty arguments list")
+	ErrModNoStr    = errors.New("argument is not string or bytes")
 
 	ErrLoopParse     = errors.New("couldn't parse loop control structure")
 	ErrWrongLoopLim  = errors.New("wrong count loop limit argument")

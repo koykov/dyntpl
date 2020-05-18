@@ -110,6 +110,10 @@ func (c *Ctx) Get(path string) interface{} {
 	return c.get(fastconv.S2B(path))
 }
 
+func (c *Ctx) GetBbuf() []byte {
+	return c.bbuf[:0]
+}
+
 func (c *Ctx) Reset() {
 	c.Err = nil
 	c.buf = nil
