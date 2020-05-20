@@ -1,6 +1,6 @@
 package dyntpl
 
-type ModFn func(ctx *Ctx, val interface{}, args []interface{}) (interface{}, error)
+type ModFn func(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) error
 
 type mod struct {
 	id  []byte

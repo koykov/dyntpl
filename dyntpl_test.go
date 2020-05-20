@@ -160,8 +160,6 @@ func pretest() {
 	tpl := map[string][]byte{
 		"tplRaw":               tplRaw,
 		"tplSimple":            tplSimple,
-		"tplModDef":            tplModDef,
-		"tplModDefStatic":      tplModDefStatic,
 		"tplCond":              tplCond,
 		"tplCondNoStatic":      tplCondNoStatic,
 		"tplSwitch":            tplSwitch,
@@ -173,6 +171,10 @@ func pretest() {
 		"tplLoopCount":         tplLoopCount,
 		"tplLoopCountCtx":      tplLoopCountCtx,
 		"tplExit":              tplExit,
+
+		"tplModDef":       tplModDef,
+		"tplModDefStatic": tplModDefStatic,
+		"tplModJsonQ":     tplModJsonQ,
 	}
 	for name, body := range tpl {
 		tree, _ := Parse(body, false)

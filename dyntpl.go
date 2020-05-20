@@ -81,8 +81,15 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 					}
 				}
 				ctx.buf = raw
-				raw, ctx.Err = (*mod.fn)(ctx, ctx.buf, ctx.modA)
+				ctx.Err = (*mod.fn)(ctx, &ctx.buf, ctx.buf, ctx.modA)
+				if ctx.Err != nil {
+					break
+				}
+				raw = ctx.buf
 			}
+		}
+		if ctx.Err != nil {
+			return
 		}
 		if raw == nil || raw == "" {
 			err = ErrEmptyArg
@@ -90,7 +97,13 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 		}
 		ctx.bbuf, err = cbytealg.AnyToBytes(ctx.bbuf, raw)
 		if err == nil {
+			if len(node.prefix) > 0 {
+				_, _ = w.Write(node.prefix)
+			}
 			_, err = w.Write(ctx.bbuf)
+			if len(node.suffix) > 0 {
+				_, _ = w.Write(node.suffix)
+			}
 		}
 	case TypeCtx:
 		if node.ctxSrcStatic {

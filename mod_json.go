@@ -26,10 +26,9 @@ var (
 	jqZR  = []byte("\u0000")
 )
 
-func modJsonQuote(ctx *Ctx, val interface{}, _ []interface{}) (interface{}, error) {
+func modJsonQuote(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{}) error {
 	var (
 		b    []byte
-		dst  = ctx.GetBbuf()
 		l, o int
 	)
 	switch val.(type) {
@@ -42,58 +41,59 @@ func modJsonQuote(ctx *Ctx, val interface{}, _ []interface{}) (interface{}, erro
 	case *string:
 		b = fastconv.S2B(*val.(*string))
 	default:
-		return val, ErrModNoStr
+		return ErrModNoStr
 	}
 	l = len(b)
 	if l == 0 {
-		return val, nil
+		return nil
 	}
 	_ = b[l-1]
 	for i := 0; i < l; i++ {
 		switch b[i] {
 		case jqQd:
-			dst = append(dst, b[o:i]...)
-			dst = append(dst, jqQdR...)
+			ctx.bbuf = append(ctx.bbuf, b[o:i]...)
+			ctx.bbuf = append(ctx.bbuf, jqQdR...)
 			o = i + 1
 		case jqSl:
-			dst = append(dst, b[o:i]...)
-			dst = append(dst, jqSlR...)
+			ctx.bbuf = append(ctx.bbuf, b[o:i]...)
+			ctx.bbuf = append(ctx.bbuf, jqSlR...)
 			o = i + 1
 		case jqNl:
-			dst = append(dst, b[o:i]...)
-			dst = append(dst, jqNlR...)
+			ctx.bbuf = append(ctx.bbuf, b[o:i]...)
+			ctx.bbuf = append(ctx.bbuf, jqNlR...)
 			o = i + 1
 		case jqCr:
-			dst = append(dst, b[o:i]...)
-			dst = append(dst, jqCrR...)
+			ctx.bbuf = append(ctx.bbuf, b[o:i]...)
+			ctx.bbuf = append(ctx.bbuf, jqCrR...)
 			o = i + 1
 		case jqT:
-			dst = append(dst, b[o:i]...)
-			dst = append(dst, jqTR...)
+			ctx.bbuf = append(ctx.bbuf, b[o:i]...)
+			ctx.bbuf = append(ctx.bbuf, jqTR...)
 			o = i + 1
 		case jqFf:
-			dst = append(dst, b[o:i]...)
-			dst = append(dst, jqFfR...)
+			ctx.bbuf = append(ctx.bbuf, b[o:i]...)
+			ctx.bbuf = append(ctx.bbuf, jqFfR...)
 			o = i + 1
 		case jqBs:
-			dst = append(dst, b[o:i]...)
-			dst = append(dst, jqBsR...)
+			ctx.bbuf = append(ctx.bbuf, b[o:i]...)
+			ctx.bbuf = append(ctx.bbuf, jqBsR...)
 			o = i + 1
 		case jqLt:
-			dst = append(dst, b[o:i]...)
-			dst = append(dst, jqLtR...)
+			ctx.bbuf = append(ctx.bbuf, b[o:i]...)
+			ctx.bbuf = append(ctx.bbuf, jqLtR...)
 			o = i + 1
 		case jqQs:
-			dst = append(dst, b[o:i]...)
-			dst = append(dst, jqQsR...)
+			ctx.bbuf = append(ctx.bbuf, b[o:i]...)
+			ctx.bbuf = append(ctx.bbuf, jqQsR...)
 			o = i + 1
 		case jqZ:
-			dst = append(dst, b[o:i]...)
-			dst = append(dst, jqZR...)
+			ctx.bbuf = append(ctx.bbuf, b[o:i]...)
+			ctx.bbuf = append(ctx.bbuf, jqZR...)
 			o = i + 1
 		}
 	}
-	dst = append(dst, b[o:]...)
+	ctx.bbuf = append(ctx.bbuf, b[o:]...)
+	*buf = &ctx.bbuf
 
-	return dst, nil
+	return nil
 }

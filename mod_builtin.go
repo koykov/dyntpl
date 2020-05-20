@@ -1,8 +1,8 @@
 package dyntpl
 
-func modDefault(_ *Ctx, val interface{}, args []interface{}) (interface{}, error) {
+func modDefault(_ *Ctx, buf *interface{}, val interface{}, args []interface{}) error {
 	if len(args) == 0 {
-		return val, ErrModNoArgs
+		return ErrModNoArgs
 	}
 	b := false
 	switch val.(type) {
@@ -64,7 +64,7 @@ func modDefault(_ *Ctx, val interface{}, args []interface{}) (interface{}, error
 		b = len(*val.(*string)) == 0
 	}
 	if b {
-		return args[0], nil
+		*buf = args[0]
 	}
-	return val, nil
+	return nil
 }
