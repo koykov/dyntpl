@@ -47,6 +47,7 @@ func modJsonQuote(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{}) 
 	if l == 0 {
 		return nil
 	}
+	ctx.bbuf = ctx.bbuf[:0]
 	_ = b[l-1]
 	for i := 0; i < l; i++ {
 		switch b[i] {

@@ -175,6 +175,7 @@ func pretest() {
 		"tplModDef":       tplModDef,
 		"tplModDefStatic": tplModDefStatic,
 		"tplModJsonQ":     tplModJsonQ,
+		"tplModHtmlE":     tplModHtmlE,
 	}
 	for name, body := range tpl {
 		tree, _ := Parse(body, false)
