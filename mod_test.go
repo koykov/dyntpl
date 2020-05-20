@@ -10,7 +10,7 @@ var (
 	tplModDefStatic = []byte(`{% ctx defaultCost = 999.99 %}Cost is: {%= user.Cost|default(defaultCost) %} USD`)
 	expectModDef    = []byte(`Cost is: 999.99 USD`)
 
-	tplModJsonQ    = []byte(`{"id":"foo","name":{%= userName|jsonQuote pfx " sfx " %}}`)
+	tplModJsonQ    = []byte(`{"id":"foo","name":"{%= userName|jsonQuote %}"}`)
 	expectModJsonQ = []byte(`{"id":"foo","name":"Foo\"bar"}`)
 
 	tplModHtmlE    = []byte(`<a href="https://golang.org/" title="{%= title|htmlEscape %}">{%= text|he %}</a>`)

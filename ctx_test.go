@@ -44,7 +44,7 @@ var (
 	}
 )
 
-func TestCtx_Get(t *testing.T) {
+func TestCtxGet(t *testing.T) {
 	var (
 		ins testobj_ins.TestObjectInspector
 		raw interface{}
@@ -69,7 +69,7 @@ func TestCtx_Get(t *testing.T) {
 	}
 }
 
-func BenchmarkCtx_Get(b *testing.B) {
+func BenchmarkCtxGet(b *testing.B) {
 	var (
 		ins testobj_ins.TestObjectInspector
 		raw interface{}
@@ -97,7 +97,7 @@ func BenchmarkCtx_Get(b *testing.B) {
 	}
 }
 
-func BenchmarkCtxPool_Get(b *testing.B) {
+func BenchmarkCtxPoolGet(b *testing.B) {
 	var (
 		ins testobj_ins.TestObjectInspector
 		raw interface{}

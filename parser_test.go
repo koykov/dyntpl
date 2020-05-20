@@ -234,7 +234,7 @@ raw: }]
 `)
 )
 
-func TestParse_CutComments(t *testing.T) {
+func TestParseCutComments(t *testing.T) {
 	tpl := []byte(`{# this is a test template #}
 		Payload line #0
 		{# some comment #}
@@ -250,7 +250,7 @@ func TestParse_CutComments(t *testing.T) {
 	}
 }
 
-func TestParse_CutFmt(t *testing.T) {
+func TestParseCutFmt(t *testing.T) {
 	p := &Parser{tpl: cutFmtOrigin}
 	p.cutFmt()
 	if !bytes.Equal(cutFmtExpect, p.tpl) {
@@ -258,7 +258,7 @@ func TestParse_CutFmt(t *testing.T) {
 	}
 }
 
-func TestParse_Primitive(t *testing.T) {
+func TestParsePrimitive(t *testing.T) {
 	tree, _ := Parse(cutFmtOrigin, false)
 	r := tree.humanReadable()
 	if !bytes.Equal(r, primHrExpect) {
@@ -266,14 +266,14 @@ func TestParse_Primitive(t *testing.T) {
 	}
 }
 
-func TestParse_uEOT(t *testing.T) {
+func TestParseuEOT(t *testing.T) {
 	_, err := Parse(uEOTOrigin, false)
 	if err != ErrUnexpectedEOF {
 		t.Errorf("unexpected EOT fail\nexp: %s\ngot: %s", ErrUnexpectedEOF, err)
 	}
 }
 
-func TestParse_PrefixSuffix(t *testing.T) {
+func TestParsePrefixSuffix(t *testing.T) {
 	tree, _ := Parse(tplPS, false)
 	r := tree.humanReadable()
 	if !bytes.Equal(r, tplPSExpect) {
@@ -281,7 +281,7 @@ func TestParse_PrefixSuffix(t *testing.T) {
 	}
 }
 
-func TestParse_Exit(t *testing.T) {
+func TestParseExit(t *testing.T) {
 	tree, _ := Parse(tplExitOrigin, false)
 	r := tree.humanReadable()
 	if !bytes.Equal(r, tplExitExpect) {
@@ -289,7 +289,7 @@ func TestParse_Exit(t *testing.T) {
 	}
 }
 
-func TestParse_Mod(t *testing.T) {
+func TestParseMod(t *testing.T) {
 	tree, _ := Parse(tplModOrigin, false)
 	r := tree.humanReadable()
 	if !bytes.Equal(r, tplModExpect) {
@@ -297,7 +297,7 @@ func TestParse_Mod(t *testing.T) {
 	}
 }
 
-func TestParse_Ctx(t *testing.T) {
+func TestParseCtx(t *testing.T) {
 	tree, _ := Parse(ctxOrigin, false)
 	r := tree.humanReadable()
 	if !bytes.Equal(r, ctxExpect) {
@@ -305,7 +305,7 @@ func TestParse_Ctx(t *testing.T) {
 	}
 }
 
-func TestParse_Condition(t *testing.T) {
+func TestParseCondition(t *testing.T) {
 	tree, _ := Parse(condOrigin, false)
 	r := tree.humanReadable()
 	if !bytes.Equal(r, condExpect) {
@@ -319,7 +319,7 @@ func TestParse_Condition(t *testing.T) {
 	}
 }
 
-func TestParse_Loop(t *testing.T) {
+func TestParseLoop(t *testing.T) {
 	tree, _ := Parse(loopOrigin, false)
 	r := tree.humanReadable()
 	if !bytes.Equal(r, loopExpect) {
@@ -333,7 +333,7 @@ func TestParse_Loop(t *testing.T) {
 	}
 }
 
-func TestParse_Switch(t *testing.T) {
+func TestParseSwitch(t *testing.T) {
 	tree, _ := Parse(switchOrigin, false)
 	r := tree.humanReadable()
 	if !bytes.Equal(r, switchExpect) {
