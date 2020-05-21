@@ -10,11 +10,13 @@ var (
 	tplModDefStatic = []byte(`{% ctx defaultCost = 999.99 %}Cost is: {%= user.Cost|default(defaultCost) %} USD`)
 	expectModDef    = []byte(`Cost is: 999.99 USD`)
 
-	tplModJsonQ    = []byte(`{"id":"foo","name":"{%= userName|jsonQuote %}"}`)
-	expectModJsonQ = []byte(`{"id":"foo","name":"Foo\"bar"}`)
+	tplModJsonQ     = []byte(`{"id":"foo","name":"{%= userName|jsonQuote %}"}`)
+	tplModJsonQoutm = []byte(`{"id":"foo","name":"{%q= userName %}"}`)
+	expectModJsonQ  = []byte(`{"id":"foo","name":"Foo\"bar"}`)
 
-	tplModHtmlE    = []byte(`<a href="https://golang.org/" title="{%= title|htmlEscape %}">{%= text|he %}</a>`)
-	expectModHtmlE = []byte(`<a href="https://golang.org/" title="&lt;h1&gt;Go is an open source programming language that makes it easy to build &lt;strong&gt;simple&lt;strong&gt;, &lt;strong&gt;reliable&lt;/strong&gt;, and &lt;strong&gt;efficient&lt;/strong&gt; software.&lt;/h1&gt;">Visit &gt;</a>`)
+	tplModHtmlE     = []byte(`<a href="https://golang.org/" title="{%= title|htmlEscape %}">{%= text|he %}</a>`)
+	tplModHtmlEoutm = []byte(`<a href="https://golang.org/" title="{%h= title %}">{%h= text %}</a>`)
+	expectModHtmlE  = []byte(`<a href="https://golang.org/" title="&lt;h1&gt;Go is an open source programming language that makes it easy to build &lt;strong&gt;simple&lt;strong&gt;, &lt;strong&gt;reliable&lt;/strong&gt;, and &lt;strong&gt;efficient&lt;/strong&gt; software.&lt;/h1&gt;">Visit &gt;</a>`)
 
 	tplModIfThen        = []byte(`{%= allow|ifThen("You're allow to buy!") %}`)
 	expectModIfThen     = []byte(`You're allow to buy!`)

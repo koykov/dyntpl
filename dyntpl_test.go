@@ -175,7 +175,9 @@ func pretest() {
 		"tplModDef":        tplModDef,
 		"tplModDefStatic":  tplModDefStatic,
 		"tplModJsonQ":      tplModJsonQ,
+		"tplModJsonQoutm":  tplModJsonQoutm,
 		"tplModHtmlE":      tplModHtmlE,
+		"tplModHtmlEoutm":  tplModHtmlEoutm,
 		"tplModIfThen":     tplModIfThen,
 		"tplModIfThenElse": tplModIfThenElse,
 	}

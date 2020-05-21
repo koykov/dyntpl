@@ -49,6 +49,11 @@ var (
 	swDefault  = []byte("default")
 	swEnd      = []byte("endswitch")
 
+	outmQ = []byte("q")          // json quote
+	idQ   = []byte("jsonQuote")  // json quote
+	outmH = []byte("h")          // html escape
+	idH   = []byte("htmlEscape") // html escape
+
 	opEq  = []byte("==")
 	opNq  = []byte("!=")
 	opGt  = []byte(">")
@@ -61,10 +66,10 @@ var (
 	reCutComments = regexp.MustCompile(`\t*{#[^#]*#}\n*`)
 	reCutFmt      = regexp.MustCompile(`\n+\t*\s*`)
 
-	reTplPS = regexp.MustCompile(`^=\s*(.*) (?:prefix|pfx) (.*) (?:suffix|sfx) (.*)`)
-	reTplP  = regexp.MustCompile(`^=\s*(.*) (?:prefix|pfx) (.*)`)
-	reTplS  = regexp.MustCompile(`^=\s*(.*) (?:suffix|sfx) (.*)`)
-	reTpl   = regexp.MustCompile(`^= (.*)`)
+	reTplPS = regexp.MustCompile(`^([qh]*)=\s*(.*) (?:prefix|pfx) (.*) (?:suffix|sfx) (.*)`)
+	reTplP  = regexp.MustCompile(`^([qh]*)=\s*(.*) (?:prefix|pfx) (.*)`)
+	reTplS  = regexp.MustCompile(`^([qh]*)=\s*(.*) (?:suffix|sfx) (.*)`)
+	reTpl   = regexp.MustCompile(`^([qh]*)= (.*)`)
 	reMod   = regexp.MustCompile(`([^(]+)\(*([^)]*)\)*`)
 
 	reCtx = regexp.MustCompile(`ctx (\w+)\s*=\s*([\w.]+)\s*[as]*\s*(\w*)`)
@@ -176,17 +181,22 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 	if reTplPS.Match(t) || reTplP.Match(t) || reTplS.Match(t) || reTpl.Match(t) {
 		root.typ = TypeTpl
 		if m := reTplPS.FindSubmatch(t); m != nil {
-			root.raw, root.mod = p.extractMods(m[1])
-			root.prefix = m[2]
-			root.suffix = m[3]
+			root.raw, root.mod = p.extractMods(m[2], m[1])
+			root.prefix = m[3]
+			root.suffix = m[4]
 		} else if m := reTplP.FindSubmatch(t); m != nil {
-			root.raw, root.mod = p.extractMods(m[1])
-			root.prefix = m[2]
+			root.raw, root.mod = p.extractMods(m[2], m[1])
+			root.prefix = m[3]
 		} else if m := reTplS.FindSubmatch(t); m != nil {
-			root.raw, root.mod = p.extractMods(m[1])
-			root.suffix = m[2]
+			root.raw, root.mod = p.extractMods(m[2], m[1])
+			root.suffix = m[3]
+		} else if m := reTpl.FindSubmatch(t); m != nil {
+			if len(m[1]) != 0 {
+				m[1] = m[1]
+			}
+			root.raw, root.mod = p.extractMods(cbytealg.Trim(m[2], ctlTrimAll), m[1])
 		} else {
-			root.raw, root.mod = p.extractMods(cbytealg.Trim(t, ctlTrimAll))
+			root.raw, root.mod = p.extractMods(cbytealg.Trim(t, ctlTrimAll), nil)
 		}
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
@@ -416,10 +426,28 @@ func (p *Parser) parseOp(src []byte) Op {
 	return op
 }
 
-func (p *Parser) extractMods(t []byte) ([]byte, []mod) {
-	if bytes.Contains(t, vline) {
+func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
+	if bytes.Contains(t, vline) || len(outm) > 0 {
+		mods := make([]mod, 0)
+
+		if bytes.Equal(outm, outmQ) {
+			fn := GetModFn("jsonQuote")
+			mods = append(mods, mod{
+				id:  idQ,
+				fn:  fn,
+				arg: make([]*modArg, 0),
+			})
+		}
+		if bytes.Equal(outm, outmH) {
+			fn := GetModFn("htmlEscape")
+			mods = append(mods, mod{
+				id:  idH,
+				fn:  fn,
+				arg: make([]*modArg, 0),
+			})
+		}
+
 		chunks := bytes.Split(t, vline)
-		mods := make([]mod, 0, len(chunks)-1)
 		for i := 1; i < len(chunks); i++ {
 			if m := reMod.FindSubmatch(chunks[i]); m != nil {
 				fn := GetModFn(fastconv.B2S(m[1]))
