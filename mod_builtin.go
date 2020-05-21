@@ -43,3 +43,31 @@ func modDefault(_ *Ctx, buf *interface{}, val interface{}, args []interface{}) (
 	}
 	return nil
 }
+
+func modIfThen(_ *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
+	if len(args) == 0 {
+		err = ErrModNoArgs
+		return
+	}
+	if b, ok := ModBool(val); ok {
+		if b {
+			*buf = args[0]
+		}
+	}
+	return
+}
+
+func modIfThenElse(_ *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
+	if len(args) < 0 {
+		err = ErrModPoorArgs
+		return
+	}
+	if b, ok := ModBool(val); ok {
+		if b {
+			*buf = args[0]
+		} else {
+			*buf = args[1]
+		}
+	}
+	return
+}

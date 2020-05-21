@@ -15,6 +15,11 @@ var (
 
 	tplModHtmlE    = []byte(`<a href="https://golang.org/" title="{%= title|htmlEscape %}">{%= text|he %}</a>`)
 	expectModHtmlE = []byte(`<a href="https://golang.org/" title="&lt;h1&gt;Go is an open source programming language that makes it easy to build &lt;strong&gt;simple&lt;strong&gt;, &lt;strong&gt;reliable&lt;/strong&gt;, and &lt;strong&gt;efficient&lt;/strong&gt; software.&lt;/h1&gt;">Visit &gt;</a>`)
+
+	tplModIfThen        = []byte(`{%= allow|ifThen("You're allow to buy!") %}`)
+	expectModIfThen     = []byte(`You're allow to buy!`)
+	tplModIfThenElse    = []byte(`Welcome, {%= logged|ifThenElse(userName, "anonymous") %}!`)
+	expectModIfThenElse = []byte(`Welcome, foobar!`)
 )
 
 func TestTplModDef(t *testing.T) {
@@ -62,6 +67,35 @@ func TestTplModHtmlEscape(t *testing.T) {
 	}
 }
 
+func TestTplModIfThen(t *testing.T) {
+	pretest()
+
+	ctx := NewCtx()
+	ctx.SetStatic("allow", true)
+	result, err := Render("tplModIfThen", ctx)
+	if err != nil {
+		t.Error(err)
+	}
+	if !bytes.Equal(result, expectModIfThen) {
+		t.Error("ifThen tpl mismatch")
+	}
+}
+
+func TestTplModIfThenElse(t *testing.T) {
+	pretest()
+
+	ctx := NewCtx()
+	ctx.SetStatic("logged", true)
+	ctx.SetStatic("userName", "foobar")
+	result, err := Render("tplModIfThenElse", ctx)
+	if err != nil {
+		t.Error(err)
+	}
+	if !bytes.Equal(result, expectModIfThenElse) {
+		t.Error("ifThenElse tpl mismatch")
+	}
+}
+
 func BenchmarkTplModJsonQuote(b *testing.B) {
 	pretest()
 
@@ -96,6 +130,45 @@ func BenchmarkTplModHtmlEscape(b *testing.B) {
 		}
 		if !bytes.Equal(buf.Bytes(), expectModHtmlE) {
 			b.Error("html escape tpl mismatch")
+		}
+		CP.Put(ctx)
+	}
+}
+
+func BenchmarkTplModIfThen(b *testing.B) {
+	pretest()
+
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		ctx := CP.Get()
+		buf.Reset()
+		ctx.SetStatic("allow", true)
+		err := RenderTo(&buf, "tplModIfThen", ctx)
+		if err != nil {
+			b.Error(err)
+		}
+		if !bytes.Equal(buf.Bytes(), expectModIfThen) {
+			b.Error("ifThen tpl mismatch")
+		}
+		CP.Put(ctx)
+	}
+}
+
+func BenchmarkTplModIfThenElse(b *testing.B) {
+	pretest()
+
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		ctx := CP.Get()
+		buf.Reset()
+		ctx.SetStatic("logged", true)
+		ctx.SetStatic("userName", "foobar")
+		err := RenderTo(&buf, "tplModIfThenElse", ctx)
+		if err != nil {
+			b.Error(err)
+		}
+		if !bytes.Equal(buf.Bytes(), expectModIfThenElse) {
+			b.Error("ifThenElse tpl mismatch")
 		}
 		CP.Put(ctx)
 	}
