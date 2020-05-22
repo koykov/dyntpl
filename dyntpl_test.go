@@ -172,14 +172,14 @@ func pretest() {
 		"tplLoopCountCtx":      tplLoopCountCtx,
 		"tplExit":              tplExit,
 
-		"tplModDef":        tplModDef,
-		"tplModDefStatic":  tplModDefStatic,
-		"tplModJsonQ":      tplModJsonQ,
-		"tplModJsonQoutm":  tplModJsonQoutm,
-		"tplModHtmlE":      tplModHtmlE,
-		"tplModHtmlEoutm":  tplModHtmlEoutm,
-		"tplModIfThen":     tplModIfThen,
-		"tplModIfThenElse": tplModIfThenElse,
+		"tplModDef":             tplModDef,
+		"tplModDefStatic":       tplModDefStatic,
+		"tplModJsonQuote":       tplModJsonQuote,
+		"tplModJsonQuoteShort":  tplModJsonQuoteShort,
+		"tplModHtmlEscape":      tplModHtmlEscape,
+		"tplModHtmlEscapeShort": tplModHtmlEscapeShort,
+		"tplModIfThen":          tplModIfThen,
+		"tplModIfThenElse":      tplModIfThenElse,
 	}
 	for name, body := range tpl {
 		tree, _ := Parse(body, false)

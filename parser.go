@@ -49,7 +49,7 @@ var (
 	swDefault  = []byte("default")
 	swEnd      = []byte("endswitch")
 
-	outmQ = []byte("q")          // json quote
+	outmQ = []byte("j")          // json quote
 	idQ   = []byte("jsonQuote")  // json quote
 	outmH = []byte("h")          // html escape
 	idH   = []byte("htmlEscape") // html escape
@@ -66,10 +66,10 @@ var (
 	reCutComments = regexp.MustCompile(`\t*{#[^#]*#}\n*`)
 	reCutFmt      = regexp.MustCompile(`\n+\t*\s*`)
 
-	reTplPS = regexp.MustCompile(`^([qh]*)=\s*(.*) (?:prefix|pfx) (.*) (?:suffix|sfx) (.*)`)
-	reTplP  = regexp.MustCompile(`^([qh]*)=\s*(.*) (?:prefix|pfx) (.*)`)
-	reTplS  = regexp.MustCompile(`^([qh]*)=\s*(.*) (?:suffix|sfx) (.*)`)
-	reTpl   = regexp.MustCompile(`^([qh]*)= (.*)`)
+	reTplPS = regexp.MustCompile(`^([jh]*)=\s*(.*) (?:prefix|pfx) (.*) (?:suffix|sfx) (.*)`)
+	reTplP  = regexp.MustCompile(`^([jh]*)=\s*(.*) (?:prefix|pfx) (.*)`)
+	reTplS  = regexp.MustCompile(`^([jh]*)=\s*(.*) (?:suffix|sfx) (.*)`)
+	reTpl   = regexp.MustCompile(`^([jh]*)= (.*)`)
 	reMod   = regexp.MustCompile(`([^(]+)\(*([^)]*)\)*`)
 
 	reCtx = regexp.MustCompile(`ctx (\w+)\s*=\s*([\w.]+)\s*[as]*\s*(\w*)`)

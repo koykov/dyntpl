@@ -10,13 +10,13 @@ var (
 	tplModDefStatic = []byte(`{% ctx defaultCost = 999.99 %}Cost is: {%= user.Cost|default(defaultCost) %} USD`)
 	expectModDef    = []byte(`Cost is: 999.99 USD`)
 
-	tplModJsonQ     = []byte(`{"id":"foo","name":"{%= userName|jsonQuote %}"}`)
-	tplModJsonQoutm = []byte(`{"id":"foo","name":"{%q= userName %}"}`)
-	expectModJsonQ  = []byte(`{"id":"foo","name":"Foo\"bar"}`)
+	tplModJsonQuote      = []byte(`{"id":"foo","name":"{%= userName|jsonQuote %}"}`)
+	tplModJsonQuoteShort = []byte(`{"id":"foo","name":"{%j= userName %}"}`)
+	expectModJsonQuote   = []byte(`{"id":"foo","name":"Foo\"bar"}`)
 
-	tplModHtmlE     = []byte(`<a href="https://golang.org/" title="{%= title|htmlEscape %}">{%= text|he %}</a>`)
-	tplModHtmlEoutm = []byte(`<a href="https://golang.org/" title="{%h= title %}">{%h= text %}</a>`)
-	expectModHtmlE  = []byte(`<a href="https://golang.org/" title="&lt;h1&gt;Go is an open source programming language that makes it easy to build &lt;strong&gt;simple&lt;strong&gt;, &lt;strong&gt;reliable&lt;/strong&gt;, and &lt;strong&gt;efficient&lt;/strong&gt; software.&lt;/h1&gt;">Visit &gt;</a>`)
+	tplModHtmlEscape      = []byte(`<a href="https://golang.org/" title="{%= title|htmlEscape %}">{%= text|he %}</a>`)
+	tplModHtmlEscapeShort = []byte(`<a href="https://golang.org/" title="{%h= title %}">{%h= text %}</a>`)
+	expectModHtmlEscape   = []byte(`<a href="https://golang.org/" title="&lt;h1&gt;Go is an open source programming language that makes it easy to build &lt;strong&gt;simple&lt;strong&gt;, &lt;strong&gt;reliable&lt;/strong&gt;, and &lt;strong&gt;efficient&lt;/strong&gt; software.&lt;/h1&gt;">Visit &gt;</a>`)
 
 	tplModIfThen        = []byte(`{%= allow|ifThen("You're allow to buy!") %}`)
 	expectModIfThen     = []byte(`You're allow to buy!`)
@@ -45,11 +45,11 @@ func TestTplModJsonQuote(t *testing.T) {
 
 	ctx := NewCtx()
 	ctx.SetStatic("userName", `Foo"bar`)
-	result, err := Render("tplModJsonQ", ctx)
+	result, err := Render("tplModJsonQuote", ctx)
 	if err != nil {
 		t.Error(err)
 	}
-	if !bytes.Equal(result, expectModJsonQ) {
+	if !bytes.Equal(result, expectModJsonQuote) {
 		t.Error("json quote tpl mismatch")
 	}
 }
@@ -60,11 +60,11 @@ func TestTplModHtmlEscape(t *testing.T) {
 	ctx := NewCtx()
 	ctx.SetStatic("title", `<h1>Go is an open source programming language that makes it easy to build <strong>simple<strong>, <strong>reliable</strong>, and <strong>efficient</strong> software.</h1>`)
 	ctx.SetStatic("text", `Visit >`)
-	result, err := Render("tplModHtmlE", ctx)
+	result, err := Render("tplModHtmlEscape", ctx)
 	if err != nil {
 		t.Error(err)
 	}
-	if !bytes.Equal(result, expectModHtmlE) {
+	if !bytes.Equal(result, expectModHtmlEscape) {
 		t.Error("html escape tpl mismatch")
 	}
 }
@@ -106,11 +106,11 @@ func BenchmarkTplModJsonQuote(b *testing.B) {
 		ctx := CP.Get()
 		buf.Reset()
 		ctx.SetStatic("userName", `Foo"bar`)
-		err := RenderTo(&buf, "tplModJsonQ", ctx)
+		err := RenderTo(&buf, "tplModJsonQuoteShort", ctx)
 		if err != nil {
 			b.Error(err)
 		}
-		if !bytes.Equal(buf.Bytes(), expectModJsonQ) {
+		if !bytes.Equal(buf.Bytes(), expectModJsonQuote) {
 			b.Error("json quote tpl mismatch")
 		}
 		CP.Put(ctx)
@@ -126,11 +126,11 @@ func BenchmarkTplModHtmlEscape(b *testing.B) {
 		buf.Reset()
 		ctx.SetStatic("title", `<h1>Go is an open source programming language that makes it easy to build <strong>simple<strong>, <strong>reliable</strong>, and <strong>efficient</strong> software.</h1>`)
 		ctx.SetStatic("text", `Visit >`)
-		err := RenderTo(&buf, "tplModHtmlE", ctx)
+		err := RenderTo(&buf, "tplModHtmlEscapeShort", ctx)
 		if err != nil {
 			b.Error(err)
 		}
-		if !bytes.Equal(buf.Bytes(), expectModHtmlE) {
+		if !bytes.Equal(buf.Bytes(), expectModHtmlEscape) {
 			b.Error("html escape tpl mismatch")
 		}
 		CP.Put(ctx)
