@@ -1,46 +1,59 @@
 package dyntpl
 
 type Node struct {
-	typ    Type
-	raw    []byte
-	prefix []byte
-	suffix []byte
+	typ       Type
+	raw       []byte
+	rawStatic bool
+	rawSsc    ssCache
+	prefix    []byte
+	suffix    []byte
 
 	ctxVar       []byte
 	ctxSrc       []byte
 	ctxSrcStatic bool
+	ctxSrcSsc    ssCache
 	ctxIns       []byte
 
 	condL       []byte
-	condR       []byte
-	condStaticL bool
-	condStaticR bool
+	condLStatic bool
+	condLSsc    ssCache
 	condOp      Op
+	condR       []byte
+	condRStatic bool
+	condRSsc    ssCache
 
 	loopKey       []byte
 	loopVal       []byte
 	loopSrc       []byte
+	loopSrcSsc    ssCache
 	loopCnt       []byte
 	loopCntInit   []byte
 	loopCntStatic bool
+	loopCntSsc    ssCache
 	loopCntOp     Op
 	loopCondOp    Op
 	loopLim       []byte
 	loopLimStatic bool
+	loopLimSsc    ssCache
 	loopSep       []byte
 
-	switchArg []byte
+	switchArg    []byte
+	switchArgSsc ssCache
 
 	caseL       []byte
-	caseR       []byte
-	caseStaticL bool
-	caseStaticR bool
+	caseLStatic bool
+	caseLSsc    ssCache
 	caseOp      Op
+	caseR       []byte
+	caseRStatic bool
+	caseRSsc    ssCache
 
 	mod []mod
 
 	child []Node
 }
+
+type ssCache []string
 
 func addNode(nodes []Node, node Node) []Node {
 	nodes = append(nodes, node)
@@ -51,7 +64,9 @@ func addRaw(nodes []Node, raw []byte) []Node {
 	if len(raw) == 0 {
 		return nodes
 	}
-	nodes = append(nodes, Node{typ: TypeRaw, raw: raw})
+	node := Node{typ: TypeRaw}
+	node.raw, node.rawStatic, node.rawSsc, node.mod = parseRaw(raw, nil)
+	nodes = append(nodes, node)
 	return nodes
 }
 

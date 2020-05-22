@@ -62,7 +62,12 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 	case TypeRaw:
 		_, err = w.Write(node.raw)
 	case TypeTpl:
-		raw := ctx.get(node.raw)
+		var raw interface{}
+		if node.rawStatic {
+			raw = node.raw
+		} else {
+			raw = ctx.getSsc(node.raw, node.rawSsc)
+		}
 		if ctx.Err != nil {
 			err = ctx.Err
 			return
@@ -75,7 +80,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 						if arg.static {
 							ctx.modA = append(ctx.modA, &arg.val)
 						} else {
-							val := ctx.get(arg.val)
+							val := ctx.getSsc(arg.val, arg.ssc)
 							ctx.modA = append(ctx.modA, val)
 						}
 					}
@@ -113,11 +118,11 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			if err != nil {
 				return err
 			}
-			ctx.Set(fastconv.B2S(node.ctxVar), ctx.get(node.ctxSrc), ins)
+			ctx.Set(fastconv.B2S(node.ctxVar), ctx.getSsc(node.ctxSrc, node.ctxSrcSsc), ins)
 		}
 	case TypeCond:
-		sl := node.condStaticL
-		sr := node.condStaticR
+		sl := node.condLStatic
+		sr := node.condRStatic
 		if sl && sr {
 			err = ErrSenselessCond
 			return
@@ -131,7 +136,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			r = ctx.cmp(node.condR, node.condOp.Swap(), node.condL)
 		} else {
 			// Both sides isn't static.
-			ctx.get(node.condR)
+			ctx.getSsc(node.condR, node.condRSsc)
 			if ctx.Err == nil {
 				ctx.bbuf, err = cbytealg.AnyToBytes(ctx.bbuf[:0], ctx.buf)
 				if err != nil {
@@ -182,10 +187,10 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			// Classic switch case.
 			for _, ch := range node.child {
 				if ch.typ == TypeCase {
-					if ch.caseStaticL {
+					if ch.caseLStatic {
 						r = ctx.cmp(node.switchArg, OpEq, ch.caseL)
 					} else {
-						ctx.get(ch.caseL)
+						ctx.getSsc(ch.caseL, ch.caseLSsc)
 						if ctx.Err == nil {
 							ctx.bbuf, err = cbytealg.AnyToBytes(ctx.bbuf[:0], ctx.buf)
 							if err != nil {
@@ -204,8 +209,8 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			// Switch without condition case.
 			for _, ch := range node.child {
 				if ch.typ == TypeCase {
-					sl := ch.caseStaticL
-					sr := ch.caseStaticR
+					sl := ch.caseLStatic
+					sr := ch.caseRStatic
 					if sl && sr {
 						err = ErrSenselessCond
 						return
@@ -218,7 +223,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 						r = ctx.cmp(ch.caseR, ch.caseOp.Swap(), ch.caseL)
 					} else {
 						// Both sides isn't static.
-						ctx.get(ch.caseR)
+						ctx.getSsc(ch.caseR, ch.caseRSsc)
 						if ctx.Err == nil {
 							ctx.bbuf, err = cbytealg.AnyToBytes(ctx.bbuf[:0], ctx.buf)
 							if err != nil {

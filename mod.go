@@ -11,6 +11,7 @@ type mod struct {
 type modArg struct {
 	val    []byte
 	static bool
+	ssc    ssCache
 }
 
 var (

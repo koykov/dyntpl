@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"regexp"
+	"strings"
 
 	"github.com/koykov/cbytealg"
 	"github.com/koykov/fastconv"
@@ -181,22 +182,22 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 	if reTplPS.Match(t) || reTplP.Match(t) || reTplS.Match(t) || reTpl.Match(t) {
 		root.typ = TypeTpl
 		if m := reTplPS.FindSubmatch(t); m != nil {
-			root.raw, root.mod = p.extractMods(m[2], m[1])
+			root.raw, root.rawStatic, root.rawSsc, root.mod = parseRaw(m[2], m[1])
 			root.prefix = m[3]
 			root.suffix = m[4]
 		} else if m := reTplP.FindSubmatch(t); m != nil {
-			root.raw, root.mod = p.extractMods(m[2], m[1])
+			root.raw, root.rawStatic, root.rawSsc, root.mod = parseRaw(m[2], m[1])
 			root.prefix = m[3]
 		} else if m := reTplS.FindSubmatch(t); m != nil {
-			root.raw, root.mod = p.extractMods(m[2], m[1])
+			root.raw, root.rawStatic, root.rawSsc, root.mod = parseRaw(m[2], m[1])
 			root.suffix = m[3]
 		} else if m := reTpl.FindSubmatch(t); m != nil {
 			if len(m[1]) != 0 {
 				m[1] = m[1]
 			}
-			root.raw, root.mod = p.extractMods(cbytealg.Trim(m[2], ctlTrimAll), m[1])
+			root.raw, root.rawStatic, root.rawSsc, root.mod = parseRaw(cbytealg.Trim(m[2], ctlTrimAll), m[1])
 		} else {
-			root.raw, root.mod = p.extractMods(cbytealg.Trim(t, ctlTrimAll), nil)
+			root.raw, root.rawStatic, root.rawSsc, root.mod = parseRaw(cbytealg.Trim(t, ctlTrimAll), nil)
 		}
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
@@ -210,6 +211,9 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 			root.ctxVar = m[1]
 			root.ctxSrc = m[2]
 			root.ctxSrcStatic = isStatic(m[2])
+			if !root.ctxSrcStatic {
+				root.ctxSrcSsc = getSsc(m[2])
+			}
 			if len(m) > 3 && len(m[3]) > 0 {
 				root.ctxIns = m[3]
 			} else {
@@ -234,7 +238,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 		split := splitNodes(subNodes)
 
 		root.typ = TypeCond
-		root.condL, root.condR, root.condStaticL, root.condStaticR, root.condOp = p.parseCondExpr(t)
+		root.condL, root.condLStatic, root.caseLSsc, root.condR, root.condRStatic, root.caseRSsc, root.condOp = parseCondExpr(t)
 		if len(split) > 0 {
 			nodeTrue := Node{typ: TypeCondTrue, child: split[0]}
 			root.child = append(root.child, nodeTrue)
@@ -277,6 +281,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 				root.loopKey = cbytealg.Trim(m[1], space)
 			}
 			root.loopSrc = m[2]
+			root.loopSrcSsc = getSsc(m[2])
 			if len(m) > 2 {
 				root.loopSep = m[3]
 			}
@@ -285,10 +290,16 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 			root.loopCnt = m[1]
 			root.loopCntInit = m[2]
 			root.loopCntStatic = isStatic(m[2])
-			root.loopCondOp = p.parseOp(m[3])
+			if !root.loopCntStatic {
+				root.loopCntSsc = getSsc(root.loopCntInit)
+			}
+			root.loopCondOp = parseOp(m[3])
 			root.loopLim = m[4]
 			root.loopLimStatic = isStatic(m[4])
-			root.loopCntOp = p.parseOp(m[5])
+			if !root.loopLimStatic {
+				root.loopLimSsc = getSsc(root.loopLim)
+			}
+			root.loopCntOp = parseOp(m[5])
 			if len(m) > 5 {
 				root.loopSep = m[6]
 			}
@@ -335,6 +346,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 		root.typ = TypeSwitch
 		if len(m) > 0 {
 			root.switchArg = m[1]
+			root.switchArgSsc = getSsc(m[1])
 		}
 		root.child = make([]Node, 0)
 		root.child, offset, err = p.parseTpl(root.child, pos+len(ctl), target)
@@ -346,7 +358,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 	// Check switch's case.
 	if reSwitchCase.Match(t) {
 		root.typ = TypeCase
-		root.caseL, root.caseR, root.caseStaticL, root.caseStaticR, root.caseOp = p.parseCaseExpr(t)
+		root.caseL, root.caseLStatic, root.caseLSsc, root.caseR, root.caseRStatic, root.caseRSsc, root.caseOp = parseCaseExpr(t)
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
 		return nodes, offset, up, err
@@ -377,31 +389,43 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 	return nodes, 0, up, ErrBadCtl
 }
 
-func (p *Parser) parseCondExpr(expr []byte) (l, r []byte, sl, sr bool, op Op) {
+func parseCondExpr(expr []byte) (l []byte, sl bool, sscL ssCache, r []byte, sr bool, sscR ssCache, op Op) {
 	if m := reCondExpr.FindSubmatch(expr); m != nil {
 		l = cbytealg.Trim(m[1], space)
-		r = cbytealg.Trim(m[3], space)
 		sl = isStatic(l)
+		if !sl {
+			sscL = getSsc(l)
+		}
+		r = cbytealg.Trim(m[3], space)
 		sr = isStatic(r)
-		op = p.parseOp(m[2])
+		if !sr {
+			sscR = getSsc(r)
+		}
+		op = parseOp(m[2])
 	}
 	return
 }
 
-func (p *Parser) parseCaseExpr(expr []byte) (l, r []byte, sl, sr bool, op Op) {
+func parseCaseExpr(expr []byte) (l []byte, sl bool, sscL ssCache, r []byte, sr bool, sscR ssCache, op Op) {
 	if m := reSwitchCase.FindSubmatch(expr); m != nil {
 		l = cbytealg.Trim(m[1], space)
 		sl = isStatic(l)
+		if !sl {
+			sscL = getSsc(l)
+		}
 		if len(m) > 1 {
-			op = p.parseOp(m[2])
+			op = parseOp(m[2])
 			r = cbytealg.Trim(m[3], space)
 			sr = isStatic(r)
+			if !sr {
+				sscR = getSsc(r)
+			}
 		}
 	}
 	return
 }
 
-func (p *Parser) parseOp(src []byte) Op {
+func parseOp(src []byte) Op {
 	var op Op
 	switch {
 	case bytes.Equal(src, opEq):
@@ -426,7 +450,7 @@ func (p *Parser) parseOp(src []byte) Op {
 	return op
 }
 
-func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
+func parseRaw(t, outm []byte) ([]byte, bool, ssCache, []mod) {
 	if bytes.Contains(t, vline) || len(outm) > 0 {
 		mods := make([]mod, 0)
 
@@ -459,10 +483,14 @@ func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
 					args := bytes.Split(m[2], comma)
 					for _, a := range args {
 						a = cbytealg.Trim(a, space)
-						arg = append(arg, &modArg{
+						mod := modArg{
 							val:    cbytealg.Trim(a, quotes),
 							static: isStatic(a),
-						})
+						}
+						if !mod.static {
+							mod.ssc = getSsc(mod.val)
+						}
+						arg = append(arg, &mod)
 					}
 				}
 				mods = append(mods, mod{
@@ -472,10 +500,14 @@ func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
 				})
 			}
 		}
-		return chunks[0], mods
+		return chunks[0], isStatic(chunks[0]), getSsc(chunks[0]), mods
 	} else {
-		return t, nil
+		return t, isStatic(t), getSsc(t), nil
 	}
+}
+
+func getSsc(p []byte) ssCache {
+	return strings.Split(fastconv.B2S(p), ".")
 }
 
 func newTarget(p *Parser) *target {

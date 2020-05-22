@@ -126,6 +126,10 @@ func (c *Ctx) Reset() {
 }
 
 func (c *Ctx) get(path []byte) interface{} {
+	if len(path) == 0 {
+		return nil
+	}
+
 	if c.chQB {
 		path = c.replaceQB(path)
 	}
@@ -134,6 +138,42 @@ func (c *Ctx) get(path []byte) interface{} {
 	c.ssbuf = cbytealg.AppendSplitStr(c.ssbuf, fastconv.B2S(path), ".", -1)
 	if len(c.ssbuf) == 0 {
 		return nil
+	}
+
+	for i, v := range c.vars {
+		if i == c.ln {
+			break
+		}
+		if v.key == c.ssbuf[0] {
+			if v.val == nil && v.buf != nil {
+				c.bbuf = append(c.bbuf[:0], v.buf...)
+				c.buf = &c.bbuf
+				return c.buf
+			}
+			c.Err = v.ins.GetTo(v.val, &c.buf, c.ssbuf[1:]...)
+			if c.Err != nil {
+				return nil
+			}
+			return c.buf
+		}
+	}
+
+	return nil
+}
+
+func (c *Ctx) getSsc(path []byte, ssc ssCache) interface{} {
+	if c.chQB {
+		path = c.replaceQB(path)
+	}
+
+	c.ssbuf = c.ssbuf[:0]
+	if len(ssc) > 0 && !c.chQB {
+		c.ssbuf = append(c.ssbuf, ssc...)
+	} else {
+		c.ssbuf = cbytealg.AppendSplitStr(c.ssbuf, fastconv.B2S(path), ".", -1)
+		if len(c.ssbuf) == 0 {
+			return nil
+		}
 	}
 
 	for i, v := range c.vars {
@@ -211,11 +251,11 @@ func (c *Ctx) cloop(node Node, tpl *Tpl, w io.Writer) {
 		cntr      int
 		allowIter bool
 	)
-	cnt = c.cloopRange(node.loopCntStatic, node.loopCntInit)
+	cnt = c.cloopRange(node.loopCntStatic, node.loopCntInit, node.loopCntSsc)
 	if c.Err != nil {
 		return
 	}
-	lim = c.cloopRange(node.loopLimStatic, node.loopLim)
+	lim = c.cloopRange(node.loopLimStatic, node.loopLim, node.loopLimSsc)
 	if c.Err != nil {
 		return
 	}
@@ -280,7 +320,7 @@ func (c *Ctx) cloop(node Node, tpl *Tpl, w io.Writer) {
 	return
 }
 
-func (c *Ctx) cloopRange(static bool, b []byte) (r int64) {
+func (c *Ctx) cloopRange(static bool, b []byte, ssc ssCache) (r int64) {
 	if static {
 		r, c.Err = strconv.ParseInt(fastconv.B2S(b), 0, 0)
 		if c.Err != nil {
@@ -288,7 +328,7 @@ func (c *Ctx) cloopRange(static bool, b []byte) (r int64) {
 		}
 	} else {
 		var ok bool
-		raw := c.get(b)
+		raw := c.getSsc(b, ssc)
 		if c.Err != nil {
 			return
 		}
