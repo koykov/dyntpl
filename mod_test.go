@@ -10,13 +10,14 @@ var (
 	tplModDefStatic = []byte(`{% ctx defaultCost = 999.99 %}Cost is: {%= user.Cost|default(defaultCost) %} USD`)
 	expectModDef    = []byte(`Cost is: 999.99 USD`)
 
-	tplModJsonQuote      = []byte(`{"id":"foo","name":"{%= userName|jsonQuote %}"}`)
-	tplModJsonQuoteShort = []byte(`{"id":"foo","name":"{%j= userName %}"}`)
-	expectModJsonQuote   = []byte(`{"id":"foo","name":"Foo\"bar"}`)
+	tplModJsonEscape      = []byte(`{"id":"foo","name":"{%= userName|jsonEscape %}"}`)
+	tplModJsonEscapeShort = []byte(`{"id":"foo","name":"{%j= userName %}"}`)
+	tplModJsonQuoteShort  = []byte(`{"id":"foo","name":{%q= userName %}}`)
+	expectModJson         = []byte(`{"id":"foo","name":"Foo\"bar"}`)
 
 	tplModHtmlEscape      = []byte(`<a href="https://golang.org/" title="{%= title|htmlEscape %}">{%= text|he %}</a>`)
 	tplModHtmlEscapeShort = []byte(`<a href="https://golang.org/" title="{%h= title %}">{%h= text %}</a>`)
-	expectModHtmlEscape   = []byte(`<a href="https://golang.org/" title="&lt;h1&gt;Go is an open source programming language that makes it easy to build &lt;strong&gt;simple&lt;strong&gt;, &lt;strong&gt;reliable&lt;/strong&gt;, and &lt;strong&gt;efficient&lt;/strong&gt; software.&lt;/h1&gt;">Visit &gt;</a>`)
+	expectModHtml         = []byte(`<a href="https://golang.org/" title="&lt;h1&gt;Go is an open source programming language that makes it easy to build &lt;strong&gt;simple&lt;strong&gt;, &lt;strong&gt;reliable&lt;/strong&gt;, and &lt;strong&gt;efficient&lt;/strong&gt; software.&lt;/h1&gt;">Visit &gt;</a>`)
 
 	tplModIfThen        = []byte(`{%= allow|ifThen("You're allow to buy!") %}`)
 	expectModIfThen     = []byte(`You're allow to buy!`)
@@ -45,12 +46,26 @@ func TestTplModJsonQuote(t *testing.T) {
 
 	ctx := NewCtx()
 	ctx.SetStatic("userName", `Foo"bar`)
-	result, err := Render("tplModJsonQuote", ctx)
+	result, err := Render("tplModJsonQuoteShort", ctx)
 	if err != nil {
 		t.Error(err)
 	}
-	if !bytes.Equal(result, expectModJsonQuote) {
+	if !bytes.Equal(result, expectModJson) {
 		t.Error("json quote tpl mismatch")
+	}
+}
+
+func TestTplModJsonEscape(t *testing.T) {
+	pretest()
+
+	ctx := NewCtx()
+	ctx.SetStatic("userName", `Foo"bar`)
+	result, err := Render("tplModJsonEscapeShort", ctx)
+	if err != nil {
+		t.Error(err)
+	}
+	if !bytes.Equal(result, expectModJson) {
+		t.Error("json escape tpl mismatch")
 	}
 }
 
@@ -64,7 +79,7 @@ func TestTplModHtmlEscape(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	if !bytes.Equal(result, expectModHtmlEscape) {
+	if !bytes.Equal(result, expectModHtml) {
 		t.Error("html escape tpl mismatch")
 	}
 }
@@ -110,7 +125,7 @@ func BenchmarkTplModJsonQuote(b *testing.B) {
 		if err != nil {
 			b.Error(err)
 		}
-		if !bytes.Equal(buf.Bytes(), expectModJsonQuote) {
+		if !bytes.Equal(buf.Bytes(), expectModJson) {
 			b.Error("json quote tpl mismatch")
 		}
 		CP.Put(ctx)
@@ -130,7 +145,7 @@ func BenchmarkTplModHtmlEscape(b *testing.B) {
 		if err != nil {
 			b.Error(err)
 		}
-		if !bytes.Equal(buf.Bytes(), expectModHtmlEscape) {
+		if !bytes.Equal(buf.Bytes(), expectModHtml) {
 			b.Error("html escape tpl mismatch")
 		}
 		CP.Put(ctx)

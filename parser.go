@@ -49,7 +49,9 @@ var (
 	swDefault  = []byte("default")
 	swEnd      = []byte("endswitch")
 
-	outmQ = []byte("j")          // json quote
+	outmJ = []byte("j")          // json quote
+	idJ   = []byte("jsonEscape") // json quote
+	outmQ = []byte("q")          // json quote
 	idQ   = []byte("jsonQuote")  // json quote
 	outmH = []byte("h")          // html escape
 	idH   = []byte("htmlEscape") // html escape
@@ -66,10 +68,10 @@ var (
 	reCutComments = regexp.MustCompile(`\t*{#[^#]*#}\n*`)
 	reCutFmt      = regexp.MustCompile(`\n+\t*\s*`)
 
-	reTplPS = regexp.MustCompile(`^([jh]*)=\s*(.*) (?:prefix|pfx) (.*) (?:suffix|sfx) (.*)`)
-	reTplP  = regexp.MustCompile(`^([jh]*)=\s*(.*) (?:prefix|pfx) (.*)`)
-	reTplS  = regexp.MustCompile(`^([jh]*)=\s*(.*) (?:suffix|sfx) (.*)`)
-	reTpl   = regexp.MustCompile(`^([jh]*)= (.*)`)
+	reTplPS = regexp.MustCompile(`^([jhq]*)=\s*(.*) (?:prefix|pfx) (.*) (?:suffix|sfx) (.*)`)
+	reTplP  = regexp.MustCompile(`^([jhq]*)=\s*(.*) (?:prefix|pfx) (.*)`)
+	reTplS  = regexp.MustCompile(`^([jhq]*)=\s*(.*) (?:suffix|sfx) (.*)`)
+	reTpl   = regexp.MustCompile(`^([jhq]*)= (.*)`)
 	reMod   = regexp.MustCompile(`([^(]+)\(*([^)]*)\)*`)
 
 	reCtx = regexp.MustCompile(`ctx (\w+)\s*=\s*([\w.]+)\s*[as]*\s*(\w*)`)
@@ -430,6 +432,14 @@ func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
 	if bytes.Contains(t, vline) || len(outm) > 0 {
 		mods := make([]mod, 0)
 
+		if bytes.Equal(outm, outmJ) {
+			fn := GetModFn("jsonEscape")
+			mods = append(mods, mod{
+				id:  idJ,
+				fn:  fn,
+				arg: make([]*modArg, 0),
+			})
+		}
 		if bytes.Equal(outm, outmQ) {
 			fn := GetModFn("jsonQuote")
 			mods = append(mods, mod{
