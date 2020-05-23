@@ -260,7 +260,7 @@ func TestParseCutFmt(t *testing.T) {
 
 func TestParsePrimitive(t *testing.T) {
 	tree, _ := Parse(cutFmtOrigin, false)
-	r := tree.humanReadable()
+	r := tree.HumanReadable()
 	if !bytes.Equal(r, primHrExpect) {
 		t.Errorf("prim test failed\nexp: %s\ngot: %s", string(primHrExpect), string(r))
 	}
@@ -275,7 +275,7 @@ func TestParseuEOT(t *testing.T) {
 
 func TestParsePrefixSuffix(t *testing.T) {
 	tree, _ := Parse(tplPS, false)
-	r := tree.humanReadable()
+	r := tree.HumanReadable()
 	if !bytes.Equal(r, tplPSExpect) {
 		t.Errorf("prefix/suffix test failed\nexp: %s\ngot: %s", string(tplPSExpect), string(r))
 	}
@@ -283,7 +283,7 @@ func TestParsePrefixSuffix(t *testing.T) {
 
 func TestParseExit(t *testing.T) {
 	tree, _ := Parse(tplExitOrigin, false)
-	r := tree.humanReadable()
+	r := tree.HumanReadable()
 	if !bytes.Equal(r, tplExitExpect) {
 		t.Errorf("exit test failed\nexp: %s\ngot: %s", string(tplExitExpect), string(r))
 	}
@@ -291,7 +291,7 @@ func TestParseExit(t *testing.T) {
 
 func TestParseMod(t *testing.T) {
 	tree, _ := Parse(tplModOrigin, false)
-	r := tree.humanReadable()
+	r := tree.HumanReadable()
 	if !bytes.Equal(r, tplModExpect) {
 		t.Errorf("mod test failed\nexp: %s\ngot: %s", string(tplModExpect), string(r))
 	}
@@ -299,7 +299,7 @@ func TestParseMod(t *testing.T) {
 
 func TestParseCtx(t *testing.T) {
 	tree, _ := Parse(ctxOrigin, false)
-	r := tree.humanReadable()
+	r := tree.HumanReadable()
 	if !bytes.Equal(r, ctxExpect) {
 		t.Errorf("ctx test failed\nexp: %s\ngot: %s", string(ctxExpect), string(r))
 	}
@@ -307,13 +307,13 @@ func TestParseCtx(t *testing.T) {
 
 func TestParseCondition(t *testing.T) {
 	tree, _ := Parse(condOrigin, false)
-	r := tree.humanReadable()
+	r := tree.HumanReadable()
 	if !bytes.Equal(r, condExpect) {
 		t.Errorf("condition test failed\nexp: %s\ngot: %s", string(condExpect), string(r))
 	}
 
 	treeNested, _ := Parse(condNestedOrigin, false)
-	rNested := treeNested.humanReadable()
+	rNested := treeNested.HumanReadable()
 	if !bytes.Equal(rNested, condNestedExpect) {
 		t.Errorf("nested condition test failed\nexp: %s\ngot: %s", string(condNestedExpect), string(rNested))
 	}
@@ -321,13 +321,13 @@ func TestParseCondition(t *testing.T) {
 
 func TestParseLoop(t *testing.T) {
 	tree, _ := Parse(loopOrigin, false)
-	r := tree.humanReadable()
+	r := tree.HumanReadable()
 	if !bytes.Equal(r, loopExpect) {
 		t.Errorf("loop test failed\nexp: %s\ngot: %s", string(loopExpect), string(r))
 	}
 
 	treeSep, _ := Parse(loopSepOrigin, false)
-	rSep := treeSep.humanReadable()
+	rSep := treeSep.HumanReadable()
 	if !bytes.Equal(rSep, loopSepExpect) {
 		t.Errorf("loop with sep test failed\nexp: %s\ngot: %s", string(loopSepExpect), string(rSep))
 	}
@@ -335,13 +335,13 @@ func TestParseLoop(t *testing.T) {
 
 func TestParseSwitch(t *testing.T) {
 	tree, _ := Parse(switchOrigin, false)
-	r := tree.humanReadable()
+	r := tree.HumanReadable()
 	if !bytes.Equal(r, switchExpect) {
 		t.Errorf("switch test failed\nexp: %s\ngot: %s", string(switchExpect), string(r))
 	}
 
 	treeNC, _ := Parse(switchNoCondOrigin, false)
-	rNC := treeNC.humanReadable()
+	rNC := treeNC.HumanReadable()
 	if !bytes.Equal(rNC, switchNoCondExpect) {
 		t.Errorf("switch no cond test failed\nexp: %s\ngot: %s", string(switchNoCondExpect), string(rNC))
 	}

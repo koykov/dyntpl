@@ -13,7 +13,7 @@ type arg struct {
 	static bool
 }
 
-func (t *Tree) humanReadable() []byte {
+func (t *Tree) HumanReadable() []byte {
 	if len(t.nodes) == 0 {
 		return nil
 	}
@@ -62,6 +62,26 @@ func (t *Tree) hrHelper(buf *bytes.Buffer, nodes []Node, indent []byte, depth in
 		if len(node.condR) > 0 {
 			buf.WriteString(" right ")
 			buf.Write(node.condR)
+		}
+		if len(node.condHlp) > 0 {
+			buf.Write(node.condHlp)
+			if len(node.condHlpArg) > 0 {
+				buf.WriteByte('(')
+				for j, a := range node.condHlpArg {
+					if j > 0 {
+						buf.WriteByte(',')
+						buf.WriteByte(' ')
+					}
+					if a.static {
+						buf.WriteByte('"')
+						buf.Write(a.val)
+						buf.WriteByte('"')
+					} else {
+						buf.Write(a.val)
+					}
+				}
+				buf.WriteByte(')')
+			}
 		}
 
 		if len(node.loopKey) > 0 {
