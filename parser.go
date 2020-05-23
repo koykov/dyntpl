@@ -78,6 +78,7 @@ var (
 
 	reCond        = regexp.MustCompile(`if .*`)
 	reCondExpr    = regexp.MustCompile(`if (.*)(==|!=|>=|<=|>|<)(.*)`)
+	reCondHelper  = regexp.MustCompile(`if ([^(]+)\(*([^)]*)\)`)
 	reCondComplex = regexp.MustCompile(`if .*&&|\|\||\(|\).*`)
 
 	reLoop      = regexp.MustCompile(`for .*`)
@@ -225,8 +226,35 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 
 	// Check condition structure.
 	if reCond.Match(t) {
+		// Check complexity of the condition first.
 		if reCondComplex.Match(t) {
-			return nodes, pos, up, ErrComplexCond
+			// Check if condition may handled by the condition helper.
+			if m := reCondHelper.FindSubmatch(t); m != nil {
+				target := newTarget(p)
+				p.cc++
+
+				subNodes := make([]Node, 0)
+				subNodes, offset, err = p.parseTpl(subNodes, pos+len(ctl), target)
+				split := splitNodes(subNodes)
+
+				root.typ = TypeCond
+				root.condHlp = m[1]
+				root.condHlpArg = p.extractArgs(m[2])
+				root.condL, root.condR, root.condStaticL, root.condStaticR, root.condOp = p.parseCondExpr(t)
+				if len(split) > 0 {
+					nodeTrue := Node{typ: TypeCondTrue, child: split[0]}
+					root.child = append(root.child, nodeTrue)
+				}
+				if len(split) > 1 {
+					nodeFalse := Node{typ: TypeCondFalse, child: split[1]}
+					root.child = append(root.child, nodeFalse)
+				}
+
+				nodes = addNode(nodes, *root)
+				return nodes, offset, up, err
+			} else {
+				return nodes, pos, up, ErrComplexCond
+			}
 		}
 		target := newTarget(p)
 		p.cc++
@@ -437,7 +465,7 @@ func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
 			mods = append(mods, mod{
 				id:  idJ,
 				fn:  fn,
-				arg: make([]*modArg, 0),
+				arg: make([]*arg, 0),
 			})
 		}
 		if bytes.Equal(outm, outmQ) {
@@ -445,7 +473,7 @@ func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
 			mods = append(mods, mod{
 				id:  idQ,
 				fn:  fn,
-				arg: make([]*modArg, 0),
+				arg: make([]*arg, 0),
 			})
 		}
 		if bytes.Equal(outm, outmH) {
@@ -453,7 +481,7 @@ func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
 			mods = append(mods, mod{
 				id:  idH,
 				fn:  fn,
-				arg: make([]*modArg, 0),
+				arg: make([]*arg, 0),
 			})
 		}
 
@@ -464,21 +492,11 @@ func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
 				if fn == nil {
 					continue
 				}
-				arg := make([]*modArg, 0)
-				if len(m) > 1 {
-					args := bytes.Split(m[2], comma)
-					for _, a := range args {
-						a = cbytealg.Trim(a, space)
-						arg = append(arg, &modArg{
-							val:    cbytealg.Trim(a, quotes),
-							static: isStatic(a),
-						})
-					}
-				}
+				args := p.extractArgs(m[2])
 				mods = append(mods, mod{
 					id:  m[1],
 					fn:  fn,
-					arg: arg,
+					arg: args,
 				})
 			}
 		}
@@ -486,6 +504,22 @@ func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
 	} else {
 		return t, nil
 	}
+}
+
+func (p *Parser) extractArgs(l []byte) []*arg {
+	r := make([]*arg, 0)
+	if len(l) == 0 {
+		return r
+	}
+	args := bytes.Split(l, comma)
+	for _, a := range args {
+		a = cbytealg.Trim(a, space)
+		r = append(r, &arg{
+			val:    cbytealg.Trim(a, quotes),
+			static: isStatic(a),
+		})
+	}
+	return r
 }
 
 func newTarget(p *Parser) *target {

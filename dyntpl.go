@@ -69,19 +69,19 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 		}
 		if len(node.mod) > 0 {
 			for _, mod := range node.mod {
-				ctx.modA = ctx.modA[:0]
+				ctx.args = ctx.args[:0]
 				if len(mod.arg) > 0 {
 					for _, arg := range mod.arg {
 						if arg.static {
-							ctx.modA = append(ctx.modA, &arg.val)
+							ctx.args = append(ctx.args, &arg.val)
 						} else {
 							val := ctx.get(arg.val)
-							ctx.modA = append(ctx.modA, val)
+							ctx.args = append(ctx.args, val)
 						}
 					}
 				}
 				ctx.buf = raw
-				ctx.Err = (*mod.fn)(ctx, &ctx.buf, ctx.buf, ctx.modA)
+				ctx.Err = (*mod.fn)(ctx, &ctx.buf, ctx.buf, ctx.args)
 				if ctx.Err != nil {
 					break
 				}
@@ -116,28 +116,50 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			ctx.Set(fastconv.B2S(node.ctxVar), ctx.get(node.ctxSrc), ins)
 		}
 	case TypeCond:
-		sl := node.condStaticL
-		sr := node.condStaticR
-		if sl && sr {
-			err = ErrSenselessCond
-			return
-		}
 		var r bool
-		if sr {
-			// Right side is static.
-			r = ctx.cmp(node.condL, node.condOp, node.condR)
-		} else if sl {
-			// Left side is static.
-			r = ctx.cmp(node.condR, node.condOp.Swap(), node.condL)
-		} else {
-			// Both sides isn't static.
-			ctx.get(node.condR)
-			if ctx.Err == nil {
-				ctx.bbuf, err = cbytealg.AnyToBytes(ctx.bbuf[:0], ctx.buf)
-				if err != nil {
-					return
+		if len(node.condHlp) > 0 {
+			// Condition helper caught.
+			fn := GetCondFn(fastconv.B2S(node.condHlp))
+			if fn == nil {
+				err = ErrCondHlpNotFound
+				return
+			}
+			ctx.args = ctx.args[:0]
+			if len(node.condHlpArg) > 0 {
+				for _, arg := range node.condHlpArg {
+					if arg.static {
+						ctx.args = append(ctx.args, &arg.val)
+					} else {
+						val := ctx.get(arg.val)
+						ctx.args = append(ctx.args, val)
+					}
 				}
-				r = ctx.cmp(node.condL, node.condOp, ctx.bbuf)
+			}
+			r = (*fn)(ctx, ctx.args)
+		} else {
+			// Regular comparison.
+			sl := node.condStaticL
+			sr := node.condStaticR
+			if sl && sr {
+				err = ErrSenselessCond
+				return
+			}
+			if sr {
+				// Right side is static.
+				r = ctx.cmp(node.condL, node.condOp, node.condR)
+			} else if sl {
+				// Left side is static.
+				r = ctx.cmp(node.condR, node.condOp.Swap(), node.condL)
+			} else {
+				// Both sides isn't static.
+				ctx.get(node.condR)
+				if ctx.Err == nil {
+					ctx.bbuf, err = cbytealg.AnyToBytes(ctx.bbuf[:0], ctx.buf)
+					if err != nil {
+						return
+					}
+					r = ctx.cmp(node.condL, node.condOp, ctx.bbuf)
+				}
 			}
 		}
 		if ctx.Err != nil {

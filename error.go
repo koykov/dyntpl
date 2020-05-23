@@ -7,8 +7,9 @@ var (
 	ErrBadCtl        = errors.New("bad control structure caught")
 	ErrUnknownCtl    = errors.New("unknown ctl")
 
-	ErrComplexCond   = errors.New("condition is too complex, use CondHelper instead")
-	ErrSenselessCond = errors.New("comparison of two static args")
+	ErrComplexCond     = errors.New("condition is too complex, use CondHelper instead")
+	ErrSenselessCond   = errors.New("comparison of two static args")
+	ErrCondHlpNotFound = errors.New("helper not found")
 
 	ErrTplNotFound = errors.New("template not found")
 	ErrInterrupt   = errors.New("tpl processing interrupted")

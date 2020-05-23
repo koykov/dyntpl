@@ -20,7 +20,7 @@ type Ctx struct {
 	ibuf  int64
 	chQB  bool
 	buf   interface{}
-	modA  []interface{}
+	args  []interface{}
 	rl    *RangeLoop
 	Err   error
 }
@@ -43,7 +43,7 @@ func NewCtx() *Ctx {
 		vars:  make([]ctxVar, 0),
 		ssbuf: make([]string, 0),
 		bbuf:  make([]byte, 0),
-		modA:  make([]interface{}, 0),
+		args:  make([]interface{}, 0),
 	}
 	return &ctx
 }
@@ -122,7 +122,7 @@ func (c *Ctx) Reset() {
 	c.ssbuf = c.ssbuf[:0]
 	c.bbuf = c.bbuf[:0]
 	c.bbuf1 = c.bbuf1[:0]
-	c.modA = c.modA[:0]
+	c.args = c.args[:0]
 }
 
 func (c *Ctx) get(path []byte) interface{} {

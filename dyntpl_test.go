@@ -59,7 +59,9 @@ var (
 {% ctx permissionLimit = 60 %}
 {% if user.Status >= permissionLimit %}Privileged user, your balance: {%= user.Finance.Balance %}.
 {% else %}You don't have enough privileges.{% endif %}</p>`)
-	expectCond = []byte(`<h2>Status</h2><p>Privileged user, your balance: 9000.015.</p>`)
+	expectCond    = []byte(`<h2>Status</h2><p>Privileged user, your balance: 9000.015.</p>`)
+	tplCondHlp    = []byte(`{% if lenGt0(user.Id) %}greater than zero{% endif %}`)
+	expectCondHlp = []byte(`greater than zero`)
 
 	tplSwitch = []byte(`{% ctx exactStatus = 78 %}{
 	"permission": "{% switch user.Status %}
@@ -162,6 +164,7 @@ func pretest() {
 		"tplSimple":            tplSimple,
 		"tplCond":              tplCond,
 		"tplCondNoStatic":      tplCondNoStatic,
+		"tplCondHlp":           tplCondHlp,
 		"tplSwitch":            tplSwitch,
 		"tplSwitchNoCond":      tplSwitchNoCond,
 		"tplLoopRange":         tplLoopRange,
@@ -243,6 +246,10 @@ func TestTplCondNoStatic(t *testing.T) {
 	testBase(t, "tplCondNoStatic", expectCond, "cond (no static) tpl mismatch")
 }
 
+func TestTplCondHlp(t *testing.T) {
+	testBase(t, "tplCondHlp", expectCondHlp, "cond (helper) tpl mismatch")
+}
+
 func TestTplSwitch(t *testing.T) {
 	testBase(t, "tplSwitch", expectSwitch, "switch tpl mismatch")
 }
@@ -301,6 +308,10 @@ func BenchmarkTplCond(b *testing.B) {
 
 func BenchmarkTplCondNoStatic(b *testing.B) {
 	benchBase(b, "tplCondNoStatic", expectCond, "cond no static tpl mismatch")
+}
+
+func BenchmarkTplCondHlp(b *testing.B) {
+	benchBase(b, "tplCondHlp", expectCondHlp, "cond (helper) tpl mismatch")
 }
 
 func BenchmarkTplSwitch(b *testing.B) {

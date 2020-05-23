@@ -8,4 +8,8 @@ func init() {
 	RegisterModFn("jsonEscape", "je", modJsonEscape)
 	RegisterModFn("jsonQuote", "jq", modJsonQuote)
 	RegisterModFn("htmlEscape", "he", modHtmlEscape)
+
+	RegisterCondFn("lenEq0", condLenEq0)
+	RegisterCondFn("lenGt0", condLenGt0)
+	RegisterCondFn("lenGtq0", condLenGtq0)
 }

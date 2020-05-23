@@ -8,6 +8,11 @@ type Tree struct {
 	nodes []Node
 }
 
+type arg struct {
+	val    []byte
+	static bool
+}
+
 func (t *Tree) humanReadable() []byte {
 	if len(t.nodes) == 0 {
 		return nil

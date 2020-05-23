@@ -16,6 +16,8 @@ type Node struct {
 	condStaticL bool
 	condStaticR bool
 	condOp      Op
+	condHlp     []byte
+	condHlpArg  []*arg
 
 	loopKey       []byte
 	loopVal       []byte
