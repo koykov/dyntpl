@@ -22,3 +22,11 @@ func (p *CtxPool) Put(ctx *Ctx) {
 	ctx.Reset()
 	p.p.Put(ctx)
 }
+
+func AcquireCtx() *Ctx {
+	return CP.Get()
+}
+
+func ReleaseCtx(ctx *Ctx) {
+	CP.Put(ctx)
+}

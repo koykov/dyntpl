@@ -105,7 +105,7 @@ func BenchmarkCtxPoolGet(b *testing.B) {
 
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		ctx := CP.Get()
+		ctx := AcquireCtx()
 		ctx.Set("obj", testO, &ins)
 
 		raw = ctx.Get("obj.Id")
@@ -124,6 +124,6 @@ func BenchmarkCtxPoolGet(b *testing.B) {
 			b.Error("ctx get mismatch: obj.Finance.Balance")
 		}
 
-		CP.Put(ctx)
+		ReleaseCtx(ctx)
 	}
 }

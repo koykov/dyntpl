@@ -1,20 +1,20 @@
 package dyntpl
 
-func condLenEq0(ctx *Ctx, args []interface{}) bool {
+func condLenEq0(_ *Ctx, args []interface{}) bool {
 	if len(args) == 0 {
 		return false
 	}
 	return getLen(args[0]) == 0
 }
 
-func condLenGt0(ctx *Ctx, args []interface{}) bool {
+func condLenGt0(_ *Ctx, args []interface{}) bool {
 	if len(args) == 0 {
 		return false
 	}
 	return getLen(args[0]) > 0
 }
 
-func condLenGtq0(ctx *Ctx, args []interface{}) bool {
+func condLenGtq0(_ *Ctx, args []interface{}) bool {
 	if len(args) == 0 {
 		return false
 	}
