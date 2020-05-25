@@ -27,14 +27,14 @@ var (
 )
 
 func modJsonQuote(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{}) error {
-	ctx.bbuf = ctx.bbuf[:0]
-	ctx.bbuf = append(ctx.bbuf, jqQd)
+	ctx.Bbuf = ctx.Bbuf[:0]
+	ctx.Bbuf = append(ctx.Bbuf, jqQd)
 	err := modJsonEscape(ctx, buf, val, nil)
 	if err == nil {
-		ctx.bbuf = append(ctx.bbuf, ctx.bbuf1...)
+		ctx.Bbuf = append(ctx.Bbuf, ctx.Bbuf1...)
 	}
-	ctx.bbuf = append(ctx.bbuf, jqQd)
-	*buf = &ctx.bbuf
+	ctx.Bbuf = append(ctx.Bbuf, jqQd)
+	*buf = &ctx.Bbuf
 	return nil
 }
 
@@ -59,54 +59,54 @@ func modJsonEscape(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{})
 	if l == 0 {
 		return nil
 	}
-	ctx.bbuf1 = ctx.bbuf1[:0]
+	ctx.Bbuf1 = ctx.Bbuf1[:0]
 	_ = b[l-1]
 	for i := 0; i < l; i++ {
 		switch b[i] {
 		case jqQd:
-			ctx.bbuf1 = append(ctx.bbuf1, b[o:i]...)
-			ctx.bbuf1 = append(ctx.bbuf1, jqQdR...)
+			ctx.Bbuf1 = append(ctx.Bbuf1, b[o:i]...)
+			ctx.Bbuf1 = append(ctx.Bbuf1, jqQdR...)
 			o = i + 1
 		case jqSl:
-			ctx.bbuf1 = append(ctx.bbuf1, b[o:i]...)
-			ctx.bbuf1 = append(ctx.bbuf1, jqSlR...)
+			ctx.Bbuf1 = append(ctx.Bbuf1, b[o:i]...)
+			ctx.Bbuf1 = append(ctx.Bbuf1, jqSlR...)
 			o = i + 1
 		case jqNl:
-			ctx.bbuf1 = append(ctx.bbuf1, b[o:i]...)
-			ctx.bbuf1 = append(ctx.bbuf1, jqNlR...)
+			ctx.Bbuf1 = append(ctx.Bbuf1, b[o:i]...)
+			ctx.Bbuf1 = append(ctx.Bbuf1, jqNlR...)
 			o = i + 1
 		case jqCr:
-			ctx.bbuf1 = append(ctx.bbuf1, b[o:i]...)
-			ctx.bbuf1 = append(ctx.bbuf1, jqCrR...)
+			ctx.Bbuf1 = append(ctx.Bbuf1, b[o:i]...)
+			ctx.Bbuf1 = append(ctx.Bbuf1, jqCrR...)
 			o = i + 1
 		case jqT:
-			ctx.bbuf1 = append(ctx.bbuf1, b[o:i]...)
-			ctx.bbuf1 = append(ctx.bbuf1, jqTR...)
+			ctx.Bbuf1 = append(ctx.Bbuf1, b[o:i]...)
+			ctx.Bbuf1 = append(ctx.Bbuf1, jqTR...)
 			o = i + 1
 		case jqFf:
-			ctx.bbuf1 = append(ctx.bbuf1, b[o:i]...)
-			ctx.bbuf1 = append(ctx.bbuf1, jqFfR...)
+			ctx.Bbuf1 = append(ctx.Bbuf1, b[o:i]...)
+			ctx.Bbuf1 = append(ctx.Bbuf1, jqFfR...)
 			o = i + 1
 		case jqBs:
-			ctx.bbuf1 = append(ctx.bbuf1, b[o:i]...)
-			ctx.bbuf1 = append(ctx.bbuf1, jqBsR...)
+			ctx.Bbuf1 = append(ctx.Bbuf1, b[o:i]...)
+			ctx.Bbuf1 = append(ctx.Bbuf1, jqBsR...)
 			o = i + 1
 		case jqLt:
-			ctx.bbuf1 = append(ctx.bbuf1, b[o:i]...)
-			ctx.bbuf1 = append(ctx.bbuf1, jqLtR...)
+			ctx.Bbuf1 = append(ctx.Bbuf1, b[o:i]...)
+			ctx.Bbuf1 = append(ctx.Bbuf1, jqLtR...)
 			o = i + 1
 		case jqQs:
-			ctx.bbuf1 = append(ctx.bbuf1, b[o:i]...)
-			ctx.bbuf1 = append(ctx.bbuf1, jqQsR...)
+			ctx.Bbuf1 = append(ctx.Bbuf1, b[o:i]...)
+			ctx.Bbuf1 = append(ctx.Bbuf1, jqQsR...)
 			o = i + 1
 		case jqZ:
-			ctx.bbuf1 = append(ctx.bbuf1, b[o:i]...)
-			ctx.bbuf1 = append(ctx.bbuf1, jqZR...)
+			ctx.Bbuf1 = append(ctx.Bbuf1, b[o:i]...)
+			ctx.Bbuf1 = append(ctx.Bbuf1, jqZR...)
 			o = i + 1
 		}
 	}
-	ctx.bbuf1 = append(ctx.bbuf1, b[o:]...)
-	*buf = &ctx.bbuf1
+	ctx.Bbuf1 = append(ctx.Bbuf1, b[o:]...)
+	*buf = &ctx.Bbuf1
 
 	return nil
 }

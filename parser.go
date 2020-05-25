@@ -459,6 +459,21 @@ func (p *Parser) parseOp(src []byte) Op {
 func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
 	if bytes.Contains(t, vline) || len(outm) > 0 {
 		mods := make([]mod, 0)
+		chunks := bytes.Split(t, vline)
+		for i := 1; i < len(chunks); i++ {
+			if m := reMod.FindSubmatch(chunks[i]); m != nil {
+				fn := GetModFn(fastconv.B2S(m[1]))
+				if fn == nil {
+					continue
+				}
+				args := p.extractArgs(m[2])
+				mods = append(mods, mod{
+					id:  m[1],
+					fn:  fn,
+					arg: args,
+				})
+			}
+		}
 
 		if bytes.Equal(outm, outmJ) {
 			fn := GetModFn("jsonEscape")
@@ -485,21 +500,6 @@ func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
 			})
 		}
 
-		chunks := bytes.Split(t, vline)
-		for i := 1; i < len(chunks); i++ {
-			if m := reMod.FindSubmatch(chunks[i]); m != nil {
-				fn := GetModFn(fastconv.B2S(m[1]))
-				if fn == nil {
-					continue
-				}
-				args := p.extractArgs(m[2])
-				mods = append(mods, mod{
-					id:  m[1],
-					fn:  fn,
-					arg: args,
-				})
-			}
-		}
 		return chunks[0], mods
 	} else {
 		return t, nil

@@ -95,12 +95,12 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			err = ErrEmptyArg
 			return
 		}
-		ctx.bbuf, err = cbytealg.AnyToBytes(ctx.bbuf, raw)
+		ctx.Bbuf, err = cbytealg.AnyToBytes(ctx.Bbuf, raw)
 		if err == nil {
 			if len(node.prefix) > 0 {
 				_, _ = w.Write(node.prefix)
 			}
-			_, err = w.Write(ctx.bbuf)
+			_, err = w.Write(ctx.Bbuf)
 			if len(node.suffix) > 0 {
 				_, _ = w.Write(node.suffix)
 			}
@@ -154,11 +154,11 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 				// Both sides isn't static.
 				ctx.get(node.condR)
 				if ctx.Err == nil {
-					ctx.bbuf, err = cbytealg.AnyToBytes(ctx.bbuf[:0], ctx.buf)
+					ctx.Bbuf, err = cbytealg.AnyToBytes(ctx.Bbuf[:0], ctx.buf)
 					if err != nil {
 						return
 					}
-					r = ctx.cmp(node.condL, node.condOp, ctx.bbuf)
+					r = ctx.cmp(node.condL, node.condOp, ctx.Bbuf)
 				}
 			}
 		}
@@ -209,11 +209,11 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 					} else {
 						ctx.get(ch.caseL)
 						if ctx.Err == nil {
-							ctx.bbuf, err = cbytealg.AnyToBytes(ctx.bbuf[:0], ctx.buf)
+							ctx.Bbuf, err = cbytealg.AnyToBytes(ctx.Bbuf[:0], ctx.buf)
 							if err != nil {
 								return
 							}
-							r = ctx.cmp(node.switchArg, OpEq, ctx.bbuf)
+							r = ctx.cmp(node.switchArg, OpEq, ctx.Bbuf)
 						}
 					}
 				}
@@ -242,11 +242,11 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 						// Both sides isn't static.
 						ctx.get(ch.caseR)
 						if ctx.Err == nil {
-							ctx.bbuf, err = cbytealg.AnyToBytes(ctx.bbuf[:0], ctx.buf)
+							ctx.Bbuf, err = cbytealg.AnyToBytes(ctx.Bbuf[:0], ctx.buf)
 							if err != nil {
 								return
 							}
-							r = ctx.cmp(ch.caseL, ch.caseOp, ctx.bbuf)
+							r = ctx.cmp(ch.caseL, ch.caseOp, ctx.Bbuf)
 						}
 					}
 					if ctx.Err != nil {

@@ -37,34 +37,34 @@ func modHtmlEscape(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{})
 	if l == 0 {
 		return nil
 	}
-	ctx.bbuf = ctx.bbuf[:0]
+	ctx.Bbuf = ctx.Bbuf[:0]
 	_ = b[l-1]
 	for i := 0; i < l; i++ {
 		switch b[i] {
 		case heLt:
-			ctx.bbuf = append(ctx.bbuf, b[o:i]...)
-			ctx.bbuf = append(ctx.bbuf, heLtR...)
+			ctx.Bbuf = append(ctx.Bbuf, b[o:i]...)
+			ctx.Bbuf = append(ctx.Bbuf, heLtR...)
 			o = i + 1
 		case heGt:
-			ctx.bbuf = append(ctx.bbuf, b[o:i]...)
-			ctx.bbuf = append(ctx.bbuf, heGtR...)
+			ctx.Bbuf = append(ctx.Bbuf, b[o:i]...)
+			ctx.Bbuf = append(ctx.Bbuf, heGtR...)
 			o = i + 1
 		case heQd:
-			ctx.bbuf = append(ctx.bbuf, b[o:i]...)
-			ctx.bbuf = append(ctx.bbuf, heQdR...)
+			ctx.Bbuf = append(ctx.Bbuf, b[o:i]...)
+			ctx.Bbuf = append(ctx.Bbuf, heQdR...)
 			o = i + 1
 		case heQs:
-			ctx.bbuf = append(ctx.bbuf, b[o:i]...)
-			ctx.bbuf = append(ctx.bbuf, heQsR...)
+			ctx.Bbuf = append(ctx.Bbuf, b[o:i]...)
+			ctx.Bbuf = append(ctx.Bbuf, heQsR...)
 			o = i + 1
 		case heAmp:
-			ctx.bbuf = append(ctx.bbuf, b[o:i]...)
-			ctx.bbuf = append(ctx.bbuf, heAmpR...)
+			ctx.Bbuf = append(ctx.Bbuf, b[o:i]...)
+			ctx.Bbuf = append(ctx.Bbuf, heAmpR...)
 			o = i + 1
 		}
 	}
-	ctx.bbuf = append(ctx.bbuf, b[o:]...)
-	*buf = &ctx.bbuf
+	ctx.Bbuf = append(ctx.Bbuf, b[o:]...)
+	*buf = &ctx.Bbuf
 
 	return nil
 }
