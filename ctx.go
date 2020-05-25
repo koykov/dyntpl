@@ -146,6 +146,7 @@ func (c *Ctx) get(path []byte) interface{} {
 				c.buf = &c.bbuf
 				return c.buf
 			}
+			c.bbuf = c.bbuf[:0]
 			c.Err = v.ins.GetTo(v.val, &c.buf, c.ssbuf[1:]...)
 			if c.Err != nil {
 				return nil
