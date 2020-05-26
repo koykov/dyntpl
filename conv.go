@@ -88,6 +88,8 @@ func ConvBytes(val interface{}) (b []byte, ok bool) {
 		b = val.([]byte)
 	case *[]byte:
 		b = *val.(*[]byte)
+	case *ByteBuf:
+		b = *val.(*ByteBuf)
 	default:
 		ok = false
 	}
@@ -171,6 +173,8 @@ func lim2int(raw interface{}) (lim int64, ok bool) {
 		lim, _ = strconv.ParseInt(raw.(string), 0, 0)
 	case *string:
 		lim, _ = strconv.ParseInt(*raw.(*string), 0, 0)
+	case *ByteBuf:
+		lim, _ = strconv.ParseInt(fastconv.B2S(*raw.(*ByteBuf)), 0, 0)
 	default:
 		ok = false
 	}

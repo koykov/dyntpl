@@ -1,6 +1,8 @@
 package dyntpl
 
-import "github.com/koykov/fastconv"
+import (
+	"github.com/koykov/fastconv"
+)
 
 var (
 	jqQd = byte('"')
@@ -27,13 +29,12 @@ var (
 )
 
 func modJsonQuote(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{}) error {
-	ctx.Bbuf = ctx.Bbuf[:0]
-	ctx.Bbuf = append(ctx.Bbuf, jqQd)
+	ctx.Bbuf.ResetWriteByte(jqQd)
 	err := modJsonEscape(ctx, buf, val, nil)
 	if err == nil {
-		ctx.Bbuf = append(ctx.Bbuf, ctx.Bbuf1...)
+		ctx.Bbuf.Write(ctx.Bbuf1)
 	}
-	ctx.Bbuf = append(ctx.Bbuf, jqQd)
+	ctx.Bbuf.WriteByte(jqQd)
 	*buf = &ctx.Bbuf
 	return nil
 }
@@ -43,69 +44,64 @@ func modJsonEscape(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{})
 		b    []byte
 		l, o int
 	)
-	switch val.(type) {
-	case []byte:
-		b = val.([]byte)
-	case *[]byte:
-		b = *val.(*[]byte)
-	case string:
-		b = fastconv.S2B(val.(string))
-	case *string:
-		b = fastconv.S2B(*val.(*string))
-	default:
+	if p, ok := ConvBytes(val); ok {
+		b = p
+	} else if s, ok := ConvStr(val); ok {
+		b = fastconv.S2B(s)
+	} else {
 		return ErrModNoStr
 	}
 	l = len(b)
 	if l == 0 {
 		return nil
 	}
-	ctx.Bbuf1 = ctx.Bbuf1[:0]
+	ctx.Bbuf1.Reset()
 	_ = b[l-1]
 	for i := 0; i < l; i++ {
 		switch b[i] {
 		case jqQd:
-			ctx.Bbuf1 = append(ctx.Bbuf1, b[o:i]...)
-			ctx.Bbuf1 = append(ctx.Bbuf1, jqQdR...)
+			ctx.Bbuf1.Write(b[o:i])
+			ctx.Bbuf1.Write(jqQdR)
 			o = i + 1
 		case jqSl:
-			ctx.Bbuf1 = append(ctx.Bbuf1, b[o:i]...)
-			ctx.Bbuf1 = append(ctx.Bbuf1, jqSlR...)
+			ctx.Bbuf1.Write(b[o:i])
+			ctx.Bbuf1.Write(jqSlR)
 			o = i + 1
 		case jqNl:
-			ctx.Bbuf1 = append(ctx.Bbuf1, b[o:i]...)
-			ctx.Bbuf1 = append(ctx.Bbuf1, jqNlR...)
+			ctx.Bbuf1.Write(b[o:i])
+			ctx.Bbuf1.Write(jqNlR)
 			o = i + 1
 		case jqCr:
-			ctx.Bbuf1 = append(ctx.Bbuf1, b[o:i]...)
-			ctx.Bbuf1 = append(ctx.Bbuf1, jqCrR...)
+			ctx.Bbuf1.Write(b[o:i])
+			ctx.Bbuf1.Write(jqCrR)
 			o = i + 1
 		case jqT:
-			ctx.Bbuf1 = append(ctx.Bbuf1, b[o:i]...)
-			ctx.Bbuf1 = append(ctx.Bbuf1, jqTR...)
+			ctx.Bbuf1.Write(b[o:i])
+			ctx.Bbuf1.Write(jqTR)
 			o = i + 1
 		case jqFf:
-			ctx.Bbuf1 = append(ctx.Bbuf1, b[o:i]...)
-			ctx.Bbuf1 = append(ctx.Bbuf1, jqFfR...)
+			ctx.Bbuf1.Write(b[o:i])
+			ctx.Bbuf1.Write(jqFfR)
 			o = i + 1
 		case jqBs:
-			ctx.Bbuf1 = append(ctx.Bbuf1, b[o:i]...)
-			ctx.Bbuf1 = append(ctx.Bbuf1, jqBsR...)
+			ctx.Bbuf1.Write(b[o:i])
+			ctx.Bbuf1.Write(jqBsR)
 			o = i + 1
 		case jqLt:
-			ctx.Bbuf1 = append(ctx.Bbuf1, b[o:i]...)
-			ctx.Bbuf1 = append(ctx.Bbuf1, jqLtR...)
+			ctx.Bbuf1.Write(b[o:i])
+			ctx.Bbuf1.Write(jqLtR)
 			o = i + 1
 		case jqQs:
-			ctx.Bbuf1 = append(ctx.Bbuf1, b[o:i]...)
-			ctx.Bbuf1 = append(ctx.Bbuf1, jqQsR...)
+			ctx.Bbuf1.Write(b[o:i])
+			ctx.Bbuf1.Write(jqQsR)
 			o = i + 1
 		case jqZ:
-			ctx.Bbuf1 = append(ctx.Bbuf1, b[o:i]...)
-			ctx.Bbuf1 = append(ctx.Bbuf1, jqZR...)
+			ctx.Bbuf1.Write(b[o:i])
+			ctx.Bbuf1.Write(jqZR)
 			o = i + 1
 		}
 	}
-	ctx.Bbuf1 = append(ctx.Bbuf1, b[o:]...)
+	ctx.Bbuf1.Write(b[o:])
 	*buf = &ctx.Bbuf1
 
 	return nil

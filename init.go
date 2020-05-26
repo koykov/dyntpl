@@ -1,5 +1,7 @@
 package dyntpl
 
+import "github.com/koykov/cbytealg"
+
 func init() {
 	RegisterModFn("default", "def", modDefault)
 	RegisterModFn("ifThen", "if", modIfThen)
@@ -12,4 +14,6 @@ func init() {
 	RegisterCondFn("lenEq0", condLenEq0)
 	RegisterCondFn("lenGt0", condLenGt0)
 	RegisterCondFn("lenGtq0", condLenGtq0)
+
+	cbytealg.RegisterAnyToBytesFn(ByteBufToBytes)
 }

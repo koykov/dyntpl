@@ -21,49 +21,44 @@ func modHtmlEscape(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{})
 		b    []byte
 		l, o int
 	)
-	switch val.(type) {
-	case []byte:
-		b = val.([]byte)
-	case *[]byte:
-		b = *val.(*[]byte)
-	case string:
-		b = fastconv.S2B(val.(string))
-	case *string:
-		b = fastconv.S2B(*val.(*string))
-	default:
+	if p, ok := ConvBytes(val); ok {
+		b = p
+	} else if s, ok := ConvStr(val); ok {
+		b = fastconv.S2B(s)
+	} else {
 		return ErrModNoStr
 	}
 	l = len(b)
 	if l == 0 {
 		return nil
 	}
-	ctx.Bbuf = ctx.Bbuf[:0]
+	ctx.Bbuf.Reset()
 	_ = b[l-1]
 	for i := 0; i < l; i++ {
 		switch b[i] {
 		case heLt:
-			ctx.Bbuf = append(ctx.Bbuf, b[o:i]...)
-			ctx.Bbuf = append(ctx.Bbuf, heLtR...)
+			ctx.Bbuf.Write(b[o:i])
+			ctx.Bbuf.Write(heLtR)
 			o = i + 1
 		case heGt:
-			ctx.Bbuf = append(ctx.Bbuf, b[o:i]...)
-			ctx.Bbuf = append(ctx.Bbuf, heGtR...)
+			ctx.Bbuf.Write(b[o:i])
+			ctx.Bbuf.Write(heGtR)
 			o = i + 1
 		case heQd:
-			ctx.Bbuf = append(ctx.Bbuf, b[o:i]...)
-			ctx.Bbuf = append(ctx.Bbuf, heQdR...)
+			ctx.Bbuf.Write(b[o:i])
+			ctx.Bbuf.Write(heQdR)
 			o = i + 1
 		case heQs:
-			ctx.Bbuf = append(ctx.Bbuf, b[o:i]...)
-			ctx.Bbuf = append(ctx.Bbuf, heQsR...)
+			ctx.Bbuf.Write(b[o:i])
+			ctx.Bbuf.Write(heQsR)
 			o = i + 1
 		case heAmp:
-			ctx.Bbuf = append(ctx.Bbuf, b[o:i]...)
-			ctx.Bbuf = append(ctx.Bbuf, heAmpR...)
+			ctx.Bbuf.Write(b[o:i])
+			ctx.Bbuf.Write(heAmpR)
 			o = i + 1
 		}
 	}
-	ctx.Bbuf = append(ctx.Bbuf, b[o:]...)
+	ctx.Bbuf.Write(b[o:])
 	*buf = &ctx.Bbuf
 
 	return nil

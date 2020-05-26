@@ -14,9 +14,10 @@ type Ctx struct {
 	vars  []ctxVar
 	ln    int
 	ssbuf []string
-	Bbuf  []byte
-	Bbuf1 []byte
-	Bbuf2 []byte
+	Bbuf  ByteBuf
+	Bbuf1 ByteBuf
+	Bbuf2 ByteBuf
+	bbuf  []byte
 	cbuf  bool
 	ibuf  int64
 	chQB  bool
@@ -43,7 +44,10 @@ func NewCtx() *Ctx {
 	ctx := Ctx{
 		vars:  make([]ctxVar, 0),
 		ssbuf: make([]string, 0),
-		Bbuf:  make([]byte, 0),
+		Bbuf:  make(ByteBuf, 0),
+		Bbuf1: make(ByteBuf, 0),
+		Bbuf2: make(ByteBuf, 0),
+		bbuf:  make([]byte, 0),
 		args:  make([]interface{}, 0),
 	}
 	return &ctx
@@ -111,19 +115,16 @@ func (c *Ctx) Get(path string) interface{} {
 	return c.get(fastconv.S2B(path))
 }
 
-func (c *Ctx) GetBbuf() []byte {
-	return c.Bbuf[:0]
-}
-
 func (c *Ctx) Reset() {
 	c.Err = nil
 	c.buf = nil
 	c.chQB = false
 	c.ln = 0
 	c.ssbuf = c.ssbuf[:0]
-	c.Bbuf = c.Bbuf[:0]
-	c.Bbuf1 = c.Bbuf1[:0]
-	c.Bbuf2 = c.Bbuf2[:0]
+	c.Bbuf.Reset()
+	c.Bbuf1.Reset()
+	c.Bbuf2.Reset()
+	c.bbuf = c.bbuf[:0]
 	c.args = c.args[:0]
 }
 
@@ -144,11 +145,10 @@ func (c *Ctx) get(path []byte) interface{} {
 		}
 		if v.key == c.ssbuf[0] {
 			if v.val == nil && v.buf != nil {
-				c.Bbuf = append(c.Bbuf[:0], v.buf...)
+				c.Bbuf.Write(v.buf)
 				c.buf = &c.Bbuf
 				return c.buf
 			}
-			// c.Bbuf = c.Bbuf[:0]
 			c.Err = v.ins.GetTo(v.val, &c.buf, c.ssbuf[1:]...)
 			if c.Err != nil {
 				return nil
@@ -202,7 +202,7 @@ func (c *Ctx) rloop(path []byte, node Node, tpl *Tpl, w io.Writer) {
 				c.rl.tpl = tpl
 				c.rl.w = w
 			}
-			c.Err = v.ins.Loop(v.val, c.rl, &c.Bbuf1, c.ssbuf[1:]...)
+			c.Err = v.ins.Loop(v.val, c.rl, &c.bbuf, c.ssbuf[1:]...)
 			return
 		}
 	}
@@ -308,20 +308,20 @@ func (c *Ctx) replaceQB(path []byte) []byte {
 	sqLi := bytes.Index(path, sqL)
 	sqRi := bytes.Index(path, sqR)
 	if sqLi != -1 && sqRi != -1 && sqLi < sqRi && sqRi < len(path) {
-		c.Bbuf = append(c.Bbuf[:0], path[0:sqLi]...)
-		c.Bbuf = append(c.Bbuf, dot...)
+		c.Bbuf.ResetWrite(path[0:sqLi])
+		c.Bbuf.Write(dot)
 		c.chQB = false
 		c.buf = c.get(path[sqLi+1 : sqRi])
 		if c.buf != nil {
-			c.Bbuf1, c.Err = cbytealg.AnyToBytes(c.Bbuf1[:0], c.buf)
+			c.Bbuf1, c.Err = cbytealg.AnyToBytes(c.Bbuf1, c.buf)
 			if c.Err != nil {
 				c.chQB = true
 				return nil
 			}
-			c.Bbuf = append(c.Bbuf, c.Bbuf1...)
+			c.Bbuf.Write(c.Bbuf1)
 		}
 		c.chQB = true
-		c.Bbuf = append(c.Bbuf, path[sqRi+1:]...)
+		c.Bbuf.Write(path[sqRi+1:])
 		path = c.Bbuf
 	}
 	return path

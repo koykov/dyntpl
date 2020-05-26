@@ -154,7 +154,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 				// Both sides isn't static.
 				ctx.get(node.condR)
 				if ctx.Err == nil {
-					ctx.Bbuf, err = cbytealg.AnyToBytes(ctx.Bbuf[:0], ctx.buf)
+					ctx.Bbuf, err = cbytealg.AnyToBytes(ctx.Bbuf, ctx.buf)
 					if err != nil {
 						return
 					}
@@ -209,7 +209,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 					} else {
 						ctx.get(ch.caseL)
 						if ctx.Err == nil {
-							ctx.Bbuf, err = cbytealg.AnyToBytes(ctx.Bbuf[:0], ctx.buf)
+							ctx.Bbuf, err = cbytealg.AnyToBytes(ctx.Bbuf, ctx.buf)
 							if err != nil {
 								return
 							}
@@ -242,7 +242,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 						// Both sides isn't static.
 						ctx.get(ch.caseR)
 						if ctx.Err == nil {
-							ctx.Bbuf, err = cbytealg.AnyToBytes(ctx.Bbuf[:0], ctx.buf)
+							ctx.Bbuf, err = cbytealg.AnyToBytes(ctx.Bbuf, ctx.buf)
 							if err != nil {
 								return
 							}
