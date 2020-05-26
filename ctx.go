@@ -308,7 +308,7 @@ func (c *Ctx) replaceQB(path []byte) []byte {
 	sqLi := bytes.Index(path, sqL)
 	sqRi := bytes.Index(path, sqR)
 	if sqLi != -1 && sqRi != -1 && sqLi < sqRi && sqRi < len(path) {
-		c.Bbuf.ResetWrite(path[0:sqLi])
+		c.Bbuf.Reset().Write(path[0:sqLi])
 		c.Bbuf.Write(dot)
 		c.chQB = false
 		c.buf = c.get(path[sqLi+1 : sqRi])

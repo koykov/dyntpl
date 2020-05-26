@@ -12,15 +12,19 @@ func ByteBufToBytes(dst []byte, val interface{}) ([]byte, error) {
 	return dst, cbytealg.ErrUnknownType
 }
 
-func (b *ByteBuf) Reset() {
+func (b *ByteBuf) Reset() *ByteBuf {
 	*b = (*b)[:0]
+	return b
 }
 
 func (b *ByteBuf) Write(p []byte) {
 	*b = append(*b, p...)
 }
 
-func (b *ByteBuf) WriteByte(p byte) {
+// Use suffix "B" instead of "Byte" to avoid warning of incorrect naming of canonical methods:
+// > Method 'WriteByte(byte)' should have signature 'WriteByte(byte) error'
+// For more info see https://github.com/golang/tools/blob/master/go/analysis/passes/stdmethods/stdmethods.go#L63
+func (b *ByteBuf) WriteB(p byte) {
 	*b = append(*b, p)
 }
 
@@ -38,28 +42,4 @@ func (b *ByteBuf) WriteFloat(f float64) {
 
 func (b *ByteBuf) WriteBool(v bool) {
 	*b, _ = cbytealg.BoolToBytes(*b, v)
-}
-
-func (b *ByteBuf) ResetWrite(p []byte) {
-	*b = append((*b)[:0], p...)
-}
-
-func (b *ByteBuf) ResetWriteByte(p byte) {
-	*b = append((*b)[:0], p)
-}
-
-func (b *ByteBuf) ResetWriteStr(s string) {
-	*b = append((*b)[:0], s...)
-}
-
-func (b *ByteBuf) ResetWriteInt(i int64) {
-	*b, _ = cbytealg.IntToBytes((*b)[:0], i)
-}
-
-func (b *ByteBuf) ResetWriteFloat(f float64) {
-	*b, _ = cbytealg.FloatToBytes((*b)[:0], f)
-}
-
-func (b *ByteBuf) ResetWriteBool(v bool) {
-	*b, _ = cbytealg.BoolToBytes((*b)[:0], v)
 }

@@ -29,12 +29,12 @@ var (
 )
 
 func modJsonQuote(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{}) error {
-	ctx.Bbuf.ResetWriteByte(jqQd)
+	ctx.Bbuf.Reset().WriteB(jqQd)
 	err := modJsonEscape(ctx, buf, val, nil)
 	if err == nil {
 		ctx.Bbuf.Write(ctx.Bbuf1)
 	}
-	ctx.Bbuf.WriteByte(jqQd)
+	ctx.Bbuf.WriteB(jqQd)
 	*buf = &ctx.Bbuf
 	return nil
 }
