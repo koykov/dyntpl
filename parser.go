@@ -87,6 +87,8 @@ var (
 
 	reSwitch     = regexp.MustCompile(`^switch\s*(.*)`)
 	reSwitchCase = regexp.MustCompile(`case ([^<=>!]+)([<=>!]{2})*(.*)`)
+
+	_ = ParseFile
 )
 
 func Parse(tpl []byte, keepFmt bool) (tree *Tree, err error) {

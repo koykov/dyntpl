@@ -60,44 +60,34 @@ func modJsonEscape(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{})
 	for i := 0; i < l; i++ {
 		switch b[i] {
 		case jqQd:
-			ctx.Bbuf1.Write(b[o:i])
-			ctx.Bbuf1.Write(jqQdR)
+			ctx.Bbuf1.Write(b[o:i]).Write(jqQdR)
 			o = i + 1
 		case jqSl:
-			ctx.Bbuf1.Write(b[o:i])
-			ctx.Bbuf1.Write(jqSlR)
+			ctx.Bbuf1.Write(b[o:i]).Write(jqSlR)
 			o = i + 1
 		case jqNl:
-			ctx.Bbuf1.Write(b[o:i])
-			ctx.Bbuf1.Write(jqNlR)
+			ctx.Bbuf1.Write(b[o:i]).Write(jqNlR)
 			o = i + 1
 		case jqCr:
-			ctx.Bbuf1.Write(b[o:i])
-			ctx.Bbuf1.Write(jqCrR)
+			ctx.Bbuf1.Write(b[o:i]).Write(jqCrR)
 			o = i + 1
 		case jqT:
-			ctx.Bbuf1.Write(b[o:i])
-			ctx.Bbuf1.Write(jqTR)
+			ctx.Bbuf1.Write(b[o:i]).Write(jqTR)
 			o = i + 1
 		case jqFf:
-			ctx.Bbuf1.Write(b[o:i])
-			ctx.Bbuf1.Write(jqFfR)
+			ctx.Bbuf1.Write(b[o:i]).Write(jqFfR)
 			o = i + 1
 		case jqBs:
-			ctx.Bbuf1.Write(b[o:i])
-			ctx.Bbuf1.Write(jqBsR)
+			ctx.Bbuf1.Write(b[o:i]).Write(jqBsR)
 			o = i + 1
 		case jqLt:
-			ctx.Bbuf1.Write(b[o:i])
-			ctx.Bbuf1.Write(jqLtR)
+			ctx.Bbuf1.Write(b[o:i]).Write(jqLtR)
 			o = i + 1
 		case jqQs:
-			ctx.Bbuf1.Write(b[o:i])
-			ctx.Bbuf1.Write(jqQsR)
+			ctx.Bbuf1.Write(b[o:i]).Write(jqQsR)
 			o = i + 1
 		case jqZ:
-			ctx.Bbuf1.Write(b[o:i])
-			ctx.Bbuf1.Write(jqZR)
+			ctx.Bbuf1.Write(b[o:i]).Write(jqZR)
 			o = i + 1
 		}
 	}

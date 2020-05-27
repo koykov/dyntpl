@@ -18,6 +18,8 @@ type Tpl struct {
 var (
 	mux         sync.Mutex
 	tplRegistry = map[string]*Tpl{}
+
+	_ = RenderFb
 )
 
 func RegisterTpl(id string, tree *Tree) {
@@ -36,6 +38,12 @@ func Render(id string, ctx *Ctx) ([]byte, error) {
 	return buf.Bytes(), err
 }
 
+func RenderFb(id, fbId string, ctx *Ctx) ([]byte, error) {
+	buf := bytes.Buffer{}
+	err := RenderFbTo(&buf, id, fbId, ctx)
+	return buf.Bytes(), err
+}
+
 func RenderTo(w io.Writer, id string, ctx *Ctx) (err error) {
 	mux.Lock()
 	tpl, ok := tplRegistry[id]
@@ -44,6 +52,28 @@ func RenderTo(w io.Writer, id string, ctx *Ctx) (err error) {
 		err = ErrTplNotFound
 		return
 	}
+	return render(w, tpl, ctx)
+}
+
+func RenderFbTo(w io.Writer, id, fbId string, ctx *Ctx) (err error) {
+	var (
+		tpl *Tpl
+		ok  bool
+	)
+	mux.Lock()
+	tpl, ok = tplRegistry[id]
+	if !ok {
+		tpl, ok = tplRegistry[fbId]
+	}
+	mux.Unlock()
+	if !ok {
+		err = ErrTplNotFound
+		return
+	}
+	return render(w, tpl, ctx)
+}
+
+func render(w io.Writer, tpl *Tpl, ctx *Ctx) (err error) {
 	for _, node := range tpl.tree.nodes {
 		err = tpl.renderNode(w, node, ctx)
 		if err != nil {

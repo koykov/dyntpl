@@ -37,24 +37,19 @@ func modHtmlEscape(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{})
 	for i := 0; i < l; i++ {
 		switch b[i] {
 		case heLt:
-			ctx.Bbuf.Write(b[o:i])
-			ctx.Bbuf.Write(heLtR)
+			ctx.Bbuf.Write(b[o:i]).Write(heLtR)
 			o = i + 1
 		case heGt:
-			ctx.Bbuf.Write(b[o:i])
-			ctx.Bbuf.Write(heGtR)
+			ctx.Bbuf.Write(b[o:i]).Write(heGtR)
 			o = i + 1
 		case heQd:
-			ctx.Bbuf.Write(b[o:i])
-			ctx.Bbuf.Write(heQdR)
+			ctx.Bbuf.Write(b[o:i]).Write(heQdR)
 			o = i + 1
 		case heQs:
-			ctx.Bbuf.Write(b[o:i])
-			ctx.Bbuf.Write(heQsR)
+			ctx.Bbuf.Write(b[o:i]).Write(heQsR)
 			o = i + 1
 		case heAmp:
-			ctx.Bbuf.Write(b[o:i])
-			ctx.Bbuf.Write(heAmpR)
+			ctx.Bbuf.Write(b[o:i]).Write(heAmpR)
 			o = i + 1
 		}
 	}
