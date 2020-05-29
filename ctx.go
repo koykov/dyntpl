@@ -62,6 +62,7 @@ func (c *Ctx) Set(key string, val interface{}, ins inspector.Inspector) {
 		}
 	}
 	if c.ln < len(c.vars) {
+		c.vars[c.ln].key = key
 		c.vars[c.ln].val = val
 		c.vars[c.ln].ins = ins
 	} else {
