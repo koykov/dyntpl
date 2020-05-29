@@ -126,6 +126,9 @@ func (c *Ctx) Reset() {
 	c.Bbuf2.Reset()
 	c.bbuf = c.bbuf[:0]
 	c.args = c.args[:0]
+	if c.rl != nil {
+		c.rl.Reset()
+	}
 }
 
 func (c *Ctx) get(path []byte) interface{} {
@@ -194,15 +197,37 @@ func (c *Ctx) rloop(path []byte, node Node, tpl *Tpl, w io.Writer) {
 			break
 		}
 		if v.key == c.ssbuf[0] {
+			var rl *RangeLoop
 			if c.rl == nil {
 				c.rl = NewRangeLoop(node, tpl, c, w)
+				rl = c.rl
 			} else {
-				c.rl.cntr = 0
-				c.rl.node = node
-				c.rl.tpl = tpl
-				c.rl.w = w
+				crl := c.rl
+				for {
+					if crl.stat == rlFree {
+						rl = crl
+						break
+					}
+					if crl.stat != rlFree {
+						if crl.next != nil {
+							crl = crl.next
+							continue
+						} else {
+							crl.next = NewRangeLoop(node, tpl, c, w)
+							rl = crl.next
+							break
+						}
+					}
+				}
+				rl.cntr = 0
+				rl.node = node
+				rl.tpl = tpl
+				rl.ctx = c
+				rl.w = w
 			}
-			c.Err = v.ins.Loop(v.val, c.rl, &c.bbuf, c.ssbuf[1:]...)
+			rl.stat = rlInuse
+			c.Err = v.ins.Loop(v.val, rl, &c.bbuf, c.ssbuf[1:]...)
+			rl.stat = rlFree
 			return
 		}
 	}

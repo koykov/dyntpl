@@ -7,11 +7,18 @@ import (
 	"github.com/koykov/inspector"
 )
 
+const (
+	rlFree  = uint(0)
+	rlInuse = uint(1)
+)
+
 type RangeLoop struct {
 	cntr int
+	stat uint
 	node Node
 	tpl  *Tpl
 	ctx  *Ctx
+	next *RangeLoop
 	w    io.Writer
 }
 
@@ -53,4 +60,16 @@ func (rl *RangeLoop) Iterate() inspector.LoopCtl {
 		}
 	}
 	return inspector.LoopCtlNone
+}
+
+func (rl *RangeLoop) Reset() {
+	crl := rl
+	for crl != nil {
+		crl.stat = rlFree
+		crl.cntr = 0
+		crl.ctx = nil
+		crl.tpl = nil
+		crl.w = nil
+		crl = crl.next
+	}
 }
