@@ -1,6 +1,6 @@
 package dyntpl
 
-import "github.com/koykov/cbytealg"
+import "github.com/koykov/any2bytes"
 
 func init() {
 	RegisterModFn("default", "def", modDefault)
@@ -15,5 +15,5 @@ func init() {
 	RegisterCondFn("lenGt0", condLenGt0)
 	RegisterCondFn("lenGtq0", condLenGtq0)
 
-	cbytealg.RegisterAnyToBytesFn(ByteBufToBytes)
+	any2bytes.RegisterAnyToBytesFn(ByteBufToBytes)
 }

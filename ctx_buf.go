@@ -1,7 +1,7 @@
 package dyntpl
 
 import (
-	"github.com/koykov/cbytealg"
+	"github.com/koykov/any2bytes"
 	"github.com/koykov/fastconv"
 )
 
@@ -12,7 +12,7 @@ func ByteBufToBytes(dst []byte, val interface{}) ([]byte, error) {
 		dst = append(dst, *b...)
 		return dst, nil
 	}
-	return dst, cbytealg.ErrUnknownType
+	return dst, any2bytes.ErrUnknownType
 }
 
 func (b *ByteBuf) Reset() *ByteBuf {
@@ -47,16 +47,16 @@ func (b *ByteBuf) WriteStr(s string) *ByteBuf {
 }
 
 func (b *ByteBuf) WriteInt(i int64) *ByteBuf {
-	*b, _ = cbytealg.IntToBytes(*b, i)
+	*b, _ = any2bytes.IntToBytes(*b, i)
 	return b
 }
 
 func (b *ByteBuf) WriteFloat(f float64) *ByteBuf {
-	*b, _ = cbytealg.FloatToBytes(*b, f)
+	*b, _ = any2bytes.FloatToBytes(*b, f)
 	return b
 }
 
 func (b *ByteBuf) WriteBool(v bool) *ByteBuf {
-	*b, _ = cbytealg.BoolToBytes(*b, v)
+	*b, _ = any2bytes.BoolToBytes(*b, v)
 	return b
 }

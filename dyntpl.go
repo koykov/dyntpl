@@ -5,7 +5,7 @@ import (
 	"io"
 	"sync"
 
-	"github.com/koykov/cbytealg"
+	"github.com/koykov/any2bytes"
 	"github.com/koykov/fastconv"
 	"github.com/koykov/inspector"
 )
@@ -125,7 +125,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			err = ErrEmptyArg
 			return
 		}
-		ctx.Bbuf, err = cbytealg.AnyToBytes(ctx.Bbuf, raw)
+		ctx.Bbuf, err = any2bytes.AnyToBytes(ctx.Bbuf, raw)
 		if err == nil {
 			if len(node.prefix) > 0 {
 				_, _ = w.Write(node.prefix)
@@ -184,7 +184,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 				// Both sides isn't static.
 				ctx.get(node.condR)
 				if ctx.Err == nil {
-					ctx.Bbuf, err = cbytealg.AnyToBytes(ctx.Bbuf, ctx.buf)
+					ctx.Bbuf, err = any2bytes.AnyToBytes(ctx.Bbuf, ctx.buf)
 					if err != nil {
 						return
 					}
@@ -239,7 +239,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 					} else {
 						ctx.get(ch.caseL)
 						if ctx.Err == nil {
-							ctx.Bbuf, err = cbytealg.AnyToBytes(ctx.Bbuf, ctx.buf)
+							ctx.Bbuf, err = any2bytes.AnyToBytes(ctx.Bbuf, ctx.buf)
 							if err != nil {
 								return
 							}
@@ -272,7 +272,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 						// Both sides isn't static.
 						ctx.get(ch.caseR)
 						if ctx.Err == nil {
-							ctx.Bbuf, err = cbytealg.AnyToBytes(ctx.Bbuf, ctx.buf)
+							ctx.Bbuf, err = any2bytes.AnyToBytes(ctx.Bbuf, ctx.buf)
 							if err != nil {
 								return
 							}

@@ -7,7 +7,7 @@ import (
 	"os"
 	"regexp"
 
-	"github.com/koykov/cbytealg"
+	"github.com/koykov/bytealg"
 	"github.com/koykov/fastconv"
 )
 
@@ -127,7 +127,7 @@ func (p *Parser) cutFmt() {
 		return
 	}
 	p.tpl = reCutFmt.ReplaceAll(p.tpl, empty)
-	p.tpl = cbytealg.Trim(p.tpl, noFmt)
+	p.tpl = bytealg.Trim(p.tpl, noFmt)
 }
 
 func (p *Parser) parseTpl(nodes []Node, offset int, target *target) ([]Node, int, error) {
@@ -139,7 +139,7 @@ func (p *Parser) parseTpl(nodes []Node, offset int, target *target) ([]Node, int
 	o, i := offset, offset
 	inCtl := false
 	for !target.reached(p) || target.eqZero() {
-		i = cbytealg.IndexAt(p.tpl, ctlOpen, i)
+		i = bytealg.IndexAt(p.tpl, ctlOpen, i)
 		if i < 0 {
 			if inCtl {
 				return nodes, o, ErrUnexpectedEOF
@@ -149,7 +149,7 @@ func (p *Parser) parseTpl(nodes []Node, offset int, target *target) ([]Node, int
 			break
 		}
 		if inCtl {
-			e := cbytealg.IndexAt(p.tpl, ctlClose, i)
+			e := bytealg.IndexAt(p.tpl, ctlClose, i)
 			if e < 0 {
 				return nodes, o, ErrUnexpectedEOF
 			}
@@ -181,7 +181,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 	)
 
 	up = false
-	t := cbytealg.Trim(ctl, ctlTrim)
+	t := bytealg.Trim(ctl, ctlTrim)
 	// Check tpl structure
 	if reTplPS.Match(t) || reTplP.Match(t) || reTplS.Match(t) || reTpl.Match(t) {
 		root.typ = TypeTpl
@@ -199,9 +199,9 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 			if len(m[1]) != 0 {
 				m[1] = m[1]
 			}
-			root.raw, root.mod = p.extractMods(cbytealg.Trim(m[2], ctlTrimAll), m[1])
+			root.raw, root.mod = p.extractMods(bytealg.Trim(m[2], ctlTrimAll), m[1])
 		} else {
-			root.raw, root.mod = p.extractMods(cbytealg.Trim(t, ctlTrimAll), nil)
+			root.raw, root.mod = p.extractMods(bytealg.Trim(t, ctlTrimAll), nil)
 		}
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
@@ -300,13 +300,13 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 			root.typ = TypeLoopRange
 			if bytes.Contains(m[1], comma) {
 				kv := bytes.Split(m[1], comma)
-				root.loopKey = cbytealg.Trim(kv[0], space)
+				root.loopKey = bytealg.Trim(kv[0], space)
 				if bytes.Equal(root.loopKey, uscore) {
 					root.loopKey = nil
 				}
-				root.loopVal = cbytealg.Trim(kv[1], space)
+				root.loopVal = bytealg.Trim(kv[1], space)
 			} else {
-				root.loopKey = cbytealg.Trim(m[1], space)
+				root.loopKey = bytealg.Trim(m[1], space)
 			}
 			root.loopSrc = m[2]
 			if len(m) > 2 {
@@ -411,8 +411,8 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 
 func (p *Parser) parseCondExpr(expr []byte) (l, r []byte, sl, sr bool, op Op) {
 	if m := reCondExpr.FindSubmatch(expr); m != nil {
-		l = cbytealg.Trim(m[1], space)
-		r = cbytealg.Trim(m[3], space)
+		l = bytealg.Trim(m[1], space)
+		r = bytealg.Trim(m[3], space)
 		sl = isStatic(l)
 		sr = isStatic(r)
 		op = p.parseOp(m[2])
@@ -422,11 +422,11 @@ func (p *Parser) parseCondExpr(expr []byte) (l, r []byte, sl, sr bool, op Op) {
 
 func (p *Parser) parseCaseExpr(expr []byte) (l, r []byte, sl, sr bool, op Op) {
 	if m := reSwitchCase.FindSubmatch(expr); m != nil {
-		l = cbytealg.Trim(m[1], space)
+		l = bytealg.Trim(m[1], space)
 		sl = isStatic(l)
 		if len(m) > 1 {
 			op = p.parseOp(m[2])
-			r = cbytealg.Trim(m[3], space)
+			r = bytealg.Trim(m[3], space)
 			sr = isStatic(r)
 		}
 	}
@@ -515,9 +515,9 @@ func (p *Parser) extractArgs(l []byte) []*arg {
 	}
 	args := bytes.Split(l, comma)
 	for _, a := range args {
-		a = cbytealg.Trim(a, space)
+		a = bytealg.Trim(a, space)
 		r = append(r, &arg{
-			val:    cbytealg.Trim(a, quotes),
+			val:    bytealg.Trim(a, quotes),
 			static: isStatic(a),
 		})
 	}

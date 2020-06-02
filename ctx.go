@@ -5,7 +5,8 @@ import (
 	"io"
 	"strconv"
 
-	"github.com/koykov/cbytealg"
+	"github.com/koykov/any2bytes"
+	"github.com/koykov/bytealg"
 	"github.com/koykov/fastconv"
 	"github.com/koykov/inspector"
 )
@@ -138,7 +139,7 @@ func (c *Ctx) get(path []byte) interface{} {
 	}
 
 	c.ssbuf = c.ssbuf[:0]
-	c.ssbuf = cbytealg.AppendSplitStr(c.ssbuf, fastconv.B2S(path), ".", -1)
+	c.ssbuf = bytealg.AppendSplitStr(c.ssbuf, fastconv.B2S(path), ".", -1)
 	if len(c.ssbuf) == 0 {
 		return nil
 	}
@@ -166,7 +167,7 @@ func (c *Ctx) get(path []byte) interface{} {
 
 func (c *Ctx) cmp(path []byte, cond Op, right []byte) bool {
 	c.ssbuf = c.ssbuf[:0]
-	c.ssbuf = cbytealg.AppendSplitStr(c.ssbuf, fastconv.B2S(path), ".", -1)
+	c.ssbuf = bytealg.AppendSplitStr(c.ssbuf, fastconv.B2S(path), ".", -1)
 	if len(c.ssbuf) == 0 {
 		return false
 	}
@@ -189,7 +190,7 @@ func (c *Ctx) cmp(path []byte, cond Op, right []byte) bool {
 
 func (c *Ctx) rloop(path []byte, node Node, tpl *Tpl, w io.Writer) {
 	c.ssbuf = c.ssbuf[:0]
-	c.ssbuf = cbytealg.AppendSplitStr(c.ssbuf, fastconv.B2S(path), ".", -1)
+	c.ssbuf = bytealg.AppendSplitStr(c.ssbuf, fastconv.B2S(path), ".", -1)
 	if len(c.ssbuf) == 0 {
 		return
 	}
@@ -338,7 +339,7 @@ func (c *Ctx) replaceQB(path []byte) []byte {
 		c.chQB = false
 		c.buf = c.get(path[sqLi+1 : sqRi])
 		if c.buf != nil {
-			c.Bbuf1, c.Err = cbytealg.AnyToBytes(c.Bbuf1, c.buf)
+			c.Bbuf1, c.Err = any2bytes.AnyToBytes(c.Bbuf1, c.buf)
 			if c.Err != nil {
 				c.chQB = true
 				return nil
