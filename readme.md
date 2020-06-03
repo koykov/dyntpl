@@ -113,4 +113,39 @@ As you can see, dyntpl in ~3-4 times slowest than quicktemplates. That is a cost
 
 ## Syntax
 
+#### Print
+
+The most general syntax construction is printing a variable or structure field:
+```
+This is a simple statis variable: {%= var0 %}
+This is a field of struct: {%= obj.Parent.Name %}
+```
+Construction `{%= ... %}` prints data as is, independent of its type.
+
+There are special directives before `=` that modifies output before printing:
+* `h` - HTML-escape output.
+* `j` - JSON-escape output.
+* `q` - JSON-quote.
+
+Note, that none of these directives doesn't apply by default. It's your responsibility to controls what and where you print.
+
+In a plan is to add precision for printing float vars.
+
+Print construction supports prefix and suffix attributes, it may be handy when you print HTML or XML:
+```html
+<ul>
+{%= var prefix <li> suffix </li> %}
+</ul>
+```
+Prefix and suffix will print only if `var` isn't empty.
+
+Also print supports data modifiers. They calls typically for any template languages:
+```
+Name: {%= obj.Name|default("anonymous") %}
+```
+and may contains variadic list of arguments or doesn't contain them at all. See the full list if built-in modifiers in [init.go](init.go) (calls of `RegisterModFn()`).
+You may register your own modifiers, see section Modifier helpers.
+
+#### Conditions
+
 ...
