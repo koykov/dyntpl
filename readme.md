@@ -1,6 +1,17 @@
 # Dynamic templates
 
+Dynamic replacement for [quicktemplate](https://github.com/valyala/quicktemplate) template engine.
+
+## Retrospective
+
+We're used for a long time quicktemplate for building JSON to interchange data between microservices on high-load project and we were happy.
+But now we need to able change existing templates or add new templates on the fly. Unfortunately quicktemplates doesn't support this and this package was developed as replacement.
+
+It reproduces many of qtpl features and syntax.
+
 ## Benchmarks
+
+Here is a result of internal benchmarks:
 ```
 BenchmarkCtxGet-8                 20000000       110 ns/op       0 B/op       0 allocs/op
 BenchmarkCtxPoolGet-8             10000000       152 ns/op       0 B/op       0 allocs/op
@@ -24,3 +35,28 @@ BenchmarkTplModHtmlEscape-8        2000000       847 ns/op       0 B/op       0 
 BenchmarkTplModIfThen-8           10000000       209 ns/op       0 B/op       0 allocs/op
 BenchmarkTplModIfThenElse-8        3000000       372 ns/op       0 B/op       0 allocs/op
 ```
+Highly recommend to check `*_test.go` files in the preject, since them contains a lot of typical language constructions that supports this engine.
+
+`cmp_test` dir contains comparison tests with corresponding [quicktemplate's test](https://github.com/valyala/quicktemplate/tree/master/tests):
+* for [templates timings](https://github.com/valyala/quicktemplate/blob/master/tests/templates_timing_test.go)
+```
+BenchmarkDyntpl1-8                 	 5000000	       328 ns/op	       0 B/op	       0 allocs/op
+BenchmarkDyntpl10-8                	 1000000	      1427 ns/op	       0 B/op	       0 allocs/op
+BenchmarkDyntpl100-8               	  100000	     14454 ns/op	       0 B/op	       0 allocs/op
+``` 
+* for [marshal timings](https://github.com/valyala/quicktemplate/blob/master/tests/marshal_timing_test.go):
+```
+BenchmarkMarshalJSONDyntpl1-8      	 3000000	       433 ns/op	       0 B/op	       0 allocs/op
+BenchmarkMarshalJSONDyntpl10-8     	 1000000	      2226 ns/op	       0 B/op	       0 allocs/op
+BenchmarkMarshalJSONDyntpl100-8    	  100000	     20331 ns/op	       0 B/op	       0 allocs/op
+BenchmarkMarshalJSONDyntpl1000-8   	   10000	    203189 ns/op	       8 B/op	       0 allocs/op
+BenchmarkMarshalXMLDyntpl1-8       	 3000000	       444 ns/op	       0 B/op	       0 allocs/op
+BenchmarkMarshalXMLDyntpl10-8      	 1000000	      2182 ns/op	       0 B/op	       0 allocs/op
+BenchmarkMarshalXMLDyntpl100-8     	  100000	     19500 ns/op	       0 B/op	       0 allocs/op
+BenchmarkMarshalXMLDyntpl1000-8    	   10000	    196965 ns/op	       9 B/op	       0 allocs/op
+```
+As you can see, dyntpl in ~3-4 times slowest than quicktemplates. Thats is a cost for dynamics. There is no way to write template engine that will fastests than native Go code.
+
+## Syntax
+
+...
