@@ -7,7 +7,7 @@ import (
 	"github.com/koykov/cbytebuf"
 
 	"github.com/koykov/dyntpl"
-	"github.com/koykov/dyntpl/cmpobj"
+	"github.com/koykov/dyntpl/testobj"
 	"github.com/koykov/dyntpl/testobj_ins"
 )
 
@@ -58,12 +58,12 @@ func benchmarkDyntpl(b *testing.B, rowsCount int) {
 	})
 }
 
-func getBenchRows(n int) *cmpobj.BenchRows {
-	bench := &cmpobj.BenchRows{
-		Rows: make([]cmpobj.BenchRow, n),
+func getBenchRows(n int) *testobj.BenchRows {
+	bench := &testobj.BenchRows{
+		Rows: make([]testobj.BenchRow, n),
 	}
 	for i := 0; i < n; i++ {
-		bench.Rows[i] = cmpobj.BenchRow{
+		bench.Rows[i] = testobj.BenchRow{
 			ID:      i,
 			Message: fmt.Sprintf("message %d", i),
 			Print:   (i & 1) == 0,

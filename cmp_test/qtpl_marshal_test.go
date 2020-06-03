@@ -9,7 +9,7 @@ import (
 	"github.com/koykov/cbytebuf"
 
 	"github.com/koykov/dyntpl"
-	"github.com/koykov/dyntpl/cmpobj"
+	"github.com/koykov/dyntpl/testobj"
 	"github.com/koykov/dyntpl/testobj_ins"
 )
 
@@ -38,15 +38,15 @@ var (
 </MarshalData>`)
 )
 
-func newTemplatesData(n int) *cmpobj.MarshalData {
-	var rows []cmpobj.MarshalRow
+func newTemplatesData(n int) *testobj.MarshalData {
+	var rows []testobj.MarshalRow
 	for i := 0; i < n; i++ {
-		rows = append(rows, cmpobj.MarshalRow{
+		rows = append(rows, testobj.MarshalRow{
 			Msg: fmt.Sprintf("тест %d", i),
 			N:   i,
 		})
 	}
-	return &cmpobj.MarshalData{
+	return &testobj.MarshalData{
 		Foo:  1,
 		Bar:  "foobar",
 		Rows: rows,

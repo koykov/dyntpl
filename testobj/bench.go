@@ -1,4 +1,4 @@
-package cmpobj
+package testobj
 
 type BenchRow struct {
 	ID      int

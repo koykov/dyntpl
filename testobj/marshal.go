@@ -1,4 +1,4 @@
-package cmpobj
+package testobj
 
 type MarshalRow struct {
 	Msg string
