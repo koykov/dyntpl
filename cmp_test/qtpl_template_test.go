@@ -53,6 +53,7 @@ func benchmarkDyntpl(b *testing.B, rowsCount int) {
 		for pb.Next() {
 			_ = dyntpl.RenderTo(buf, "tplTemplate", ctx)
 		}
+		dyntpl.ReleaseCtx(ctx)
 		cbytebuf.Release(buf)
 	})
 }

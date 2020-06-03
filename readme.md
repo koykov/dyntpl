@@ -17,6 +17,52 @@ To solve that problem was developed [inspector](https://github.com/koykov/inspec
 
 You may check example of inspectors in subdirectory [testobj_ins](./testobj_ins) that represents testing structures in [testobj](./testobj).
 
+## Usage
+
+The typical usage of dyntpl looks like this:
+```go
+package main
+
+import (
+    "bytes"
+
+    "github.com/koykov/dyntpl"
+    "path/to/inspector_lib_ins"
+)
+
+var (
+    // Test data.
+    data = &Data{
+        // ...
+    }
+
+    // Template code.
+    tplData = []byte(`...`)
+)
+
+func init() {
+    // Parse the template and register it.
+    tree, _ := dyntpl.Parse(tplData, false)
+    dyntpl.RegisterTpl("tplData", tree)
+}
+
+func main() {
+    // Prepare output buffer
+    buf := &bytes.Buffer{}
+    // Prepare dyntpl context.
+    ctx := dyntpl.AcquireCtx()
+    ctx.Set("data", data, &inspector_lib_ins.DataInspector{})
+    // Execute the template and write result to buf.
+    _ = dyntpl.RenderTo(buf, "tplData", ctx)
+    // Use result as buf.Bytes() or buf.String() ...
+    // Release context.
+    dyntpl.ReleaseCtx(ctx)
+}
+```
+Content of `init()` function may be moved to scheduler and periodically take fresh template code from source data, e.g. DB table and update it on the fly.
+
+Content of `main()` function is how to use dyntpl in general way. Of course, byte buffer should take from the pool.
+
 ## Benchmarks
 
 Here is a result of internal benchmarks:
