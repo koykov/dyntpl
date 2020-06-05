@@ -55,6 +55,10 @@ var (
 	idQ   = []byte("jsonQuote")  // json quote
 	outmH = []byte("h")          // html escape
 	idH   = []byte("htmlEscape") // html escape
+	outmf = []byte("f")          // html escape
+	idf   = []byte("floorPrec")  // html escape
+	outmF = []byte("F")          // html escape
+	idF   = []byte("ceilPrec")   // html escape
 
 	opEq  = []byte("==")
 	opNq  = []byte("!=")
@@ -68,11 +72,12 @@ var (
 	reCutComments = regexp.MustCompile(`\t*{#[^#]*#}\n*`)
 	reCutFmt      = regexp.MustCompile(`\n+\t*\s*`)
 
-	reTplPS = regexp.MustCompile(`^([jhq]*)=\s*(.*) (?:prefix|pfx) (.*) (?:suffix|sfx) (.*)`)
-	reTplP  = regexp.MustCompile(`^([jhq]*)=\s*(.*) (?:prefix|pfx) (.*)`)
-	reTplS  = regexp.MustCompile(`^([jhq]*)=\s*(.*) (?:suffix|sfx) (.*)`)
-	reTpl   = regexp.MustCompile(`^([jhq]*)= (.*)`)
-	reMod   = regexp.MustCompile(`([^(]+)\(*([^)]*)\)*`)
+	reTplPS   = regexp.MustCompile(`^([jhq]*|[fF]\.\d+)=\s*(.*) (?:prefix|pfx) (.*) (?:suffix|sfx) (.*)`)
+	reTplP    = regexp.MustCompile(`^([jhq]*|[fF]\.\d+)=\s*(.*) (?:prefix|pfx) (.*)`)
+	reTplS    = regexp.MustCompile(`^([jhq]*|[fF]\.\d+)=\s*(.*) (?:suffix|sfx) (.*)`)
+	reTpl     = regexp.MustCompile(`^([jhq]*|[fF]\.\d+)= (.*)`)
+	reModPfxF = regexp.MustCompile(`([fF]+)\.*(\d*)`)
+	reMod     = regexp.MustCompile(`([^(]+)\(*([^)]*)\)*`)
 
 	reCtx = regexp.MustCompile(`ctx (\w+)\s*=\s*([\w.]+)\s*[as]*\s*(\w*)`)
 
@@ -500,6 +505,24 @@ func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
 				fn:  fn,
 				arg: make([]*arg, 0),
 			})
+		}
+		if m := reModPfxF.FindSubmatch(outm); m != nil {
+			switch m[1][0] {
+			case 'f':
+				fn := GetModFn("floorPrec")
+				mods = append(mods, mod{
+					id:  idf,
+					fn:  fn,
+					arg: []*arg{{m[2], true}},
+				})
+			case 'F':
+				fn := GetModFn("ceilPrec")
+				mods = append(mods, mod{
+					id:  idF,
+					fn:  fn,
+					arg: []*arg{{m[2], true}},
+				})
+			}
 		}
 
 		return chunks[0], mods

@@ -11,6 +11,13 @@ func init() {
 	RegisterModFn("jsonQuote", "jq", modJsonQuote)
 	RegisterModFn("htmlEscape", "he", modHtmlEscape)
 
+	RegisterModFn("round", "round", modRound)
+	RegisterModFn("roundPrec", "roundp", modRoundPrec)
+	RegisterModFn("ceil", "ceil", modCeil)
+	RegisterModFn("ceilPrec", "ceilp", modCeilPrec)
+	RegisterModFn("floor", "floor", modFloor)
+	RegisterModFn("floorPrec", "floorp", modFloorPrec)
+
 	RegisterCondFn("lenEq0", condLenEq0)
 	RegisterCondFn("lenGt0", condLenGt0)
 	RegisterCondFn("lenGtq0", condLenGtq0)

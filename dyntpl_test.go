@@ -184,6 +184,7 @@ func pretest() {
 		"tplModHtmlEscapeShort": tplModHtmlEscapeShort,
 		"tplModIfThen":          tplModIfThen,
 		"tplModIfThenElse":      tplModIfThenElse,
+		"tplModRound":           tplModRound,
 	}
 	for name, body := range tpl {
 		tree, _ := Parse(body, false)
@@ -213,7 +214,7 @@ func benchBase(b *testing.B, tplName string, expectResult []byte, errMsg string)
 
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		ctx := CP.Get()
+		ctx := AcquireCtx()
 		ctx.Set("user", user, &ins)
 		buf.Reset()
 		err := RenderTo(&buf, tplName, ctx)
@@ -226,7 +227,7 @@ func benchBase(b *testing.B, tplName string, expectResult []byte, errMsg string)
 		if !bytes.Equal(buf.Bytes(), expectResult) {
 			b.Error(errMsg)
 		}
-		CP.Put(ctx)
+		ReleaseCtx(ctx)
 	}
 }
 
@@ -343,7 +344,7 @@ func BenchmarkTplLoopCount(b *testing.B) {
 
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		ctx := CP.Get()
+		ctx := AcquireCtx()
 		buf.Reset()
 		ctx.Set("user", user, &ins)
 		ctx.SetStatic("begin", 0)
@@ -355,7 +356,7 @@ func BenchmarkTplLoopCount(b *testing.B) {
 		if !bytes.Equal(buf.Bytes(), expectLoopCount) {
 			b.Error("loop count tpl mismatch")
 		}
-		CP.Put(ctx)
+		ReleaseCtx(ctx)
 	}
 }
 

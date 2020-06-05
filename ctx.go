@@ -21,6 +21,7 @@ type Ctx struct {
 	bbuf  []byte
 	cbuf  bool
 	ibuf  int64
+	fbuf  float64
 	chQB  bool
 	buf   interface{}
 	args  []interface{}
@@ -322,7 +323,7 @@ func (c *Ctx) cloopRange(static bool, b []byte) (r int64) {
 		if c.Err != nil {
 			return
 		}
-		r, ok = lim2int(raw)
+		r, ok = if2int(raw)
 		if !ok {
 			c.Err = ErrWrongLoopLim
 			return

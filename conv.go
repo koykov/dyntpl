@@ -122,7 +122,7 @@ func ConvBool(val interface{}) (b bool, ok bool) {
 	return
 }
 
-func lim2int(raw interface{}) (lim int64, ok bool) {
+func if2int(raw interface{}) (lim int64, ok bool) {
 	ok = true
 	switch raw.(type) {
 	case int:

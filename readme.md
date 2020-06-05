@@ -126,10 +126,10 @@ There are special directives before `=` that modifies output before printing:
 * `h` - HTML-escape output.
 * `j` - JSON-escape output.
 * `q` - JSON-quote.
+* `f.<num>` - float with precision.
+* `F.<num>` - ceil rounded float with precision.
 
 Note, that none of these directives doesn't apply by default. It's your responsibility to controls what and where you print.
-
-In a plan is to add precision for printing float vars.
 
 Print construction supports prefix and suffix attributes, it may be handy when you print HTML or XML:
 ```html

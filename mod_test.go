@@ -23,6 +23,9 @@ var (
 	expectModIfThen     = []byte(`You're allow to buy!`)
 	tplModIfThenElse    = []byte(`Welcome, {%= logged|ifThenElse(userName, "anonymous") %}!`)
 	expectModIfThenElse = []byte(`Welcome, foobar!`)
+
+	tplModRound    = []byte(`Price 1: {%= f0|round %}; Price 2: {%= f1|roundPrec(3) %}; Price 3: {%= f2|ceil %}; Price 4: {%F.3= f3 %}; Price 5: {%= f4|floor %}; Price 6: {%f.3= f5 %}`)
+	expectModRound = []byte(`Price 1: 7; Price 2: 3.141; Price 3: 12; Price 4: 56.688; Price 5: 67; Price 6: 20.214`)
 )
 
 func TestTplModDef(t *testing.T) {
@@ -113,12 +116,31 @@ func TestTplModIfThenElse(t *testing.T) {
 	}
 }
 
+func TestTplModRoundPrec(t *testing.T) {
+	pretest()
+
+	ctx := NewCtx()
+	ctx.SetStatic("f0", 7.243242)
+	ctx.SetStatic("f1", 3.1415)
+	ctx.SetStatic("f2", 11.39)
+	ctx.SetStatic("f3", 56.68734)
+	ctx.SetStatic("f4", 67.999)
+	ctx.SetStatic("f5", 20.214999)
+	result, err := Render("tplModRound", ctx)
+	if err != nil {
+		t.Error(err)
+	}
+	if !bytes.Equal(result, expectModRound) {
+		t.Error("round tpl mismatch")
+	}
+}
+
 func BenchmarkTplModJsonQuote(b *testing.B) {
 	pretest()
 
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		ctx := CP.Get()
+		ctx := AcquireCtx()
 		buf.Reset()
 		ctx.SetStatic("userName", `Foo"bar`)
 		err := RenderTo(&buf, "tplModJsonQuoteShort", ctx)
@@ -128,7 +150,7 @@ func BenchmarkTplModJsonQuote(b *testing.B) {
 		if !bytes.Equal(buf.Bytes(), expectModJson) {
 			b.Error("json quote tpl mismatch")
 		}
-		CP.Put(ctx)
+		ReleaseCtx(ctx)
 	}
 }
 
@@ -137,7 +159,7 @@ func BenchmarkTplModHtmlEscape(b *testing.B) {
 
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		ctx := CP.Get()
+		ctx := AcquireCtx()
 		buf.Reset()
 		ctx.SetStatic("title", `<h1>Go is an open source programming language that makes it easy to build <strong>simple<strong>, <strong>reliable</strong>, and <strong>efficient</strong> software.</h1>`)
 		ctx.SetStatic("text", `Visit >`)
@@ -148,7 +170,7 @@ func BenchmarkTplModHtmlEscape(b *testing.B) {
 		if !bytes.Equal(buf.Bytes(), expectModHtml) {
 			b.Error("html escape tpl mismatch")
 		}
-		CP.Put(ctx)
+		ReleaseCtx(ctx)
 	}
 }
 
@@ -157,7 +179,7 @@ func BenchmarkTplModIfThen(b *testing.B) {
 
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		ctx := CP.Get()
+		ctx := AcquireCtx()
 		buf.Reset()
 		ctx.SetStatic("allow", true)
 		err := RenderTo(&buf, "tplModIfThen", ctx)
@@ -167,7 +189,7 @@ func BenchmarkTplModIfThen(b *testing.B) {
 		if !bytes.Equal(buf.Bytes(), expectModIfThen) {
 			b.Error("ifThen tpl mismatch")
 		}
-		CP.Put(ctx)
+		ReleaseCtx(ctx)
 	}
 }
 
@@ -176,7 +198,7 @@ func BenchmarkTplModIfThenElse(b *testing.B) {
 
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		ctx := CP.Get()
+		ctx := AcquireCtx()
 		buf.Reset()
 		ctx.SetStatic("logged", true)
 		ctx.SetStatic("userName", "foobar")
@@ -187,6 +209,30 @@ func BenchmarkTplModIfThenElse(b *testing.B) {
 		if !bytes.Equal(buf.Bytes(), expectModIfThenElse) {
 			b.Error("ifThenElse tpl mismatch")
 		}
-		CP.Put(ctx)
+		ReleaseCtx(ctx)
+	}
+}
+
+func BenchmarkTplModRound(b *testing.B) {
+	pretest()
+
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		ctx := AcquireCtx()
+		buf.Reset()
+		ctx.SetStatic("f0", 7.243242)
+		ctx.SetStatic("f1", 3.1415)
+		ctx.SetStatic("f2", 11.39)
+		ctx.SetStatic("f3", 56.68734)
+		ctx.SetStatic("f4", 67.999)
+		ctx.SetStatic("f5", 20.214999)
+		err := RenderTo(&buf, "tplModRound", ctx)
+		if err != nil {
+			b.Error(err)
+		}
+		if !bytes.Equal(buf.Bytes(), expectModRound) {
+			b.Error("round tpl mismatch")
+		}
+		ReleaseCtx(ctx)
 	}
 }
