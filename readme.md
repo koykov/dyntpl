@@ -126,8 +126,8 @@ There are special directives before `=` that modifies output before printing:
 * `h` - HTML-escape output.
 * `j` - JSON-escape output.
 * `q` - JSON-quote.
-* `f.<num>` - float with precision.
-* `F.<num>` - ceil rounded float with precision.
+* `f.<num>` - float with precision, example: `{%f.3= 3.1415 %}` will output `3.141`.
+* `F.<num>` - ceil rounded float with precision, example: `{%F.3= 3.1415 %}` will output `3.142`.
 
 Note, that none of these directives doesn't apply by default. It's your responsibility to controls what and where you print.
 
