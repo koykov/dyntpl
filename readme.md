@@ -144,9 +144,26 @@ Also print supports data modifiers. They calls typically for any template langua
 ```
 Name: {%= obj.Name|default("anonymous") %}
 ```
-and may contains variadic list of arguments or doesn't contain them at all. See the full list if built-in modifiers in [init.go](init.go) (calls of `RegisterModFn()`).
+and may contains variadic list of arguments or doesn't contain them at all. See the full list of built-in modifiers in [init.go](init.go) (calls of `RegisterModFn()`).
 You may register your own modifiers, see section Modifier helpers.
 
 #### Conditions
 
-...
+Conditions in dyntpl is pretty simple and supports only two types of record:
+* `{% if leftVar [=|!=|>|>=|<|<=] rightVar %}...{% endif %}`
+* `{% if conditionHelper(var0, obj.Name, "foo") %}...{% endif %}`
+
+First type is for the simplest case, like:
+```html
+{% if user.Id == 0 %}
+You shoult <a href="#">log in</a>.
+{% endif %}
+```
+Left side or right side or both may be a variable. But you can't specify a condition with static values on both sides, since it's senseless.
+
+Second type of condition is for more complex conditions when any side of condition should contain Go code, like:
+```
+Welcome, {% if len(user.Name) > 0 %}{%= user.Name %}{% else %}anonymous{%endif%}!
+```
+Dyntpl can't handle that kind of records, but it supports special functions that may make a decision is given args suitable or not and return true/false.
+See the full list of built-in condition helpers in [init.go](init.go) (calls of `RegisterCondFn`). Of course you can register your own handlers to implement your logic.
