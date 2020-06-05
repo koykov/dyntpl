@@ -55,10 +55,12 @@ var (
 	idQ   = []byte("jsonQuote")  // json quote
 	outmH = []byte("h")          // html escape
 	idH   = []byte("htmlEscape") // html escape
-	outmf = []byte("f")          // html escape
-	idf   = []byte("floorPrec")  // html escape
-	outmF = []byte("F")          // html escape
-	idF   = []byte("ceilPrec")   // html escape
+	outmU = []byte("u")          // url encode
+	idU   = []byte("urlEncode")  // url encode
+	outmf = 'f'                  // float precision floor
+	idf   = []byte("floorPrec")  // float precision floor
+	outmF = 'F'                  // float precision ceil
+	idF   = []byte("ceilPrec")   // float precision ceil
 
 	opEq  = []byte("==")
 	opNq  = []byte("!=")
@@ -72,10 +74,10 @@ var (
 	reCutComments = regexp.MustCompile(`\t*{#[^#]*#}\n*`)
 	reCutFmt      = regexp.MustCompile(`\n+\t*\s*`)
 
-	reTplPS   = regexp.MustCompile(`^([jhq]*|[fF]\.\d+)=\s*(.*) (?:prefix|pfx) (.*) (?:suffix|sfx) (.*)`)
-	reTplP    = regexp.MustCompile(`^([jhq]*|[fF]\.\d+)=\s*(.*) (?:prefix|pfx) (.*)`)
-	reTplS    = regexp.MustCompile(`^([jhq]*|[fF]\.\d+)=\s*(.*) (?:suffix|sfx) (.*)`)
-	reTpl     = regexp.MustCompile(`^([jhq]*|[fF]\.\d+)= (.*)`)
+	reTplPS   = regexp.MustCompile(`^([jhqu]*|[fF]\.\d+)=\s*(.*) (?:prefix|pfx) (.*) (?:suffix|sfx) (.*)`)
+	reTplP    = regexp.MustCompile(`^([jhqu]*|[fF]\.\d+)=\s*(.*) (?:prefix|pfx) (.*)`)
+	reTplS    = regexp.MustCompile(`^([jhqu]*|[fF]\.\d+)=\s*(.*) (?:suffix|sfx) (.*)`)
+	reTpl     = regexp.MustCompile(`^([jhqu]*|[fF]\.\d+)= (.*)`)
 	reModPfxF = regexp.MustCompile(`([fF]+)\.*(\d*)`)
 	reMod     = regexp.MustCompile(`([^(]+)\(*([^)]*)\)*`)
 
@@ -506,16 +508,24 @@ func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
 				arg: make([]*arg, 0),
 			})
 		}
+		if bytes.Equal(outm, outmU) {
+			fn := GetModFn("urlEncode")
+			mods = append(mods, mod{
+				id:  idU,
+				fn:  fn,
+				arg: make([]*arg, 0),
+			})
+		}
 		if m := reModPfxF.FindSubmatch(outm); m != nil {
 			switch m[1][0] {
-			case 'f':
+			case byte(outmf):
 				fn := GetModFn("floorPrec")
 				mods = append(mods, mod{
 					id:  idf,
 					fn:  fn,
 					arg: []*arg{{m[2], true}},
 				})
-			case 'F':
+			case byte(outmF):
 				fn := GetModFn("ceilPrec")
 				mods = append(mods, mod{
 					id:  idF,

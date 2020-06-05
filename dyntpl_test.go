@@ -182,6 +182,7 @@ func pretest() {
 		"tplModJsonQuoteShort":  tplModJsonQuoteShort,
 		"tplModHtmlEscape":      tplModHtmlEscape,
 		"tplModHtmlEscapeShort": tplModHtmlEscapeShort,
+		"tplModUrlEncode":       tplModUrlEncode,
 		"tplModIfThen":          tplModIfThen,
 		"tplModIfThenElse":      tplModIfThenElse,
 		"tplModRound":           tplModRound,

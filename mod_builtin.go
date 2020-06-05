@@ -1,6 +1,10 @@
 package dyntpl
 
-import "math"
+import (
+	"math"
+
+	"github.com/koykov/fastconv"
+)
 
 const (
 	round = iota
@@ -9,6 +13,8 @@ const (
 	ceilPrec
 	floor
 	floorPrec
+
+	hexUp = "0123456789ABCDEF"
 )
 
 func modDefault(_ *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
@@ -161,4 +167,37 @@ func roundHelper(f float64, mode int, args []interface{}) float64 {
 		return math.Floor(x) / p
 	}
 	return f
+}
+
+// see https://golang.org/src/net/url/url.go#L100
+func modUrlEncode(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{}) (err error) {
+	var (
+		b []byte
+		l int
+	)
+	if p, ok := ConvBytes(val); ok {
+		b = p
+	} else if s, ok := ConvStr(val); ok {
+		b = fastconv.S2B(s)
+	} else {
+		return ErrModNoStr
+	}
+	l = len(b)
+	if l == 0 {
+		return ErrModEmptyStr
+	}
+	ctx.Bbuf.Reset()
+	_ = b[l-1]
+	for i := 0; i < l; i++ {
+		switch {
+		case b[i] >= 'a' && b[i] <= 'z' || b[i] >= 'A' && b[i] <= 'Z' || b[i] >= '0' && b[i] <= '9' || b[i] == '-' || b[i] == '.' || b[i] == '_':
+			ctx.Bbuf.WriteB(b[i])
+		case b[i] == ' ':
+			ctx.Bbuf.WriteB('+')
+		default:
+			ctx.Bbuf.WriteB('%').WriteB(hexUp[b[i]>>4]).WriteB(hexUp[b[i]&15])
+		}
+	}
+	*buf = &ctx.Bbuf
+	return
 }

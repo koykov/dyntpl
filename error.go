@@ -16,8 +16,8 @@ var (
 	ErrEmptyArg    = errors.New("empty input param")
 	ErrModNoArgs   = errors.New("empty arguments list")
 	ErrModPoorArgs = errors.New("arguments list is too small")
-	ErrModBadArgs  = errors.New("arguments list is wrong")
 	ErrModNoStr    = errors.New("argument is not string or bytes")
+	ErrModEmptyStr = errors.New("argument is empty string")
 
 	ErrLoopParse     = errors.New("couldn't parse loop control structure")
 	ErrWrongLoopLim  = errors.New("wrong count loop limit argument")

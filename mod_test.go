@@ -15,6 +15,9 @@ var (
 	tplModJsonQuoteShort  = []byte(`{"id":"foo","name":{%q= userName %}}`)
 	expectModJson         = []byte(`{"id":"foo","name":"Foo\"bar"}`)
 
+	tplModUrlEncode    = []byte(`<a href="https://redir.com/{%u= url %}">go to >>></a>`)
+	expectModUrlEncode = []byte(`<a href="https://redir.com/https%3A%2F%2Fgolang.org%2Fsrc%2Fnet%2Furl%2Furl.go%23L100">go to >>></a>`)
+
 	tplModHtmlEscape      = []byte(`<a href="https://golang.org/" title="{%= title|htmlEscape %}">{%= text|he %}</a>`)
 	tplModHtmlEscapeShort = []byte(`<a href="https://golang.org/" title="{%h= title %}">{%h= text %}</a>`)
 	expectModHtml         = []byte(`<a href="https://golang.org/" title="&lt;h1&gt;Go is an open source programming language that makes it easy to build &lt;strong&gt;simple&lt;strong&gt;, &lt;strong&gt;reliable&lt;/strong&gt;, and &lt;strong&gt;efficient&lt;/strong&gt; software.&lt;/h1&gt;">Visit &gt;</a>`)
@@ -84,6 +87,20 @@ func TestTplModHtmlEscape(t *testing.T) {
 	}
 	if !bytes.Equal(result, expectModHtml) {
 		t.Error("html escape tpl mismatch")
+	}
+}
+
+func TestTplModUrlEncode(t *testing.T) {
+	pretest()
+
+	ctx := NewCtx()
+	ctx.SetStatic("url", `https://golang.org/src/net/url/url.go#L100`)
+	result, err := Render("tplModUrlEncode", ctx)
+	if err != nil {
+		t.Error(err)
+	}
+	if !bytes.Equal(result, expectModUrlEncode) {
+		t.Error("url encode tpl mismatch")
 	}
 }
 
@@ -169,6 +186,25 @@ func BenchmarkTplModHtmlEscape(b *testing.B) {
 		}
 		if !bytes.Equal(buf.Bytes(), expectModHtml) {
 			b.Error("html escape tpl mismatch")
+		}
+		ReleaseCtx(ctx)
+	}
+}
+
+func BenchmarkTplModUrlEncode(b *testing.B) {
+	pretest()
+
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		ctx := AcquireCtx()
+		buf.Reset()
+		ctx.SetStatic("url", `https://golang.org/src/net/url/url.go#L100`)
+		err := RenderTo(&buf, "tplModUrlEncode", ctx)
+		if err != nil {
+			b.Error(err)
+		}
+		if !bytes.Equal(buf.Bytes(), expectModUrlEncode) {
+			b.Error("url encode tpl mismatch")
 		}
 		ReleaseCtx(ctx)
 	}

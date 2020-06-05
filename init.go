@@ -10,6 +10,7 @@ func init() {
 	RegisterModFn("jsonEscape", "je", modJsonEscape)
 	RegisterModFn("jsonQuote", "jq", modJsonQuote)
 	RegisterModFn("htmlEscape", "he", modHtmlEscape)
+	RegisterModFn("urlEncode", "ue", modUrlEncode)
 
 	RegisterModFn("round", "round", modRound)
 	RegisterModFn("roundPrec", "roundp", modRoundPrec)
