@@ -167,3 +167,36 @@ Welcome, {% if len(user.Name) > 0 %}{%= user.Name %}{% else %}anonymous{%endif%}
 ```
 Dyntpl can't handle that kind of records, but it supports special functions that may make a decision is given args suitable or not and return true/false.
 See the full list of built-in condition helpers in [init.go](init.go) (calls of `RegisterCondFn`). Of course you can register your own handlers to implement your logic.
+
+For multiple conditions you can use `switch` statement, example 1:
+```xml
+<item type="{% switch item.Type %}
+{% case 0 %}
+    deny
+{% case 1 %}
+    allow
+{% case 2 %}
+    allow-by-permission
+{% default %}
+    unknown
+{% endswitch %}">foo</item>
+```
+, example 2:
+```xml
+<item type="{% switch %}
+{% case item.Type == 0 %}
+    deny
+{% case item.Type == 1 %}
+    allow
+{% case item.Type == 2 %}
+    allow-by-permission
+{% default %}
+    unknown
+{% endswitch %}">foo</item>
+```
+
+Switch can handle only primitive cases, condition helpers doesn't support.
+
+#### Loops
+
+...
