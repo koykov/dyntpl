@@ -145,7 +145,7 @@ Also print supports data modifiers. They calls typically for any template langua
 Name: {%= obj.Name|default("anonymous") %}
 ```
 and may contains variadic list of arguments or doesn't contain them at all. See the full list of built-in modifiers in [init.go](init.go) (calls of `RegisterModFn()`).
-You may register your own modifiers, see section Modifier helpers.
+You may register your own modifiers, see section [Modifier helpers](#modifier-helpers).
 
 #### Conditions
 
@@ -227,3 +227,29 @@ The output that will produced:
 ```
 As you see, commas between 2nd and last elements was added by dyntpl without any additional handling like `...{% if i>0 %},{% endif %}{% endfor %}`.
 Separator has shorthand variant `sep`.
+
+## Modifier helpers
+
+Modifiers is a special functions that may perform modifications over the data during print. These function have signature:
+```go
+func(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) error
+```
+and should be registered using function `dyntpl.RegisterModFn()`. See [init.go](init.go) for examples. See [mod.go](mod.go) for explanation of arguments.
+
+Modifiers calls using pipeline symbol after a variable, example: `{%= var0|default(0) %}`.
+
+You may specify a sequence of modifiers: `{%= var0|roundPrec(4)|default(1) %}`.
+
+## Condition helpers
+
+If you want to make a condition more complex than simple condition, you may declare a special function with signature:
+```go
+func(ctx *Ctx, args []interface{}) bool
+```
+and register it using function `dyntpl.RegisterCondFn()`. See [init.go](init.go) for examples. See [cond.go](cond.go) for explanation of arguments.
+
+After declaring and registering you can use the helper in conditions:
+```
+{% if <condFnName>(var0, var1, "static val", 0, 15.234) %}...{% endif %}
+```
+Function will make a decision according arguments you take and will return true or false.
