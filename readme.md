@@ -138,7 +138,7 @@ Print construction supports prefix and suffix attributes, it may be handy when y
 {%= var prefix <li> suffix </li> %}
 </ul>
 ```
-Prefix and suffix will print only if `var` isn't empty.
+Prefix and suffix will print only if `var` isn't empty. Prefix/suffix has shorthands `pfx` and `sfx`.
 
 Also print supports data modifiers. They calls typically for any template languages:
 ```
@@ -199,4 +199,31 @@ Switch can handle only primitive cases, condition helpers doesn't support.
 
 #### Loops
 
-...
+Dyntpl supports both types of loops:
+* conditional loop from three components separated by semicolon, like `{% for i:=0; i<5; i++ %}...{% endfor %}`
+* range-loop, like `{% for k, v := range obj.Items %}...{% endfor %}`
+
+Edge cases like `for k < 2000 {...}` or `for ; i < 10 ; {...}` isn't supported. Also you can't make infinite loop by using `for {...}`.
+
+There is a special attribute `separator` that made special to build JSON output. Example of use:
+```json
+[
+  {% for _, a := range user.History separator , %}
+    {
+      "id": {%q= a.Id %},
+      "date": {%q= a.Date %},
+      "comment": {%q= a.Note %}
+    }
+  {% endfor %}
+]
+```
+The output that will produced:
+```json
+[
+  {"id":1, "date": "2020-01-01", "comment": "success"},
+  {"id":2, "date": "2020-01-01", "comment": "failed"},
+  {"id":3, "date": "2020-01-01", "comment": "rejected"}
+]
+```
+As you see, commas between 2nd and last elements was added by dyntpl without any additional handling like `...{% if i>0 %},{% endif %}{% endfor %}`.
+Separator has shorthand variant `sep`.
