@@ -206,7 +206,7 @@ Dyntpl supports both types of loops:
 Edge cases like `for k < 2000 {...}` or `for ; i < 10 ; {...}` isn't supported. Also you can't make infinite loop by using `for {...}`.
 
 There is a special attribute `separator` that made special to build JSON output. Example of use:
-```json
+```
 [
   {% for _, a := range user.History separator , %}
     {
