@@ -91,48 +91,48 @@ func modIfThenElse(_ *Ctx, buf *interface{}, val interface{}, args []interface{}
 
 func modRound(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
 	if f, ok := ConvFloat(val); ok {
-		ctx.fbuf = roundHelper(f, round, args)
-		*buf = &ctx.fbuf
+		ctx.BufF = roundHelper(f, round, args)
+		*buf = &ctx.BufF
 	}
 	return
 }
 
 func modRoundPrec(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
 	if f, ok := ConvFloat(val); ok {
-		ctx.fbuf = roundHelper(f, roundPrec, args)
-		*buf = &ctx.fbuf
+		ctx.BufF = roundHelper(f, roundPrec, args)
+		*buf = &ctx.BufF
 	}
 	return
 }
 
 func modCeil(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
 	if f, ok := ConvFloat(val); ok {
-		ctx.fbuf = roundHelper(f, ceil, args)
-		*buf = &ctx.fbuf
+		ctx.BufF = roundHelper(f, ceil, args)
+		*buf = &ctx.BufF
 	}
 	return
 }
 
 func modCeilPrec(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
 	if f, ok := ConvFloat(val); ok {
-		ctx.fbuf = roundHelper(f, ceilPrec, args)
-		*buf = &ctx.fbuf
+		ctx.BufF = roundHelper(f, ceilPrec, args)
+		*buf = &ctx.BufF
 	}
 	return
 }
 
 func modFloor(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
 	if f, ok := ConvFloat(val); ok {
-		ctx.fbuf = roundHelper(f, floor, args)
-		*buf = &ctx.fbuf
+		ctx.BufF = roundHelper(f, floor, args)
+		*buf = &ctx.BufF
 	}
 	return
 }
 
 func modFloorPrec(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
 	if f, ok := ConvFloat(val); ok {
-		ctx.fbuf = roundHelper(f, floorPrec, args)
-		*buf = &ctx.fbuf
+		ctx.BufF = roundHelper(f, floorPrec, args)
+		*buf = &ctx.BufF
 	}
 	return
 }
@@ -186,18 +186,18 @@ func modUrlEncode(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{}) 
 	if l == 0 {
 		return ErrModEmptyStr
 	}
-	ctx.Bbuf.Reset()
+	ctx.Buf.Reset()
 	_ = b[l-1]
 	for i := 0; i < l; i++ {
 		switch {
 		case b[i] >= 'a' && b[i] <= 'z' || b[i] >= 'A' && b[i] <= 'Z' || b[i] >= '0' && b[i] <= '9' || b[i] == '-' || b[i] == '.' || b[i] == '_':
-			ctx.Bbuf.WriteB(b[i])
+			ctx.Buf.WriteB(b[i])
 		case b[i] == ' ':
-			ctx.Bbuf.WriteB('+')
+			ctx.Buf.WriteB('+')
 		default:
-			ctx.Bbuf.WriteB('%').WriteB(hexUp[b[i]>>4]).WriteB(hexUp[b[i]&15])
+			ctx.Buf.WriteB('%').WriteB(hexUp[b[i]>>4]).WriteB(hexUp[b[i]&15])
 		}
 	}
-	*buf = &ctx.Bbuf
+	*buf = &ctx.Buf
 	return
 }

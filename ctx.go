@@ -11,46 +11,58 @@ import (
 	"github.com/koykov/inspector"
 )
 
+// Context object. Contains list of variables available to inspect.
+// In addition has buffers to help develop new modifiers without allocations.
 type Ctx struct {
-	vars  []ctxVar
-	ln    int
-	ssbuf []string
-	Bbuf  ByteBuf
-	Bbuf1 ByteBuf
-	Bbuf2 ByteBuf
-	bbuf  []byte
-	cbuf  bool
-	ibuf  int64
-	fbuf  float64
-	chQB  bool
-	buf   interface{}
-	args  []interface{}
-	rl    *RangeLoop
-	Err   error
+	// List of context variables and list len.
+	vars []ctxVar
+	ln   int
+	// Check square brackets flag.
+	chQB bool
+	// Internal buffers.
+	buf  []byte
+	bufS []string
+	bufX interface{}
+	bufA []interface{}
+	// Range loop helper.
+	rl *RangeLoop
+
+	// External buffers to use in modifier and condition helpers.
+	Buf, Buf1, Buf2 ByteBuf
+
+	BufB bool
+	BufI int64
+	BufU uint64
+	BufF float64
+
+	Err error
 }
 
+// Context variable object.
 type ctxVar struct {
 	key string
 	val interface{}
+	// Byte buffer need for special cases when value is a byte slice.
 	buf []byte
 	ins inspector.Inspector
 }
 
 var (
-	sqL = []byte("[")
-	sqR = []byte("]")
+	// Byte constants.
+	qbL = []byte("[")
+	qbR = []byte("]")
 	dot = []byte(".")
 )
 
 func NewCtx() *Ctx {
 	ctx := Ctx{
-		vars:  make([]ctxVar, 0),
-		ssbuf: make([]string, 0),
-		Bbuf:  make(ByteBuf, 0),
-		Bbuf1: make(ByteBuf, 0),
-		Bbuf2: make(ByteBuf, 0),
-		bbuf:  make([]byte, 0),
-		args:  make([]interface{}, 0),
+		vars: make([]ctxVar, 0),
+		bufS: make([]string, 0),
+		Buf:  make(ByteBuf, 0),
+		Buf1: make(ByteBuf, 0),
+		Buf2: make(ByteBuf, 0),
+		buf:  make([]byte, 0),
+		bufA: make([]interface{}, 0),
 	}
 	return &ctx
 }
@@ -120,15 +132,15 @@ func (c *Ctx) Get(path string) interface{} {
 
 func (c *Ctx) Reset() {
 	c.Err = nil
-	c.buf = nil
+	c.bufX = nil
 	c.chQB = false
 	c.ln = 0
-	c.ssbuf = c.ssbuf[:0]
-	c.Bbuf.Reset()
-	c.Bbuf1.Reset()
-	c.Bbuf2.Reset()
-	c.bbuf = c.bbuf[:0]
-	c.args = c.args[:0]
+	c.bufS = c.bufS[:0]
+	c.Buf.Reset()
+	c.Buf1.Reset()
+	c.Buf2.Reset()
+	c.buf = c.buf[:0]
+	c.bufA = c.bufA[:0]
 	if c.rl != nil {
 		c.rl.Reset()
 	}
@@ -139,9 +151,9 @@ func (c *Ctx) get(path []byte) interface{} {
 		path = c.replaceQB(path)
 	}
 
-	c.ssbuf = c.ssbuf[:0]
-	c.ssbuf = bytealg.AppendSplitStr(c.ssbuf, fastconv.B2S(path), ".", -1)
-	if len(c.ssbuf) == 0 {
+	c.bufS = c.bufS[:0]
+	c.bufS = bytealg.AppendSplitStr(c.bufS, fastconv.B2S(path), ".", -1)
+	if len(c.bufS) == 0 {
 		return nil
 	}
 
@@ -149,17 +161,17 @@ func (c *Ctx) get(path []byte) interface{} {
 		if i == c.ln {
 			break
 		}
-		if v.key == c.ssbuf[0] {
+		if v.key == c.bufS[0] {
 			if v.val == nil && v.buf != nil {
-				c.Bbuf.Write(v.buf)
-				c.buf = &c.Bbuf
-				return c.buf
+				c.Buf.Write(v.buf)
+				c.bufX = &c.Buf
+				return c.bufX
 			}
-			c.Err = v.ins.GetTo(v.val, &c.buf, c.ssbuf[1:]...)
+			c.Err = v.ins.GetTo(v.val, &c.bufX, c.bufS[1:]...)
 			if c.Err != nil {
 				return nil
 			}
-			return c.buf
+			return c.bufX
 		}
 	}
 
@@ -167,9 +179,9 @@ func (c *Ctx) get(path []byte) interface{} {
 }
 
 func (c *Ctx) cmp(path []byte, cond Op, right []byte) bool {
-	c.ssbuf = c.ssbuf[:0]
-	c.ssbuf = bytealg.AppendSplitStr(c.ssbuf, fastconv.B2S(path), ".", -1)
-	if len(c.ssbuf) == 0 {
+	c.bufS = c.bufS[:0]
+	c.bufS = bytealg.AppendSplitStr(c.bufS, fastconv.B2S(path), ".", -1)
+	if len(c.bufS) == 0 {
 		return false
 	}
 
@@ -177,12 +189,12 @@ func (c *Ctx) cmp(path []byte, cond Op, right []byte) bool {
 		if i == c.ln {
 			break
 		}
-		if v.key == c.ssbuf[0] {
-			c.Err = v.ins.Cmp(v.val, inspector.Op(cond), fastconv.B2S(right), &c.cbuf, c.ssbuf[1:]...)
+		if v.key == c.bufS[0] {
+			c.Err = v.ins.Cmp(v.val, inspector.Op(cond), fastconv.B2S(right), &c.BufB, c.bufS[1:]...)
 			if c.Err != nil {
 				return false
 			}
-			return c.cbuf
+			return c.BufB
 		}
 	}
 
@@ -190,16 +202,16 @@ func (c *Ctx) cmp(path []byte, cond Op, right []byte) bool {
 }
 
 func (c *Ctx) rloop(path []byte, node Node, tpl *Tpl, w io.Writer) {
-	c.ssbuf = c.ssbuf[:0]
-	c.ssbuf = bytealg.AppendSplitStr(c.ssbuf, fastconv.B2S(path), ".", -1)
-	if len(c.ssbuf) == 0 {
+	c.bufS = c.bufS[:0]
+	c.bufS = bytealg.AppendSplitStr(c.bufS, fastconv.B2S(path), ".", -1)
+	if len(c.bufS) == 0 {
 		return
 	}
 	for i, v := range c.vars {
 		if i == c.ln {
 			break
 		}
-		if v.key == c.ssbuf[0] {
+		if v.key == c.bufS[0] {
 			var rl *RangeLoop
 			if c.rl == nil {
 				c.rl = NewRangeLoop(node, tpl, c, w)
@@ -229,7 +241,7 @@ func (c *Ctx) rloop(path []byte, node Node, tpl *Tpl, w io.Writer) {
 				rl.w = w
 			}
 			rl.stat = rlInuse
-			c.Err = v.ins.Loop(v.val, rl, &c.bbuf, c.ssbuf[1:]...)
+			c.Err = v.ins.Loop(v.val, rl, &c.buf, c.bufS[1:]...)
 			rl.stat = rlFree
 			return
 		}
@@ -250,23 +262,23 @@ func (c *Ctx) cloop(node Node, tpl *Tpl, w io.Writer) {
 	if c.Err != nil {
 		return
 	}
-	c.ibuf = cnt
+	c.BufI = cnt
 	allowIter = false
 	cntr = 0
 	for {
 		switch node.loopCondOp {
 		case OpLt:
-			allowIter = c.ibuf < lim
+			allowIter = c.BufI < lim
 		case OpLtq:
-			allowIter = c.ibuf <= lim
+			allowIter = c.BufI <= lim
 		case OpGt:
-			allowIter = c.ibuf > lim
+			allowIter = c.BufI > lim
 		case OpGtq:
-			allowIter = c.ibuf >= lim
+			allowIter = c.BufI >= lim
 		case OpEq:
-			allowIter = c.ibuf == lim
+			allowIter = c.BufI == lim
 		case OpNq:
-			allowIter = c.ibuf != lim
+			allowIter = c.BufI != lim
 		default:
 			c.Err = ErrWrongLoopCond
 			break
@@ -275,7 +287,7 @@ func (c *Ctx) cloop(node Node, tpl *Tpl, w io.Writer) {
 			break
 		}
 
-		c.Set(fastconv.B2S(node.loopCnt), &c.ibuf, &inspector.StaticInspector{})
+		c.Set(fastconv.B2S(node.loopCnt), &c.BufI, &inspector.StaticInspector{})
 
 		if cntr > 0 && len(node.loopSep) > 0 {
 			_, _ = w.Write(node.loopSep)
@@ -293,9 +305,9 @@ func (c *Ctx) cloop(node Node, tpl *Tpl, w io.Writer) {
 
 		switch node.loopCntOp {
 		case OpInc:
-			c.ibuf++
+			c.BufI++
 		case OpDec:
-			c.ibuf--
+			c.BufI--
 		default:
 			c.Err = ErrWrongLoopOp
 			break
@@ -333,23 +345,23 @@ func (c *Ctx) cloopRange(static bool, b []byte) (r int64) {
 }
 
 func (c *Ctx) replaceQB(path []byte) []byte {
-	sqLi := bytes.Index(path, sqL)
-	sqRi := bytes.Index(path, sqR)
-	if sqLi != -1 && sqRi != -1 && sqLi < sqRi && sqRi < len(path) {
-		c.Bbuf.Reset().Write(path[0:sqLi]).Write(dot)
+	qbLi := bytes.Index(path, qbL)
+	qbRi := bytes.Index(path, qbR)
+	if qbLi != -1 && qbRi != -1 && qbLi < qbRi && qbRi < len(path) {
+		c.Buf.Reset().Write(path[0:qbLi]).Write(dot)
 		c.chQB = false
-		c.buf = c.get(path[sqLi+1 : sqRi])
-		if c.buf != nil {
-			c.Bbuf1, c.Err = any2bytes.AnyToBytes(c.Bbuf1, c.buf)
+		c.bufX = c.get(path[qbLi+1 : qbRi])
+		if c.bufX != nil {
+			c.Buf1, c.Err = any2bytes.AnyToBytes(c.Buf1, c.bufX)
 			if c.Err != nil {
 				c.chQB = true
 				return nil
 			}
-			c.Bbuf.Write(c.Bbuf1)
+			c.Buf.Write(c.Buf1)
 		}
 		c.chQB = true
-		c.Bbuf.Write(path[sqRi+1:])
-		path = c.Bbuf
+		c.Buf.Write(path[qbRi+1:])
+		path = c.Buf
 	}
 	return path
 }

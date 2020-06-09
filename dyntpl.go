@@ -99,23 +99,23 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 		}
 		if len(node.mod) > 0 {
 			for _, mod := range node.mod {
-				ctx.args = ctx.args[:0]
+				ctx.bufA = ctx.bufA[:0]
 				if len(mod.arg) > 0 {
 					for _, arg := range mod.arg {
 						if arg.static {
-							ctx.args = append(ctx.args, &arg.val)
+							ctx.bufA = append(ctx.bufA, &arg.val)
 						} else {
 							val := ctx.get(arg.val)
-							ctx.args = append(ctx.args, val)
+							ctx.bufA = append(ctx.bufA, val)
 						}
 					}
 				}
-				ctx.buf = raw
-				ctx.Err = (*mod.fn)(ctx, &ctx.buf, ctx.buf, ctx.args)
+				ctx.bufX = raw
+				ctx.Err = (*mod.fn)(ctx, &ctx.bufX, ctx.bufX, ctx.bufA)
 				if ctx.Err != nil {
 					break
 				}
-				raw = ctx.buf
+				raw = ctx.bufX
 			}
 		}
 		if ctx.Err != nil {
@@ -125,12 +125,12 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			err = ErrEmptyArg
 			return
 		}
-		ctx.Bbuf, err = any2bytes.AnyToBytes(ctx.Bbuf, raw)
+		ctx.Buf, err = any2bytes.AnyToBytes(ctx.Buf, raw)
 		if err == nil {
 			if len(node.prefix) > 0 {
 				_, _ = w.Write(node.prefix)
 			}
-			_, err = w.Write(ctx.Bbuf)
+			_, err = w.Write(ctx.Buf)
 			if len(node.suffix) > 0 {
 				_, _ = w.Write(node.suffix)
 			}
@@ -154,18 +154,18 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 				err = ErrCondHlpNotFound
 				return
 			}
-			ctx.args = ctx.args[:0]
+			ctx.bufA = ctx.bufA[:0]
 			if len(node.condHlpArg) > 0 {
 				for _, arg := range node.condHlpArg {
 					if arg.static {
-						ctx.args = append(ctx.args, &arg.val)
+						ctx.bufA = append(ctx.bufA, &arg.val)
 					} else {
 						val := ctx.get(arg.val)
-						ctx.args = append(ctx.args, val)
+						ctx.bufA = append(ctx.bufA, val)
 					}
 				}
 			}
-			r = (*fn)(ctx, ctx.args)
+			r = (*fn)(ctx, ctx.bufA)
 		} else {
 			// Regular comparison.
 			sl := node.condStaticL
@@ -184,11 +184,11 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 				// Both sides isn't static.
 				ctx.get(node.condR)
 				if ctx.Err == nil {
-					ctx.Bbuf, err = any2bytes.AnyToBytes(ctx.Bbuf, ctx.buf)
+					ctx.Buf, err = any2bytes.AnyToBytes(ctx.Buf, ctx.bufX)
 					if err != nil {
 						return
 					}
-					r = ctx.cmp(node.condL, node.condOp, ctx.Bbuf)
+					r = ctx.cmp(node.condL, node.condOp, ctx.Buf)
 				}
 			}
 		}
@@ -239,11 +239,11 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 					} else {
 						ctx.get(ch.caseL)
 						if ctx.Err == nil {
-							ctx.Bbuf, err = any2bytes.AnyToBytes(ctx.Bbuf, ctx.buf)
+							ctx.Buf, err = any2bytes.AnyToBytes(ctx.Buf, ctx.bufX)
 							if err != nil {
 								return
 							}
-							r = ctx.cmp(node.switchArg, OpEq, ctx.Bbuf)
+							r = ctx.cmp(node.switchArg, OpEq, ctx.Buf)
 						}
 					}
 				}
@@ -272,11 +272,11 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 						// Both sides isn't static.
 						ctx.get(ch.caseR)
 						if ctx.Err == nil {
-							ctx.Bbuf, err = any2bytes.AnyToBytes(ctx.Bbuf, ctx.buf)
+							ctx.Buf, err = any2bytes.AnyToBytes(ctx.Buf, ctx.bufX)
 							if err != nil {
 								return
 							}
-							r = ctx.cmp(ch.caseL, ch.caseOp, ctx.Bbuf)
+							r = ctx.cmp(ch.caseL, ch.caseOp, ctx.Buf)
 						}
 					}
 					if ctx.Err != nil {

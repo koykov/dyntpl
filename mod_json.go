@@ -29,13 +29,13 @@ var (
 )
 
 func modJsonQuote(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{}) error {
-	ctx.Bbuf.Reset().WriteB(jqQd)
+	ctx.Buf.Reset().WriteB(jqQd)
 	err := modJsonEscape(ctx, buf, val, nil)
 	if err == nil {
-		ctx.Bbuf.Write(ctx.Bbuf1)
+		ctx.Buf.Write(ctx.Buf1)
 	}
-	ctx.Bbuf.WriteB(jqQd)
-	*buf = &ctx.Bbuf
+	ctx.Buf.WriteB(jqQd)
+	*buf = &ctx.Buf
 	return nil
 }
 
@@ -55,44 +55,44 @@ func modJsonEscape(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{})
 	if l == 0 {
 		return nil
 	}
-	ctx.Bbuf1.Reset()
+	ctx.Buf1.Reset()
 	_ = b[l-1]
 	for i := 0; i < l; i++ {
 		switch b[i] {
 		case jqQd:
-			ctx.Bbuf1.Write(b[o:i]).Write(jqQdR)
+			ctx.Buf1.Write(b[o:i]).Write(jqQdR)
 			o = i + 1
 		case jqSl:
-			ctx.Bbuf1.Write(b[o:i]).Write(jqSlR)
+			ctx.Buf1.Write(b[o:i]).Write(jqSlR)
 			o = i + 1
 		case jqNl:
-			ctx.Bbuf1.Write(b[o:i]).Write(jqNlR)
+			ctx.Buf1.Write(b[o:i]).Write(jqNlR)
 			o = i + 1
 		case jqCr:
-			ctx.Bbuf1.Write(b[o:i]).Write(jqCrR)
+			ctx.Buf1.Write(b[o:i]).Write(jqCrR)
 			o = i + 1
 		case jqT:
-			ctx.Bbuf1.Write(b[o:i]).Write(jqTR)
+			ctx.Buf1.Write(b[o:i]).Write(jqTR)
 			o = i + 1
 		case jqFf:
-			ctx.Bbuf1.Write(b[o:i]).Write(jqFfR)
+			ctx.Buf1.Write(b[o:i]).Write(jqFfR)
 			o = i + 1
 		case jqBs:
-			ctx.Bbuf1.Write(b[o:i]).Write(jqBsR)
+			ctx.Buf1.Write(b[o:i]).Write(jqBsR)
 			o = i + 1
 		case jqLt:
-			ctx.Bbuf1.Write(b[o:i]).Write(jqLtR)
+			ctx.Buf1.Write(b[o:i]).Write(jqLtR)
 			o = i + 1
 		case jqQs:
-			ctx.Bbuf1.Write(b[o:i]).Write(jqQsR)
+			ctx.Buf1.Write(b[o:i]).Write(jqQsR)
 			o = i + 1
 		case jqZ:
-			ctx.Bbuf1.Write(b[o:i]).Write(jqZR)
+			ctx.Buf1.Write(b[o:i]).Write(jqZR)
 			o = i + 1
 		}
 	}
-	ctx.Bbuf1.Write(b[o:])
-	*buf = &ctx.Bbuf1
+	ctx.Buf1.Write(b[o:])
+	*buf = &ctx.Buf1
 
 	return nil
 }
