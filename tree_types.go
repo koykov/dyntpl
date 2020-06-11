@@ -1,9 +1,13 @@
 package dyntpl
 
+// Type of the node.
 type Type int
+
+// Type of the operation in conditions and loops.
 type Op int
 
 const (
+	// Known types of nodes.
 	TypeRaw       Type = 0
 	TypeTpl       Type = 1
 	TypeCond      Type = 2
@@ -32,6 +36,7 @@ const (
 	OpDec Op = 8
 )
 
+// String view of the type.
 func (typ Type) String() string {
 	switch typ {
 	case TypeRaw:
@@ -69,6 +74,7 @@ func (typ Type) String() string {
 	}
 }
 
+// String view of the opertion.
 func (o Op) String() string {
 	switch o {
 	case OpEq:
@@ -92,6 +98,7 @@ func (o Op) String() string {
 	}
 }
 
+// Invert operation.
 func (o Op) Swap() Op {
 	switch o {
 	case OpGt:

@@ -4,15 +4,18 @@ import (
 	"bytes"
 )
 
+// Tree structure that represents parsed template as list of nodes with childrens.
 type Tree struct {
 	nodes []Node
 }
 
+// Representation argument of modifier or helper.
 type arg struct {
 	val    []byte
 	static bool
 }
 
+// Build human readable view of the tree.
 func (t *Tree) HumanReadable() []byte {
 	if len(t.nodes) == 0 {
 		return nil
@@ -22,6 +25,7 @@ func (t *Tree) HumanReadable() []byte {
 	return buf.Bytes()
 }
 
+// Internal human readable helper.
 func (t *Tree) hrHelper(buf *bytes.Buffer, nodes []Node, indent []byte, depth int) {
 	for _, node := range nodes {
 		buf.Write(bytes.Repeat(indent, depth))

@@ -1,5 +1,8 @@
 package dyntpl
 
+// Node is a description of template part.
+// Every piece of the template, beginning from static text and finishing of complex structures (switch, loop, ...)
+// Represents by this type.
 type Node struct {
 	typ    Type
 	raw    []byte
@@ -44,11 +47,13 @@ type Node struct {
 	child []Node
 }
 
+// Add new node to the destination list.
 func addNode(nodes []Node, node Node) []Node {
 	nodes = append(nodes, node)
 	return nodes
 }
 
+// Add raw node (static text) to the list.
 func addRaw(nodes []Node, raw []byte) []Node {
 	if len(raw) == 0 {
 		return nodes
@@ -57,6 +62,7 @@ func addRaw(nodes []Node, raw []byte) []Node {
 	return nodes
 }
 
+// Split nodes by divider node.
 func splitNodes(nodes []Node) [][]Node {
 	if len(nodes) == 0 {
 		return nil
@@ -75,6 +81,7 @@ func splitNodes(nodes []Node) [][]Node {
 	return split
 }
 
+// Walk over the nodes list and group them by the type, need to make tree of switch structure.
 func rollupSwitchNodes(nodes []Node) []Node {
 	if len(nodes) == 0 {
 		return nil
