@@ -12,22 +12,28 @@ import (
 )
 
 const (
+	// Types of targets.
 	targetCond = iota
 	targetLoop
 	targetSwitch
 )
 
+// Parser object.
 type Parser struct {
+	// Keep format flag. Remove all new lines and tabulations when false.
 	keepFmt bool
-	tpl     []byte
+	// Template body to parse.
+	tpl []byte
 
-	// Counters of conditions, loops and switches.
+	// Counters (depths) of conditions, loops and switches.
 	cc, cl, cs int
 }
 
+// Target is a storage of depths needed to provide proper out from conditions, loops and switches control structures.
 type target map[int]int
 
 var (
+	// Byte constants.
 	empty      []byte
 	space      = []byte(" ")
 	comma      = []byte(",")
@@ -49,6 +55,7 @@ var (
 	swDefault  = []byte("default")
 	swEnd      = []byte("endswitch")
 
+	// Print prefixes and replacements.
 	outmJ = []byte("j")          // json quote
 	idJ   = []byte("jsonEscape") // json quote
 	outmQ = []byte("q")          // json quote
@@ -62,6 +69,7 @@ var (
 	outmF = 'F'                  // float precision ceil
 	idF   = []byte("ceilPrec")   // float precision ceil
 
+	// Operation constants.
 	opEq  = []byte("==")
 	opNq  = []byte("!=")
 	opGt  = []byte(">")
@@ -71,9 +79,11 @@ var (
 	opInc = []byte("++")
 	opDec = []byte("--")
 
+	// Regexp to clear template.
 	reCutComments = regexp.MustCompile(`\t*{#[^#]*#}\n*`)
 	reCutFmt      = regexp.MustCompile(`\n+\t*\s*`)
 
+	// Regexp to parse print instructions.
 	reTplPS   = regexp.MustCompile(`^([jhqu]*|[fF]\.\d+)=\s*(.*) (?:prefix|pfx) (.*) (?:suffix|sfx) (.*)`)
 	reTplP    = regexp.MustCompile(`^([jhqu]*|[fF]\.\d+)=\s*(.*) (?:prefix|pfx) (.*)`)
 	reTplS    = regexp.MustCompile(`^([jhqu]*|[fF]\.\d+)=\s*(.*) (?:suffix|sfx) (.*)`)
@@ -81,23 +91,29 @@ var (
 	reModPfxF = regexp.MustCompile(`([fF]+)\.*(\d*)`)
 	reMod     = regexp.MustCompile(`([^(]+)\(*([^)]*)\)*`)
 
+	// Regexp to parse context instruction.
 	reCtx = regexp.MustCompile(`ctx (\w+)\s*=\s*([\w.]+)\s*[as]*\s*(\w*)`)
 
+	// Regexp to parse condition instruction.
 	reCond        = regexp.MustCompile(`if .*`)
 	reCondExpr    = regexp.MustCompile(`if (.*)(==|!=|>=|<=|>|<)(.*)`)
 	reCondHelper  = regexp.MustCompile(`if ([^(]+)\(*([^)]*)\)`)
 	reCondComplex = regexp.MustCompile(`if .*&&|\|\||\(|\).*`)
 
+	// Regexp to parse loop instruction.
 	reLoop      = regexp.MustCompile(`for .*`)
 	reLoopRange = regexp.MustCompile(`for ([^:]+)\s*:*=\s*range\s*([^\s]*)\s*(?:separator|sep)*\s*(.*)`)
 	reLoopCount = regexp.MustCompile(`for (\w*)\s*:*=\s*(\w+)\s*;\s*\w+\s*(<|<=|>|>=|!=)+\s*([^;]+)\s*;\s*\w*(--|\+\+)+\s*(?:separator|sep)*\s*(.*)`)
 
+	// Regexp to parse switch instruction.
 	reSwitch     = regexp.MustCompile(`^switch\s*(.*)`)
 	reSwitchCase = regexp.MustCompile(`case ([^<=>!]+)([<=>!]{2})*(.*)`)
 
+	// Suppress go vet warning.
 	_ = ParseFile
 )
 
+// Initialize parser and parse the template body.
 func Parse(tpl []byte, keepFmt bool) (tree *Tree, err error) {
 	p := &Parser{
 		tpl:     tpl,
@@ -106,12 +122,14 @@ func Parse(tpl []byte, keepFmt bool) (tree *Tree, err error) {
 	p.cutComments()
 	p.cutFmt()
 
+	// Prepare template tree.
 	tree = &Tree{}
 	target := newTarget(p)
 	tree.nodes, _, err = p.parseTpl(tree.nodes, 0, target)
 	return
 }
 
+// Initialize parser and parse file contents.
 func ParseFile(fileName string, keepFmt bool) (tree *Tree, err error) {
 	_, err = os.Stat(fileName)
 	if os.IsNotExist(err) {
@@ -125,10 +143,12 @@ func ParseFile(fileName string, keepFmt bool) (tree *Tree, err error) {
 	return Parse(raw, keepFmt)
 }
 
+// Remove all comments from the template body.
 func (p *Parser) cutComments() {
 	p.tpl = reCutComments.ReplaceAll(p.tpl, empty)
 }
 
+// Remove template formatting if needed.
 func (p *Parser) cutFmt() {
 	if p.keepFmt {
 		return
@@ -137,12 +157,14 @@ func (p *Parser) cutFmt() {
 	p.tpl = bytealg.Trim(p.tpl, noFmt)
 }
 
+// Initial parsing method.
 func (p *Parser) parseTpl(nodes []Node, offset int, target *target) ([]Node, int, error) {
 	var (
 		up  bool
 		err error
 	)
 
+	// Walk over template body and find control structures.
 	o, i := offset, offset
 	inCtl := false
 	for !target.reached(p) || target.eqZero() {
@@ -156,6 +178,7 @@ func (p *Parser) parseTpl(nodes []Node, offset int, target *target) ([]Node, int
 			break
 		}
 		if inCtl {
+			// We are inside control structure.
 			e := bytealg.IndexAt(p.tpl, ctlClose, i)
 			if e < 0 {
 				return nodes, o, ErrUnexpectedEOF
@@ -172,6 +195,7 @@ func (p *Parser) parseTpl(nodes []Node, offset int, target *target) ([]Node, int
 				break
 			}
 		} else {
+			// Start of control structure caught.
 			nodes = addRaw(nodes, p.tpl[o:i])
 			o = i
 			inCtl = true
@@ -180,6 +204,7 @@ func (p *Parser) parseTpl(nodes []Node, offset int, target *target) ([]Node, int
 	return nodes, o, nil
 }
 
+// General parsing method.
 func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]Node, int, bool, error) {
 	var (
 		offset int
@@ -189,20 +214,25 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 
 	up = false
 	t := bytealg.Trim(ctl, ctlTrim)
-	// Check tpl structure
+	// Check tpl (print) structure.
 	if reTplPS.Match(t) || reTplP.Match(t) || reTplS.Match(t) || reTpl.Match(t) {
+		// Sequentially check print structure from the complex to the simplest.
 		root.typ = TypeTpl
 		if m := reTplPS.FindSubmatch(t); m != nil {
+			// Tpl with prefix and suffix found.
 			root.raw, root.mod = p.extractMods(m[2], m[1])
 			root.prefix = m[3]
 			root.suffix = m[4]
 		} else if m := reTplP.FindSubmatch(t); m != nil {
+			// Tpl with prefix found.
 			root.raw, root.mod = p.extractMods(m[2], m[1])
 			root.prefix = m[3]
 		} else if m := reTplS.FindSubmatch(t); m != nil {
+			// Tpl with suffix found.
 			root.raw, root.mod = p.extractMods(m[2], m[1])
 			root.suffix = m[3]
 		} else if m := reTpl.FindSubmatch(t); m != nil {
+			// Simple tpl found.
 			if len(m[1]) != 0 {
 				m[1] = m[1]
 			}
@@ -265,6 +295,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 				return nodes, pos, up, ErrComplexCond
 			}
 		}
+		// Create new target, increase condition counter and dive deeper.
 		target := newTarget(p)
 		p.cc++
 
@@ -295,6 +326,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 	}
 	// Check condition end.
 	if bytes.Equal(t, condEnd) {
+		// End of condition caught. Decrease the counter and exit.
 		p.cc--
 		offset = pos + len(ctl)
 		up = true
@@ -304,6 +336,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 	// Check loop structure.
 	if reLoop.Match(t) {
 		if m := reLoopRange.FindSubmatch(t); m != nil {
+			// Range loop found.
 			root.typ = TypeLoopRange
 			if bytes.Contains(m[1], comma) {
 				kv := bytes.Split(m[1], comma)
@@ -320,6 +353,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 				root.loopSep = m[3]
 			}
 		} else if m := reLoopCount.FindSubmatch(t); m != nil {
+			// Counter loop found.
 			root.typ = TypeLoopCount
 			root.loopCnt = m[1]
 			root.loopCntInit = m[2]
@@ -335,6 +369,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 			return nodes, 0, up, ErrLoopParse
 		}
 
+		// Create new target, increase loop counter and dive deeper.
 		target := newTarget(p)
 		p.cl++
 
@@ -346,6 +381,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 	}
 	// Check loop end.
 	if bytes.Equal(t, loopEnd) {
+		// End of loop caught. Decrease the counter and exit.
 		p.cl--
 		offset = pos + len(ctl)
 		up = true
@@ -368,6 +404,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 
 	// Check switch structure.
 	if m := reSwitch.FindSubmatch(t); m != nil {
+		// Create new target, increase switch counter and dive deeper.
 		target := newTarget(p)
 		p.cs++
 
@@ -399,6 +436,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 	}
 	// Check switch end.
 	if bytes.Equal(t, swEnd) {
+		// End of switch caught. Decrease the counter and exit.
 		p.cs--
 		offset = pos + len(ctl)
 		up = true
@@ -416,6 +454,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 	return nodes, 0, up, ErrBadCtl
 }
 
+// Parse condition to left/right parts and condition operator.
 func (p *Parser) parseCondExpr(expr []byte) (l, r []byte, sl, sr bool, op Op) {
 	if m := reCondExpr.FindSubmatch(expr); m != nil {
 		l = bytealg.Trim(m[1], space)
@@ -427,6 +466,7 @@ func (p *Parser) parseCondExpr(expr []byte) (l, r []byte, sl, sr bool, op Op) {
 	return
 }
 
+// Parse case condition similar to condition parsing.
 func (p *Parser) parseCaseExpr(expr []byte) (l, r []byte, sl, sr bool, op Op) {
 	if m := reSwitchCase.FindSubmatch(expr); m != nil {
 		l = bytealg.Trim(m[1], space)
@@ -440,6 +480,7 @@ func (p *Parser) parseCaseExpr(expr []byte) (l, r []byte, sl, sr bool, op Op) {
 	return
 }
 
+// Convert operation from string to Op type.
 func (p *Parser) parseOp(src []byte) Op {
 	var op Op
 	switch {
@@ -465,8 +506,10 @@ func (p *Parser) parseOp(src []byte) Op {
 	return op
 }
 
+// Split print structure to value and mods list.
 func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
 	if bytes.Contains(t, vline) || len(outm) > 0 {
+		// First try to extract suffix mods, like ...|default(0).
 		mods := make([]mod, 0)
 		chunks := bytes.Split(t, vline)
 		for i := 1; i < len(chunks); i++ {
@@ -484,6 +527,8 @@ func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
 			}
 		}
 
+		// Second check prefix mods, like {%q= ... %}, {%u= ... %}, ...
+		// - {%j= ... %} - JSON escape.
 		if bytes.Equal(outm, outmJ) {
 			fn := GetModFn("jsonEscape")
 			mods = append(mods, mod{
@@ -492,6 +537,7 @@ func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
 				arg: make([]*arg, 0),
 			})
 		}
+		// - {%q= ... %} - JSON quote.
 		if bytes.Equal(outm, outmQ) {
 			fn := GetModFn("jsonQuote")
 			mods = append(mods, mod{
@@ -500,6 +546,7 @@ func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
 				arg: make([]*arg, 0),
 			})
 		}
+		// - {%h= ... %} - HTML escape.
 		if bytes.Equal(outm, outmH) {
 			fn := GetModFn("htmlEscape")
 			mods = append(mods, mod{
@@ -508,6 +555,7 @@ func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
 				arg: make([]*arg, 0),
 			})
 		}
+		// - {%u= ... %} - URL encode.
 		if bytes.Equal(outm, outmU) {
 			fn := GetModFn("urlEncode")
 			mods = append(mods, mod{
@@ -519,6 +567,7 @@ func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
 		if m := reModPfxF.FindSubmatch(outm); m != nil {
 			switch m[1][0] {
 			case byte(outmf):
+				// - {%f.<prec>= ... %} - Float with precision.
 				fn := GetModFn("floorPrec")
 				mods = append(mods, mod{
 					id:  idf,
@@ -526,6 +575,7 @@ func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
 					arg: []*arg{{m[2], true}},
 				})
 			case byte(outmF):
+				// - {%F.<prec>= ... %} - Ceil rounded to precision float.
 				fn := GetModFn("ceilPrec")
 				mods = append(mods, mod{
 					id:  idF,
@@ -541,6 +591,11 @@ func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
 	}
 }
 
+// Get list of arguments of modifier or helper, ex:
+// {%= variable|mod(arg0, ..., argN) %}
+//                  ^             ^
+// {% if condHelper(arg0, ..., argN) %}...{% endif %}
+//                  ^             ^
 func (p *Parser) extractArgs(l []byte) []*arg {
 	r := make([]*arg, 0)
 	if len(l) == 0 {
@@ -557,6 +612,7 @@ func (p *Parser) extractArgs(l []byte) []*arg {
 	return r
 }
 
+// Create new target based on current parser state.
 func newTarget(p *Parser) *target {
 	return &target{
 		targetCond:   p.cc,
@@ -565,12 +621,14 @@ func newTarget(p *Parser) *target {
 	}
 }
 
+// Check if parser reached the target.
 func (t *target) reached(p *Parser) bool {
 	return (*t)[targetCond] == p.cc &&
 		(*t)[targetLoop] == p.cl &&
 		(*t)[targetSwitch] == p.cs
 }
 
+// Check if target is a root.
 func (t *target) eqZero() bool {
 	return (*t)[targetCond] == 0 &&
 		(*t)[targetLoop] == 0 &&
