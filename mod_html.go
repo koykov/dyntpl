@@ -3,12 +3,14 @@ package dyntpl
 import "github.com/koykov/fastconv"
 
 var (
+	// Symbols to replace.
 	heLt  = byte('<')
 	heGt  = byte('>')
 	heQd  = byte('"')
 	heQs  = byte('\'')
 	heAmp = byte('&')
 
+	// Replacements.
 	heLtR  = []byte("&lt;")
 	heGtR  = []byte("&gt;")
 	heQdR  = []byte("&quot;")
@@ -16,6 +18,7 @@ var (
 	heAmpR = []byte("&amp;")
 )
 
+// HTML escape of string value.
 func modHtmlEscape(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{}) error {
 	var (
 		b    []byte

@@ -5,6 +5,7 @@ import (
 )
 
 var (
+	// Symbols to replace.
 	jqQd = byte('"')
 	jqSl = byte('\\')
 	jqNl = byte('\n')
@@ -16,6 +17,7 @@ var (
 	jqQs = byte('\'')
 	jqZ  = byte(0)
 
+	// Replacements.
 	jqQdR = []byte(`\"`)
 	jqSlR = []byte("\\")
 	jqNlR = []byte("\n")
@@ -28,6 +30,7 @@ var (
 	jqZR  = []byte("\u0000")
 )
 
+// JSON quote of string value - '"' + JSON escape + '"'.
 func modJsonQuote(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{}) error {
 	ctx.Buf.Reset().WriteB(jqQd)
 	err := modJsonEscape(ctx, buf, val, nil)
@@ -39,6 +42,7 @@ func modJsonQuote(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{}) 
 	return nil
 }
 
+// JSON escape of string value.
 func modJsonEscape(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{}) error {
 	var (
 		b    []byte

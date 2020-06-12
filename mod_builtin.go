@@ -7,6 +7,7 @@ import (
 )
 
 const (
+	// Types of round.
 	round = iota
 	roundPrec
 	ceil
@@ -14,14 +15,24 @@ const (
 	floor
 	floorPrec
 
+	// Hex digits in upper case.
 	hexUp = "0123456789ABCDEF"
 )
 
+// If var is empty, the given default value (first in args) will print instead.
 func modDefault(_ *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
 	if len(args) == 0 {
 		err = ErrModNoArgs
 		return
 	}
+	// Consecutive try to assert value to known (builtin) types:
+	// * int
+	// * uint
+	// * float
+	// * bytes
+	// * string
+	// * bool
+	// ... and check if value is empty.
 	if i, ok := ConvInt(val); ok {
 		if i == 0 {
 			*buf = args[0]
@@ -61,6 +72,9 @@ func modDefault(_ *Ctx, buf *interface{}, val interface{}, args []interface{}) (
 	return nil
 }
 
+// Shorthand replacement of {% if ... %}{%= ... %}{% endif %} statement.
+//
+// Example of usage: {%= leftVal|ifThen(val) %}, leftVal should be a boolean.
 func modIfThen(_ *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
 	if len(args) == 0 {
 		err = ErrModNoArgs
@@ -74,6 +88,10 @@ func modIfThen(_ *Ctx, buf *interface{}, val interface{}, args []interface{}) (e
 	return
 }
 
+// Shorthand replacement of {% if ... %}{%= ... %}{% else %}{%= ... %}{% endif %} statement.
+//
+// Example of usage: {%= leftVal|ifThenElse(valIfTrue, valIfFalse) %}, leftVal should be a boolean.
+// valIfTrue and valIfFalse may has arbitrary types or may be a static values.
 func modIfThenElse(_ *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
 	if len(args) < 2 {
 		err = ErrModPoorArgs
@@ -89,6 +107,7 @@ func modIfThenElse(_ *Ctx, buf *interface{}, val interface{}, args []interface{}
 	return
 }
 
+// Round float val to integer using rounding half away from zero algorithm.
 func modRound(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
 	if f, ok := ConvFloat(val); ok {
 		ctx.BufF = roundHelper(f, round, args)
@@ -97,6 +116,7 @@ func modRound(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) (
 	return
 }
 
+// Round to precision, example: pi|roundPrec(3) will print 3.141
 func modRoundPrec(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
 	if f, ok := ConvFloat(val); ok {
 		ctx.BufF = roundHelper(f, roundPrec, args)
@@ -105,6 +125,7 @@ func modRoundPrec(ctx *Ctx, buf *interface{}, val interface{}, args []interface{
 	return
 }
 
+// Round to least integer value greater than or equal to val.
 func modCeil(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
 	if f, ok := ConvFloat(val); ok {
 		ctx.BufF = roundHelper(f, ceil, args)
@@ -113,6 +134,7 @@ func modCeil(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) (e
 	return
 }
 
+// Ceil round to precision, example: 56.68734|ceilPrec will print 56.688
 func modCeilPrec(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
 	if f, ok := ConvFloat(val); ok {
 		ctx.BufF = roundHelper(f, ceilPrec, args)
@@ -121,6 +143,7 @@ func modCeilPrec(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}
 	return
 }
 
+// Round to greatest integer value less than or equal to val.
 func modFloor(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
 	if f, ok := ConvFloat(val); ok {
 		ctx.BufF = roundHelper(f, floor, args)
@@ -129,6 +152,7 @@ func modFloor(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) (
 	return
 }
 
+// Float round to precision, example: 20.214999|floorPrec(3) will print 20.214
 func modFloorPrec(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
 	if f, ok := ConvFloat(val); ok {
 		ctx.BufF = roundHelper(f, floorPrec, args)
@@ -137,6 +161,7 @@ func modFloorPrec(ctx *Ctx, buf *interface{}, val interface{}, args []interface{
 	return
 }
 
+// Universal internal round helper for round modifiers.
 func roundHelper(f float64, mode int, args []interface{}) float64 {
 	var (
 		prec int64
@@ -169,6 +194,8 @@ func roundHelper(f float64, mode int, args []interface{}) float64 {
 	return f
 }
 
+// URL encode string value.
+//
 // see https://golang.org/src/net/url/url.go#L100
 func modUrlEncode(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{}) (err error) {
 	var (
