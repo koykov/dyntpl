@@ -8,10 +8,12 @@ import (
 )
 
 const (
+	// RangeLoop object statuses.
 	rlFree  = uint(0)
 	rlInuse = uint(1)
 )
 
+// RangeLoop is a object that injects to inspector to perform range loop execution.
 type RangeLoop struct {
 	cntr int
 	stat uint
@@ -22,6 +24,7 @@ type RangeLoop struct {
 	w    io.Writer
 }
 
+// Init new RL.
 func NewRangeLoop(node Node, tpl *Tpl, ctx *Ctx, w io.Writer) *RangeLoop {
 	rl := RangeLoop{
 		node: node,
@@ -32,18 +35,22 @@ func NewRangeLoop(node Node, tpl *Tpl, ctx *Ctx, w io.Writer) *RangeLoop {
 	return &rl
 }
 
+// Check if node requires a key to store in the context.
 func (rl *RangeLoop) RequireKey() bool {
 	return len(rl.node.loopKey) > 0
 }
 
+// Save key to the context.
 func (rl *RangeLoop) SetKey(val interface{}, ins inspector.Inspector) {
 	rl.ctx.Set(fastconv.B2S(rl.node.loopKey), val, ins)
 }
 
+// Save value to the context.
 func (rl *RangeLoop) SetVal(val interface{}, ins inspector.Inspector) {
 	rl.ctx.Set(fastconv.B2S(rl.node.loopVal), val, ins)
 }
 
+// Perform the iteration.
 func (rl *RangeLoop) Iterate() inspector.LoopCtl {
 	if rl.cntr > 0 && len(rl.node.loopSep) > 0 {
 		_, _ = rl.w.Write(rl.node.loopSep)
@@ -62,6 +69,7 @@ func (rl *RangeLoop) Iterate() inspector.LoopCtl {
 	return inspector.LoopCtlNone
 }
 
+// Clear all data in the list of RL.
 func (rl *RangeLoop) Reset() {
 	crl := rl
 	for crl != nil {
