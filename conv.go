@@ -1,11 +1,14 @@
 package dyntpl
 
+// Collection of conversion functions.
+
 import (
 	"strconv"
 
 	"github.com/koykov/fastconv"
 )
 
+// Try to convert value to integer.
 func ConvInt(val interface{}) (i int64, ok bool) {
 	ok = true
 	switch val.(type) {
@@ -35,6 +38,7 @@ func ConvInt(val interface{}) (i int64, ok bool) {
 	return
 }
 
+// Try to convert value to uint.
 func ConvUint(val interface{}) (u uint64, ok bool) {
 	ok = true
 	switch val.(type) {
@@ -64,6 +68,7 @@ func ConvUint(val interface{}) (u uint64, ok bool) {
 	return
 }
 
+// Try to convert value ti float.
 func ConvFloat(val interface{}) (f float64, ok bool) {
 	ok = true
 	switch val.(type) {
@@ -81,6 +86,7 @@ func ConvFloat(val interface{}) (f float64, ok bool) {
 	return
 }
 
+// Try to convert value to bytes.
 func ConvBytes(val interface{}) (b []byte, ok bool) {
 	ok = true
 	switch val.(type) {
@@ -96,6 +102,7 @@ func ConvBytes(val interface{}) (b []byte, ok bool) {
 	return
 }
 
+// Try to convert value to string.
 func ConvStr(val interface{}) (s string, ok bool) {
 	ok = true
 	switch val.(type) {
@@ -109,6 +116,7 @@ func ConvStr(val interface{}) (s string, ok bool) {
 	return
 }
 
+// Try to convert value ti boolean.
 func ConvBool(val interface{}) (b bool, ok bool) {
 	ok = true
 	switch val.(type) {
@@ -122,6 +130,7 @@ func ConvBool(val interface{}) (b bool, ok bool) {
 	return
 }
 
+// Convert interface value with arbitrary underlying type to integer value.
 func if2int(raw interface{}) (lim int64, ok bool) {
 	ok = true
 	switch raw.(type) {
