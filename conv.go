@@ -131,59 +131,69 @@ func ConvBool(val interface{}) (b bool, ok bool) {
 }
 
 // Convert interface value with arbitrary underlying type to integer value.
-func if2int(raw interface{}) (lim int64, ok bool) {
+func if2int(raw interface{}) (r int64, ok bool) {
 	ok = true
 	switch raw.(type) {
 	case int:
-		lim = int64(raw.(int))
+		r = int64(raw.(int))
 	case *int:
-		lim = int64(*raw.(*int))
+		r = int64(*raw.(*int))
 	case int8:
-		lim = int64(raw.(int8))
+		r = int64(raw.(int8))
 	case *int8:
-		lim = int64(*raw.(*int8))
+		r = int64(*raw.(*int8))
 	case int16:
-		lim = int64(raw.(int16))
+		r = int64(raw.(int16))
 	case *int16:
-		lim = int64(*raw.(*int16))
+		r = int64(*raw.(*int16))
 	case int32:
-		lim = int64(raw.(int32))
+		r = int64(raw.(int32))
 	case *int32:
-		lim = int64(*raw.(*int32))
+		r = int64(*raw.(*int32))
 	case int64:
-		lim = raw.(int64)
+		r = raw.(int64)
 	case *int64:
-		lim = *raw.(*int64)
+		r = *raw.(*int64)
 	case uint:
-		lim = int64(raw.(uint))
+		r = int64(raw.(uint))
 	case *uint:
-		lim = int64(*raw.(*uint))
+		r = int64(*raw.(*uint))
 	case uint8:
-		lim = int64(raw.(uint8))
+		r = int64(raw.(uint8))
 	case *uint8:
-		lim = int64(*raw.(*uint8))
+		r = int64(*raw.(*uint8))
 	case uint16:
-		lim = int64(raw.(uint16))
+		r = int64(raw.(uint16))
 	case *uint16:
-		lim = int64(*raw.(*uint16))
+		r = int64(*raw.(*uint16))
 	case uint32:
-		lim = int64(raw.(uint32))
+		r = int64(raw.(uint32))
 	case *uint32:
-		lim = int64(*raw.(*uint32))
+		r = int64(*raw.(*uint32))
 	case uint64:
-		lim = int64(raw.(uint64))
+		r = int64(raw.(uint64))
 	case *uint64:
-		lim = int64(*raw.(*uint64))
+		r = int64(*raw.(*uint64))
 	case []byte:
-		lim, _ = strconv.ParseInt(fastconv.B2S(raw.([]byte)), 0, 0)
+		if len(raw.([]byte)) > 0 {
+			r, _ = strconv.ParseInt(fastconv.B2S(raw.([]byte)), 0, 0)
+		}
 	case *[]byte:
-		lim, _ = strconv.ParseInt(fastconv.B2S(*raw.(*[]byte)), 0, 0)
+		if len(*raw.(*[]byte)) > 0 {
+			r, _ = strconv.ParseInt(fastconv.B2S(*raw.(*[]byte)), 0, 0)
+		}
 	case string:
-		lim, _ = strconv.ParseInt(raw.(string), 0, 0)
+		if len(raw.(string)) > 0 {
+			r, _ = strconv.ParseInt(raw.(string), 0, 0)
+		}
 	case *string:
-		lim, _ = strconv.ParseInt(*raw.(*string), 0, 0)
+		if len(*raw.(*string)) > 0 {
+			r, _ = strconv.ParseInt(*raw.(*string), 0, 0)
+		}
 	case *ByteBuf:
-		lim, _ = strconv.ParseInt(fastconv.B2S(*raw.(*ByteBuf)), 0, 0)
+		if (*raw.(*ByteBuf)).Len() > 0 {
+			r, _ = strconv.ParseInt((*raw.(*ByteBuf)).String(), 0, 0)
+		}
 	default:
 		ok = false
 	}

@@ -72,3 +72,13 @@ func (b *ByteBuf) WriteBool(v bool) *ByteBuf {
 	*b, _ = any2bytes.BoolToBytes(*b, v)
 	return b
 }
+
+// Get length of the buffer.
+func (b *ByteBuf) Len() int {
+	return len(*b)
+}
+
+// Get capacity of the buffer.
+func (b *ByteBuf) Cap() int {
+	return cap(*b)
+}
