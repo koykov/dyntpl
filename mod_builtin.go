@@ -176,17 +176,26 @@ func roundHelper(f float64, mode int, args []interface{}) float64 {
 	case round:
 		return math.Round(f)
 	case roundPrec:
+		if prec == 0 {
+			return f
+		}
 		p := math.Pow10(int(prec))
 		return float64(int(f*p)) / p
 	case ceil:
 		return math.Ceil(f)
 	case ceilPrec:
+		if prec == 0 {
+			return f
+		}
 		p := math.Pow10(int(prec))
 		x := p * f
 		return math.Ceil(x) / p
 	case floor:
 		return math.Floor(f)
 	case floorPrec:
+		if prec == 0 {
+			return f
+		}
 		p := math.Pow10(int(prec))
 		x := p * f
 		return math.Floor(x) / p

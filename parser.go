@@ -84,10 +84,10 @@ var (
 	reCutFmt      = regexp.MustCompile(`\n+\t*\s*`)
 
 	// Regexp to parse print instructions.
-	reTplPS   = regexp.MustCompile(`^([jhqu]*|[fF]\.\d+)=\s*(.*) (?:prefix|pfx) (.*) (?:suffix|sfx) (.*)`)
-	reTplP    = regexp.MustCompile(`^([jhqu]*|[fF]\.\d+)=\s*(.*) (?:prefix|pfx) (.*)`)
-	reTplS    = regexp.MustCompile(`^([jhqu]*|[fF]\.\d+)=\s*(.*) (?:suffix|sfx) (.*)`)
-	reTpl     = regexp.MustCompile(`^([jhqu]*|[fF]\.\d+)= (.*)`)
+	reTplPS   = regexp.MustCompile(`^([jhqu]*|[fF]\.*\d*)=\s*(.*) (?:prefix|pfx) (.*) (?:suffix|sfx) (.*)`)
+	reTplP    = regexp.MustCompile(`^([jhqu]*|[fF]\.*\d*)=\s*(.*) (?:prefix|pfx) (.*)`)
+	reTplS    = regexp.MustCompile(`^([jhqu]*|[fF]\.*\d*)=\s*(.*) (?:suffix|sfx) (.*)`)
+	reTpl     = regexp.MustCompile(`^([jhqu]*|[fF]\.*\d*)= (.*)`)
 	reModPfxF = regexp.MustCompile(`([fF]+)\.*(\d*)`)
 	reMod     = regexp.MustCompile(`([^(]+)\(*([^)]*)\)*`)
 
