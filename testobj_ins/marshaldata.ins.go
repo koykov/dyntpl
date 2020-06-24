@@ -51,11 +51,11 @@ func (i2 *MarshalDataInspector) GetTo(src interface{}, buf *interface{}, path ..
 			_ = x0
 			if len(path) > 1 {
 				var i int
-				t8, err8 := strconv.ParseInt(path[1], 0, 0)
-				if err8 != nil {
-					return err8
+				t9, err9 := strconv.ParseInt(path[1], 0, 0)
+				if err9 != nil {
+					return err9
 				}
-				i = int(t8)
+				i = int(t9)
 				if len(x0) > i {
 					x1 := &x0[i]
 					_ = x1
@@ -98,11 +98,11 @@ func (i2 *MarshalDataInspector) Cmp(src interface{}, cond inspector.Op, right st
 	if len(path) > 0 {
 		if path[0] == "Foo" {
 			var rightExact int
-			t9, err9 := strconv.ParseInt(right, 0, 0)
-			if err9 != nil {
-				return err9
+			t10, err10 := strconv.ParseInt(right, 0, 0)
+			if err10 != nil {
+				return err10
 			}
-			rightExact = int(t9)
+			rightExact = int(t10)
 			switch cond {
 			case inspector.OpEq:
 				*result = x.Foo == rightExact
@@ -144,11 +144,11 @@ func (i2 *MarshalDataInspector) Cmp(src interface{}, cond inspector.Op, right st
 			_ = x0
 			if len(path) > 1 {
 				var i int
-				t11, err11 := strconv.ParseInt(path[1], 0, 0)
-				if err11 != nil {
-					return err11
+				t12, err12 := strconv.ParseInt(path[1], 0, 0)
+				if err12 != nil {
+					return err12
 				}
-				i = int(t11)
+				i = int(t12)
 				if len(x0) > i {
 					x1 := &x0[i]
 					_ = x1
@@ -175,11 +175,11 @@ func (i2 *MarshalDataInspector) Cmp(src interface{}, cond inspector.Op, right st
 						}
 						if path[2] == "N" {
 							var rightExact int
-							t13, err13 := strconv.ParseInt(right, 0, 0)
-							if err13 != nil {
-								return err13
+							t14, err14 := strconv.ParseInt(right, 0, 0)
+							if err14 != nil {
+								return err14
 							}
-							rightExact = int(t13)
+							rightExact = int(t14)
 							switch cond {
 							case inspector.OpEq:
 								*result = x1.N == rightExact
@@ -245,5 +245,63 @@ func (i2 *MarshalDataInspector) Loop(src interface{}, l inspector.Looper, buf *[
 	return
 }
 
-func (i2 *MarshalDataInspector) Set(dst, value interface{}, path ...string) {
+func (i2 *MarshalDataInspector) Set(dst, value interface{}, path ...string) error {
+	if len(path) == 0 {
+		return nil
+	}
+	if dst == nil {
+		return nil
+	}
+	var x *testobj.MarshalData
+	_ = x
+	if p, ok := dst.(*testobj.MarshalData); ok {
+		x = p
+	} else if v, ok := dst.(testobj.MarshalData); ok {
+		x = &v
+	} else {
+		return nil
+	}
+
+	if len(path) > 0 {
+		if path[0] == "Foo" {
+			if exact, ok := value.(int); ok {
+				x.Foo = exact
+			}
+		}
+		if path[0] == "Bar" {
+			if exact, ok := value.(string); ok {
+				x.Bar = exact
+			}
+		}
+		if path[0] == "Rows" {
+			x0 := x.Rows
+			_ = x0
+			if len(path) > 1 {
+				var i int
+				t15, err15 := strconv.ParseInt(path[1], 0, 0)
+				if err15 != nil {
+					return err15
+				}
+				i = int(t15)
+				if len(x0) > i {
+					x1 := &x0[i]
+					_ = x1
+					if len(path) > 2 {
+						if path[2] == "Msg" {
+							if exact, ok := value.(string); ok {
+								x1.Msg = exact
+							}
+						}
+						if path[2] == "N" {
+							if exact, ok := value.(int); ok {
+								x1.N = exact
+							}
+						}
+					}
+					x0[i] = *x1
+				}
+			}
+		}
+	}
+	return nil
 }

@@ -156,5 +156,39 @@ func (i0 *BenchRowInspector) Loop(src interface{}, l inspector.Looper, buf *[]by
 	return
 }
 
-func (i0 *BenchRowInspector) Set(dst, value interface{}, path ...string) {
+func (i0 *BenchRowInspector) Set(dst, value interface{}, path ...string) error {
+	if len(path) == 0 {
+		return nil
+	}
+	if dst == nil {
+		return nil
+	}
+	var x *testobj.BenchRow
+	_ = x
+	if p, ok := dst.(*testobj.BenchRow); ok {
+		x = p
+	} else if v, ok := dst.(testobj.BenchRow); ok {
+		x = &v
+	} else {
+		return nil
+	}
+
+	if len(path) > 0 {
+		if path[0] == "ID" {
+			if exact, ok := value.(int); ok {
+				x.ID = exact
+			}
+		}
+		if path[0] == "Message" {
+			if exact, ok := value.(string); ok {
+				x.Message = exact
+			}
+		}
+		if path[0] == "Print" {
+			if exact, ok := value.(bool); ok {
+				x.Print = exact
+			}
+		}
+	}
+	return nil
 }

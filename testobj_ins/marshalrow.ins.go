@@ -91,11 +91,11 @@ func (i3 *MarshalRowInspector) Cmp(src interface{}, cond inspector.Op, right str
 		}
 		if path[0] == "N" {
 			var rightExact int
-			t15, err15 := strconv.ParseInt(right, 0, 0)
-			if err15 != nil {
-				return err15
+			t17, err17 := strconv.ParseInt(right, 0, 0)
+			if err17 != nil {
+				return err17
 			}
-			rightExact = int(t15)
+			rightExact = int(t17)
 			switch cond {
 			case inspector.OpEq:
 				*result = x.N == rightExact
@@ -138,5 +138,34 @@ func (i3 *MarshalRowInspector) Loop(src interface{}, l inspector.Looper, buf *[]
 	return
 }
 
-func (i3 *MarshalRowInspector) Set(dst, value interface{}, path ...string) {
+func (i3 *MarshalRowInspector) Set(dst, value interface{}, path ...string) error {
+	if len(path) == 0 {
+		return nil
+	}
+	if dst == nil {
+		return nil
+	}
+	var x *testobj.MarshalRow
+	_ = x
+	if p, ok := dst.(*testobj.MarshalRow); ok {
+		x = p
+	} else if v, ok := dst.(testobj.MarshalRow); ok {
+		x = &v
+	} else {
+		return nil
+	}
+
+	if len(path) > 0 {
+		if path[0] == "Msg" {
+			if exact, ok := value.(string); ok {
+				x.Msg = exact
+			}
+		}
+		if path[0] == "N" {
+			if exact, ok := value.(int); ok {
+				x.N = exact
+			}
+		}
+	}
+	return nil
 }
