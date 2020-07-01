@@ -15,9 +15,10 @@ type Node struct {
 	ctxIns       []byte
 
 	cntrVar   []byte
-	cntrInit  []byte
+	cntrInit  int
+	cntrInitF bool
 	cntrOp    Op
-	cntrOpArg []byte
+	cntrOpArg int
 
 	condL       []byte
 	condR       []byte

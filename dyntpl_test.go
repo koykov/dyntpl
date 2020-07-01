@@ -155,6 +155,15 @@ var (
 </ul>`)
 	expectLoopCount = []byte(`<h2>History</h2><ul><li>Amount: 14.345241<br/>Description: pay for domain<br/>Date: 152354345634</li><li>Amount: -3.0000342543<br/>Description: got refund<br/>Date: 153465345246</li><li>Amount: 2325242534.3532453<br/>Description: maintenance<br/>Date: 156436535640</li></ul>`)
 
+	tplCntr0 = []byte(`{% counter c = 0 %}
+[
+	{% for i := 0; i < 5; i++ separator , %}
+		{% counter c+2 %}
+		{%= c %}
+	{% endfor %}
+]`)
+	expectCntr0 = []byte(`[2,4,6,8,10]`)
+
 	tplExit = []byte(`{% if user.Status < 100 %}{% exit %}{% endif %}foobar`)
 )
 
@@ -173,6 +182,7 @@ func pretest() {
 		"tplLoopCountContinue": tplLoopCountContinue,
 		"tplLoopCount":         tplLoopCount,
 		"tplLoopCountCtx":      tplLoopCountCtx,
+		"tplCntr0":             tplCntr0,
 		"tplExit":              tplExit,
 
 		"tplModDef":             tplModDef,
@@ -294,6 +304,10 @@ func TestTplLoopCount(t *testing.T) {
 
 func TestTplLoopCountCtx(t *testing.T) {
 	testBase(t, "tplLoopCountCtx", expectLoopCount, "loop count ctx tpl mismatch")
+}
+
+func TestCntr0Exit(t *testing.T) {
+	testBase(t, "tplCntr0", expectCntr0, "cntr 0 tpl mismatch")
 }
 
 func TestTplExit(t *testing.T) {

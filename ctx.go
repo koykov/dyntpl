@@ -44,6 +44,10 @@ type ctxVar struct {
 	val interface{}
 	// Byte buffer need for special cases when value is a byte slice.
 	buf []byte
+	// Special case: var is counter.
+	cntrF bool
+	cntr  int
+
 	ins inspector.Inspector
 }
 
@@ -139,6 +143,39 @@ func (c *Ctx) SetBytes(key string, val []byte) {
 	c.ln++
 }
 
+// Set int counter as static variable.
+//
+// See Ctx.Set().
+// This is a special case to support counters.
+func (c *Ctx) setCntr(key string, val int) {
+	ins, err := inspector.GetInspector("static")
+	if err != nil {
+		c.Err = err
+		return
+	}
+	for i := 0; i < c.ln; i++ {
+		if c.vars[i].key == key {
+			c.vars[i].cntr = val
+			c.vars[i].ins = ins
+			return
+		}
+	}
+	if c.ln < len(c.vars) {
+		c.vars[c.ln].key = key
+		c.vars[c.ln].cntr = val
+		c.vars[c.ln].ins = ins
+	} else {
+		v := ctxVar{
+			key:   key,
+			cntrF: true,
+			cntr:  val,
+			ins:   ins,
+		}
+		c.vars = append(c.vars, v)
+	}
+	c.ln++
+}
+
 // Get arbitrary value from the context by path.
 //
 // See Ctx.get().
@@ -199,6 +236,11 @@ func (c *Ctx) get(path []byte) interface{} {
 				// Special case: var is a byte slice.
 				c.Buf.Write(v.buf)
 				c.bufX = &c.Buf
+				return c.bufX
+			}
+			if v.val == nil && v.cntrF {
+				// Special case: var is a counter.
+				c.bufX = &v.cntr
 				return c.bufX
 			}
 			// Inspect variable using inspector object.

@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"regexp"
+	"strconv"
 
 	"github.com/koykov/bytealg"
 	"github.com/koykov/fastconv"
@@ -35,7 +36,6 @@ type target map[int]int
 var (
 	// Byte constants.
 	empty      []byte
-	one        = []byte(`1`)
 	space      = []byte(" ")
 	comma      = []byte(",")
 	uscore     = []byte("_")
@@ -273,9 +273,15 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 	// Check counter structure.
 	if reCntr.Match(t) {
 		root.typ = TypeCounter
+		root.cntrInitF = false
 		if m := reCntrInit.FindSubmatch(t); m != nil {
 			root.cntrVar = m[1]
-			root.cntrInit = m[2]
+			root.cntrInitF = true
+			i, err := strconv.Atoi(string(m[2]))
+			if err != nil {
+				return nodes, offset, up, err
+			}
+			root.cntrInit = i
 		} else if m := reCntrOp0.FindSubmatch(t); m != nil {
 			root.cntrVar = m[1]
 			if bytes.Equal(m[2], opDec) {
@@ -283,7 +289,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 			} else {
 				root.cntrOp = OpInc
 			}
-			root.cntrOpArg = one
+			root.cntrOpArg = 1
 		} else if m := reCntrOp1.FindSubmatch(t); m != nil {
 			root.cntrVar = m[1]
 			if m[2][0] == '-' {
@@ -291,7 +297,11 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 			} else {
 				root.cntrOp = OpInc
 			}
-			root.cntrOpArg = m[2][1:]
+			a, err := strconv.Atoi(string(m[2][1:]))
+			if err != nil {
+				return nodes, offset, up, err
+			}
+			root.cntrOpArg = a
 		}
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)

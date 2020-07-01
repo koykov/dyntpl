@@ -2,6 +2,7 @@ package dyntpl
 
 import (
 	"bytes"
+	"strconv"
 )
 
 // Tree structure that represents parsed template as list of nodes with childrens.
@@ -58,14 +59,14 @@ func (t *Tree) hrHelper(buf *bytes.Buffer, nodes []Node, indent []byte, depth in
 		if len(node.cntrVar) > 0 {
 			buf.WriteString("cntr ")
 			buf.Write(node.cntrVar)
-			if len(node.cntrInit) > 0 {
+			if node.cntrInitF {
 				buf.WriteString(" = ")
-				buf.Write(node.cntrInit)
+				buf.WriteString(strconv.Itoa(node.cntrInit))
 			} else {
 				buf.WriteString(" op ")
 				buf.WriteString(node.cntrOp.String())
 				buf.WriteString(" arg ")
-				buf.Write(node.cntrOpArg)
+				buf.WriteString(strconv.Itoa(node.cntrOpArg))
 			}
 		}
 

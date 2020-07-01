@@ -193,6 +193,26 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			}
 			ctx.Set(fastconv.B2S(node.ctxVar), ctx.get(node.ctxSrc), ins)
 		}
+	case TypeCounter:
+		if node.cntrInitF {
+			ctx.setCntr(fastconv.B2S(node.cntrVar), node.cntrInit)
+		} else {
+			raw := ctx.get(node.cntrVar)
+			if ctx.Err != nil {
+				err = ctx.Err
+				return
+			}
+			var cntr int
+			if cntr64, ok := ConvInt(raw); ok {
+				cntr = int(cntr64)
+			}
+			if node.cntrOp == OpInc {
+				cntr += node.cntrOpArg
+			} else {
+				cntr -= node.cntrOpArg
+			}
+			ctx.setCntr(fastconv.B2S(node.cntrVar), cntr)
+		}
 	case TypeCond:
 		// Condition node evaluates condition expressions.
 		var r bool
