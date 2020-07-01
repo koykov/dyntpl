@@ -156,6 +156,7 @@ func (c *Ctx) setCntr(key string, val int) {
 	}
 	for i := 0; i < c.ln; i++ {
 		if c.vars[i].key == key {
+			c.vars[i].cntrF = true
 			c.vars[i].cntr = val
 			c.vars[i].ins = ins
 			return
@@ -163,6 +164,7 @@ func (c *Ctx) setCntr(key string, val int) {
 	}
 	if c.ln < len(c.vars) {
 		c.vars[c.ln].key = key
+		c.vars[c.ln].cntrF = true
 		c.vars[c.ln].cntr = val
 		c.vars[c.ln].ins = ins
 	} else {
@@ -192,6 +194,10 @@ func (c *Ctx) Get(path string) interface{} {
 //
 // Made to use together with pools.
 func (c *Ctx) Reset() {
+	for i := 0; i < c.ln; i++ {
+		c.vars[i].cntrF = false
+	}
+
 	c.Err = nil
 	c.bufX = nil
 	c.chQB = false
