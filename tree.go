@@ -55,6 +55,20 @@ func (t *Tree) hrHelper(buf *bytes.Buffer, nodes []Node, indent []byte, depth in
 			}
 		}
 
+		if len(node.cntrVar) > 0 {
+			buf.WriteString("cntr ")
+			buf.Write(node.cntrVar)
+			if len(node.cntrInit) > 0 {
+				buf.WriteString(" = ")
+				buf.Write(node.cntrInit)
+			} else {
+				buf.WriteString(" op ")
+				buf.WriteString(node.cntrOp.String())
+				buf.WriteString(" arg ")
+				buf.Write(node.cntrOpArg)
+			}
+		}
+
 		if len(node.condL) > 0 {
 			buf.WriteString("left ")
 			buf.Write(node.condL)

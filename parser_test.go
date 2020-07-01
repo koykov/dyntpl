@@ -76,6 +76,20 @@ ctx: var var1 src user.Id ins static
 tpl: var1
 `)
 
+	cntrOrigin = []byte(`{% counter i = 0 %}
+{% cntr j=5 %}
+foo
+{% counter i++ %}
+bar
+{% counter j+3 %}`)
+	cntrExpect = []byte(`cntr: cntr i = 0
+cntr: cntr j = 5
+raw: foo
+cntr: cntr i op ++ arg 1
+raw: bar
+cntr: cntr j op ++ arg 3
+`)
+
 	condOrigin = []byte(`
 <h1>Profile</h1>
 {% if user.Id == 0 %}
@@ -302,6 +316,14 @@ func TestParseCtx(t *testing.T) {
 	r := tree.HumanReadable()
 	if !bytes.Equal(r, ctxExpect) {
 		t.Errorf("ctx test failed\nexp: %s\ngot: %s", string(ctxExpect), string(r))
+	}
+}
+
+func TestParseCntr(t *testing.T) {
+	tree, _ := Parse(cntrOrigin, false)
+	r := tree.HumanReadable()
+	if !bytes.Equal(r, cntrExpect) {
+		t.Errorf("cntr test failed\nexp: %s\ngot: %s", string(ctxExpect), string(r))
 	}
 }
 

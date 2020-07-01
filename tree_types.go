@@ -18,10 +18,11 @@ const (
 	TypeBreak     Type = 7
 	TypeContinue  Type = 8
 	TypeCtx       Type = 9
-	TypeSwitch    Type = 10
-	TypeCase      Type = 11
-	TypeDefault   Type = 12
-	TypeDiv       Type = 13
+	TypeCounter   Type = 10
+	TypeSwitch    Type = 11
+	TypeCase      Type = 12
+	TypeDefault   Type = 13
+	TypeDiv       Type = 14
 	TypeExit      Type = 99
 
 	// Must be in sync with inspector.Op type.
@@ -59,6 +60,8 @@ func (typ Type) String() string {
 		return "cont"
 	case TypeCtx:
 		return "ctx"
+	case TypeCounter:
+		return "cntr"
 	case TypeSwitch:
 		return "switch"
 	case TypeCase:

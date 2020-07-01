@@ -35,6 +35,7 @@ type target map[int]int
 var (
 	// Byte constants.
 	empty      []byte
+	one        = []byte(`1`)
 	space      = []byte(" ")
 	comma      = []byte(",")
 	uscore     = []byte("_")
@@ -92,7 +93,13 @@ var (
 	reMod     = regexp.MustCompile(`([^(]+)\(*([^)]*)\)*`)
 
 	// Regexp to parse context instruction.
-	reCtx = regexp.MustCompile(`ctx (\w+)\s*=\s*([\w.]+)\s*[as]*\s*(\w*)`)
+	reCtx = regexp.MustCompile(`(?:context|ctx) (\w+)\s*=\s*([\w.]+)\s*[as]*\s*(\w*)`)
+
+	// Regexp to parse counter instructions.
+	reCntr     = regexp.MustCompile(`(?:counter|cntr) (\w+)`)
+	reCntrInit = regexp.MustCompile(`(?:counter|cntr) (\w+)\s*=\s*(\d+)`)
+	reCntrOp0  = regexp.MustCompile(`(?:counter|cntr) (\w+)(\+\+|--)`)
+	reCntrOp1  = regexp.MustCompile(`(?:counter|cntr) (\w+)(\+\d+|-\d+)`)
 
 	// Regexp to parse condition instruction.
 	reCond        = regexp.MustCompile(`if .*`)
@@ -257,6 +264,34 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 			} else {
 				root.ctxIns = ctxStatic
 			}
+		}
+		nodes = addNode(nodes, *root)
+		offset = pos + len(ctl)
+		return nodes, offset, up, err
+	}
+
+	// Check counter structure.
+	if reCntr.Match(t) {
+		root.typ = TypeCounter
+		if m := reCntrInit.FindSubmatch(t); m != nil {
+			root.cntrVar = m[1]
+			root.cntrInit = m[2]
+		} else if m := reCntrOp0.FindSubmatch(t); m != nil {
+			root.cntrVar = m[1]
+			if bytes.Equal(m[2], opDec) {
+				root.cntrOp = OpDec
+			} else {
+				root.cntrOp = OpInc
+			}
+			root.cntrOpArg = one
+		} else if m := reCntrOp1.FindSubmatch(t); m != nil {
+			root.cntrVar = m[1]
+			if m[2][0] == '-' {
+				root.cntrOp = OpDec
+			} else {
+				root.cntrOp = OpInc
+			}
+			root.cntrOpArg = m[2][1:]
 		}
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)

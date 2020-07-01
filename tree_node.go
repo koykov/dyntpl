@@ -14,6 +14,11 @@ type Node struct {
 	ctxSrcStatic bool
 	ctxIns       []byte
 
+	cntrVar   []byte
+	cntrInit  []byte
+	cntrOp    Op
+	cntrOpArg []byte
+
 	condL       []byte
 	condR       []byte
 	condStaticL bool
