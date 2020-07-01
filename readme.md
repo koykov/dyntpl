@@ -81,6 +81,8 @@ BenchmarkTplLoopCountBreak-8        300000      5159 ns/op       0 B/op       0 
 BenchmarkTplLoopCountContinue-8     200000      6426 ns/op       0 B/op       0 allocs/op
 BenchmarkTplLoopCount-8             300000      5784 ns/op       0 B/op       0 allocs/op
 BenchmarkTplLoopCountCtx-8          200000      5450 ns/op       0 B/op       0 allocs/op
+BenchmarkTplCntr0-8                1000000      2056 ns/op       0 B/op       0 allocs/op
+BenchmarkTplCntr1-8                 500000      2506 ns/op       0 B/op       0 allocs/op
 BenchmarkTplExit-8                 5000000       288 ns/op       0 B/op       0 allocs/op
 BenchmarkTplModDef-8               5000000       363 ns/op       0 B/op       0 allocs/op
 BenchmarkTplModDefStatic-8         3000000       486 ns/op       0 B/op       0 allocs/op

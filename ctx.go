@@ -22,6 +22,7 @@ type Ctx struct {
 	// Internal buffers.
 	buf  []byte
 	bufS []string
+	bufI int
 	bufX interface{}
 	bufA []interface{}
 	// Range loop helper.
@@ -240,7 +241,8 @@ func (c *Ctx) get(path []byte) interface{} {
 			}
 			if v.val == nil && v.cntrF {
 				// Special case: var is a counter.
-				c.bufX = &v.cntr
+				c.bufI = v.cntr
+				c.bufX = &c.bufI
 				return c.bufX
 			}
 			// Inspect variable using inspector object.
