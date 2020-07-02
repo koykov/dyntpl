@@ -337,7 +337,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 				nodes = addNode(nodes, *root)
 				return nodes, offset, up, err
 			} else {
-				return nodes, pos, up, ErrComplexCond
+				return nodes, pos, up, fmt.Errorf("too complex condition '%s' at offset %d", t, pos)
 			}
 		}
 		// Create new target, increase condition counter and dive deeper.
@@ -411,7 +411,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 				root.loopSep = m[6]
 			}
 		} else {
-			return nodes, 0, up, ErrLoopParse
+			return nodes, 0, up, fmt.Errorf("couldn't parse loop control structure '%s' at offset %d", t, pos)
 		}
 
 		// Create new target, increase loop counter and dive deeper.
@@ -496,7 +496,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 		return nodes, offset, up, err
 	}
 
-	return nodes, 0, up, ErrBadCtl
+	return nodes, 0, up, fmt.Errorf("unknown control structure '%s' at offset %d", t, pos)
 }
 
 // Parse condition to left/right parts and condition operator.

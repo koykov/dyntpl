@@ -4,12 +4,10 @@ import "errors"
 
 var (
 	ErrUnexpectedEOF = errors.New("unexpected end of file: control structure couldn't be closed")
-	ErrBadCtl        = errors.New("bad control structure caught")
 	ErrUnknownCtl    = errors.New("unknown ctl")
 
-	ErrComplexCond     = errors.New("condition is too complex, use CondHelper instead")
 	ErrSenselessCond   = errors.New("comparison of two static args")
-	ErrCondHlpNotFound = errors.New("helper not found")
+	ErrCondHlpNotFound = errors.New("condition helper not found")
 
 	ErrTplNotFound = errors.New("template not found")
 	ErrInterrupt   = errors.New("tpl processing interrupted")
@@ -19,7 +17,6 @@ var (
 	ErrModNoStr    = errors.New("argument is not string or bytes")
 	ErrModEmptyStr = errors.New("argument is empty string")
 
-	ErrLoopParse     = errors.New("couldn't parse loop control structure")
 	ErrWrongLoopLim  = errors.New("wrong count loop limit argument")
 	ErrWrongLoopCond = errors.New("wrong loop condition operation")
 	ErrWrongLoopOp   = errors.New("wrong loop operation")
