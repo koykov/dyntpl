@@ -64,14 +64,14 @@ func benchmarkMarshalJSONDyntpl(b *testing.B, n int) {
 
 	d := newTemplatesData(n)
 	b.RunParallel(func(pb *testing.PB) {
-		buf := cbytebuf.Acquire()
+		buf := cbytebuf.LBAcquire()
 		ctx := dyntpl.AcquireCtx()
 		ctx.Set("d", d, &testobj_ins.MarshalDataInspector{})
 		for pb.Next() {
 			_ = dyntpl.RenderTo(buf, "tplMarshalJSON", ctx)
 		}
 		dyntpl.ReleaseCtx(ctx)
-		cbytebuf.Release(buf)
+		cbytebuf.LBRelease(buf)
 	})
 }
 
@@ -97,14 +97,14 @@ func benchmarkMarshalXMLDyntpl(b *testing.B, n int) {
 
 	d := newTemplatesData(n)
 	b.RunParallel(func(pb *testing.PB) {
-		buf := cbytebuf.Acquire()
+		buf := cbytebuf.LBAcquire()
 		ctx := dyntpl.AcquireCtx()
 		ctx.Set("d", d, &testobj_ins.MarshalDataInspector{})
 		for pb.Next() {
 			_ = dyntpl.RenderTo(buf, "tplMarshalXML", ctx)
 		}
 		dyntpl.ReleaseCtx(ctx)
-		cbytebuf.Release(buf)
+		cbytebuf.LBRelease(buf)
 	})
 }
 

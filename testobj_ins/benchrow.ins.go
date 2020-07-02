@@ -175,19 +175,31 @@ func (i0 *BenchRowInspector) Set(dst, value interface{}, path ...string) error {
 
 	if len(path) > 0 {
 		if path[0] == "ID" {
+			if exact, ok := value.(*int); ok {
+				x.ID = *exact
+			}
 			if exact, ok := value.(int); ok {
 				x.ID = exact
 			}
+			return nil
 		}
 		if path[0] == "Message" {
+			if exact, ok := value.(*string); ok {
+				x.Message = *exact
+			}
 			if exact, ok := value.(string); ok {
 				x.Message = exact
 			}
+			return nil
 		}
 		if path[0] == "Print" {
+			if exact, ok := value.(*bool); ok {
+				x.Print = *exact
+			}
 			if exact, ok := value.(bool); ok {
 				x.Print = exact
 			}
+			return nil
 		}
 	}
 	return nil

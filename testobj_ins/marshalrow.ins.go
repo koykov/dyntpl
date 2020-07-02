@@ -157,14 +157,22 @@ func (i3 *MarshalRowInspector) Set(dst, value interface{}, path ...string) error
 
 	if len(path) > 0 {
 		if path[0] == "Msg" {
+			if exact, ok := value.(*string); ok {
+				x.Msg = *exact
+			}
 			if exact, ok := value.(string); ok {
 				x.Msg = exact
 			}
+			return nil
 		}
 		if path[0] == "N" {
+			if exact, ok := value.(*int); ok {
+				x.N = *exact
+			}
 			if exact, ok := value.(int); ok {
 				x.N = exact
 			}
+			return nil
 		}
 	}
 	return nil

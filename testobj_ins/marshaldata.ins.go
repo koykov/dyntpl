@@ -57,7 +57,7 @@ func (i2 *MarshalDataInspector) GetTo(src interface{}, buf *interface{}, path ..
 				}
 				i = int(t9)
 				if len(x0) > i {
-					x1 := &x0[i]
+					x1 := &(x0)[i]
 					_ = x1
 					if len(path) > 2 {
 						if path[2] == "Msg" {
@@ -150,7 +150,7 @@ func (i2 *MarshalDataInspector) Cmp(src interface{}, cond inspector.Op, right st
 				}
 				i = int(t12)
 				if len(x0) > i {
-					x1 := &x0[i]
+					x1 := &(x0)[i]
 					_ = x1
 					if len(path) > 2 {
 						if path[2] == "Msg" {
@@ -264,14 +264,22 @@ func (i2 *MarshalDataInspector) Set(dst, value interface{}, path ...string) erro
 
 	if len(path) > 0 {
 		if path[0] == "Foo" {
+			if exact, ok := value.(*int); ok {
+				x.Foo = *exact
+			}
 			if exact, ok := value.(int); ok {
 				x.Foo = exact
 			}
+			return nil
 		}
 		if path[0] == "Bar" {
+			if exact, ok := value.(*string); ok {
+				x.Bar = *exact
+			}
 			if exact, ok := value.(string); ok {
 				x.Bar = exact
 			}
+			return nil
 		}
 		if path[0] == "Rows" {
 			x0 := x.Rows
@@ -284,21 +292,30 @@ func (i2 *MarshalDataInspector) Set(dst, value interface{}, path ...string) erro
 				}
 				i = int(t15)
 				if len(x0) > i {
-					x1 := &x0[i]
+					x1 := &(x0)[i]
 					_ = x1
 					if len(path) > 2 {
 						if path[2] == "Msg" {
+							if exact, ok := value.(*string); ok {
+								x1.Msg = *exact
+							}
 							if exact, ok := value.(string); ok {
 								x1.Msg = exact
 							}
+							return nil
 						}
 						if path[2] == "N" {
+							if exact, ok := value.(*int); ok {
+								x1.N = *exact
+							}
 							if exact, ok := value.(int); ok {
 								x1.N = exact
 							}
+							return nil
 						}
 					}
-					x0[i] = *x1
+					(x0)[i] = *x1
+					return nil
 				}
 			}
 		}

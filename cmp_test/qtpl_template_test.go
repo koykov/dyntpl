@@ -47,14 +47,14 @@ func benchmarkDyntpl(b *testing.B, rowsCount int) {
 
 	bench := getBenchRows(rowsCount)
 	b.RunParallel(func(pb *testing.PB) {
-		buf := cbytebuf.Acquire()
+		buf := cbytebuf.LBAcquire()
 		ctx := dyntpl.AcquireCtx()
 		ctx.Set("bench", bench, &testobj_ins.BenchRowsInspector{})
 		for pb.Next() {
 			_ = dyntpl.RenderTo(buf, "tplTemplate", ctx)
 		}
 		dyntpl.ReleaseCtx(ctx)
-		cbytebuf.Release(buf)
+		cbytebuf.LBRelease(buf)
 	})
 }
 

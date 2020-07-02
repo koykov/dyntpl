@@ -49,7 +49,7 @@ func (i1 *BenchRowsInspector) GetTo(src interface{}, buf *interface{}, path ...s
 				}
 				i = int(t3)
 				if len(x0) > i {
-					x1 := &x0[i]
+					x1 := &(x0)[i]
 					_ = x1
 					if len(path) > 2 {
 						if path[2] == "ID" {
@@ -103,7 +103,7 @@ func (i1 *BenchRowsInspector) Cmp(src interface{}, cond inspector.Op, right stri
 				}
 				i = int(t4)
 				if len(x0) > i {
-					x1 := &x0[i]
+					x1 := &(x0)[i]
 					_ = x1
 					if len(path) > 2 {
 						if path[2] == "ID" {
@@ -241,26 +241,39 @@ func (i1 *BenchRowsInspector) Set(dst, value interface{}, path ...string) error 
 				}
 				i = int(t8)
 				if len(x0) > i {
-					x1 := &x0[i]
+					x1 := &(x0)[i]
 					_ = x1
 					if len(path) > 2 {
 						if path[2] == "ID" {
+							if exact, ok := value.(*int); ok {
+								x1.ID = *exact
+							}
 							if exact, ok := value.(int); ok {
 								x1.ID = exact
 							}
+							return nil
 						}
 						if path[2] == "Message" {
+							if exact, ok := value.(*string); ok {
+								x1.Message = *exact
+							}
 							if exact, ok := value.(string); ok {
 								x1.Message = exact
 							}
+							return nil
 						}
 						if path[2] == "Print" {
+							if exact, ok := value.(*bool); ok {
+								x1.Print = *exact
+							}
 							if exact, ok := value.(bool); ok {
 								x1.Print = exact
 							}
+							return nil
 						}
 					}
-					x0[i] = *x1
+					(x0)[i] = *x1
+					return nil
 				}
 			}
 		}
