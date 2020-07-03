@@ -159,6 +159,7 @@ func (c *Ctx) setCntr(key string, val int) {
 			c.vars[i].cntrF = true
 			c.vars[i].cntr = val
 			c.vars[i].ins = ins
+			c.vars[i].val = nil
 			return
 		}
 	}
@@ -167,6 +168,7 @@ func (c *Ctx) setCntr(key string, val int) {
 		c.vars[c.ln].cntrF = true
 		c.vars[c.ln].cntr = val
 		c.vars[c.ln].ins = ins
+		c.vars[c.ln].val = nil
 	} else {
 		v := ctxVar{
 			key:   key,

@@ -1,6 +1,9 @@
 package dyntpl
 
-import "github.com/koykov/fastconv"
+import (
+	"github.com/koykov/any2bytes"
+	"github.com/koykov/fastconv"
+)
 
 var (
 	// Symbols to replace.
@@ -23,11 +26,15 @@ func modHtmlEscape(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{})
 	var (
 		b    []byte
 		l, o int
+		err  error
 	)
+	ctx.Buf2.Reset()
 	if p, ok := ConvBytes(val); ok {
 		b = p
 	} else if s, ok := ConvStr(val); ok {
 		b = fastconv.S2B(s)
+	} else if ctx.Buf2, err = any2bytes.AnyToBytes(ctx.Buf2, val); err == nil {
+		b = ctx.Buf2
 	} else {
 		return ErrModNoStr
 	}
