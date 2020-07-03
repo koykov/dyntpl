@@ -93,7 +93,8 @@ var (
 	reMod     = regexp.MustCompile(`([^(]+)\(*([^)]*)\)*`)
 
 	// Regexp to parse context instruction.
-	reCtx = regexp.MustCompile(`(?:context|ctx) (\w+)\s*=\s*([\w.]+)\s*[as]*\s*(\w*)`)
+	reCtxAs = regexp.MustCompile(`(?:context|ctx) (\w+)\s*=\s*([\w\s.,|()]+) as (\w*)`)
+	reCtx   = regexp.MustCompile(`(?:context|ctx) (\w+)\s*=\s*([\w\s.,|()]+)`)
 
 	// Regexp to parse counter instructions.
 	reCntr     = regexp.MustCompile(`(?:counter|cntr) (\w+)`)
@@ -255,15 +256,18 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 	// Check context structure.
 	if reCtx.Match(t) {
 		root.typ = TypeCtx
-		if m := reCtx.FindSubmatch(t); m != nil {
-			root.ctxVar = m[1]
-			root.ctxSrc = m[2]
-			root.ctxSrcStatic = isStatic(m[2])
-			if len(m) > 3 && len(m[3]) > 0 {
-				root.ctxIns = m[3]
-			} else {
-				root.ctxIns = ctxStatic
-			}
+		var m [][]byte
+		m = reCtxAs.FindSubmatch(t)
+		if m == nil {
+			m = reCtx.FindSubmatch(t)
+		}
+		root.ctxVar = m[1]
+		root.ctxSrc, root.mod = p.extractMods(m[2], nil)
+		root.ctxSrcStatic = isStatic(root.ctxSrc)
+		if len(m) > 3 && len(m[3]) > 0 {
+			root.ctxIns = m[3]
+		} else {
+			root.ctxIns = ctxStatic
 		}
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)

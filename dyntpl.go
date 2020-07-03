@@ -187,11 +187,51 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 		if node.ctxSrcStatic {
 			ctx.SetBytes(fastconv.B2S(node.ctxVar), node.ctxSrc)
 		} else {
+			// Get the inspector.
 			ins, err := inspector.GetInspector(fastconv.B2S(node.ctxIns))
 			if err != nil {
 				return err
 			}
-			ctx.Set(fastconv.B2S(node.ctxVar), ctx.get(node.ctxSrc), ins)
+
+			raw := ctx.get(node.ctxSrc)
+			if ctx.Err != nil {
+				err = ctx.Err
+				return err
+			}
+			// Process modifiers.
+			if len(node.mod) > 0 {
+				for _, mod := range node.mod {
+					// Collect arguments to buffer.
+					ctx.bufA = ctx.bufA[:0]
+					if len(mod.arg) > 0 {
+						for _, arg := range mod.arg {
+							if arg.static {
+								ctx.bufA = append(ctx.bufA, &arg.val)
+							} else {
+								val := ctx.get(arg.val)
+								ctx.bufA = append(ctx.bufA, val)
+							}
+						}
+					}
+					ctx.bufX = raw
+					// Call the modifier func.
+					ctx.Err = (*mod.fn)(ctx, &ctx.bufX, ctx.bufX, ctx.bufA)
+					if ctx.Err != nil {
+						break
+					}
+					raw = ctx.bufX
+				}
+			}
+			if ctx.Err != nil {
+				err = ctx.Err
+				return err
+			}
+			if raw == nil || raw == "" {
+				err = ErrEmptyArg
+				return err
+			}
+
+			ctx.Set(fastconv.B2S(node.ctxVar), raw, ins)
 		}
 	case TypeCounter:
 		if node.cntrInitF {
