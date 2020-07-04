@@ -72,6 +72,8 @@ func (i2 *MarshalDataInspector) GetTo(src interface{}, buf *interface{}, path ..
 					*buf = x1
 				}
 			}
+			*buf = &x.Rows
+			return
 		}
 	}
 	*buf = &(*x)

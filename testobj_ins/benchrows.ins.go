@@ -68,6 +68,8 @@ func (i1 *BenchRowsInspector) GetTo(src interface{}, buf *interface{}, path ...s
 					*buf = x1
 				}
 			}
+			*buf = &x.Rows
+			return
 		}
 	}
 	*buf = &(*x)
