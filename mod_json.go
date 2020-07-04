@@ -20,15 +20,15 @@ var (
 
 	// Replacements.
 	jqQdR = []byte(`\"`)
-	jqSlR = []byte("\\")
-	jqNlR = []byte("\n")
-	jqCrR = []byte("\r")
-	jqTR  = []byte("\t")
-	jqFfR = []byte("\u000c")
-	jqBsR = []byte("\u0008")
-	jqLtR = []byte("\u003c")
-	jqQsR = []byte("\u0027")
-	jqZR  = []byte("\u0000")
+	jqSlR = []byte(`\\`)
+	jqNlR = []byte(`\n`)
+	jqCrR = []byte(`\r`)
+	jqTR  = []byte(`\t`)
+	jqFfR = []byte(`\u000c`)
+	jqBsR = []byte(`\u0008`)
+	jqLtR = []byte(`\u003c`)
+	jqQsR = []byte(`\u0027`)
+	jqZR  = []byte(`\u0000`)
 )
 
 // JSON quote of string value - '"' + JSON escape + '"'.
