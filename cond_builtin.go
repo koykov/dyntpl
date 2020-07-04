@@ -29,7 +29,13 @@ func getLen(val interface{}) int {
 	if b, ok := ConvBytes(val); ok {
 		return len(b)
 	}
+	if b, ok := ConvBytesSlice(val); ok {
+		return len(b)
+	}
 	if s, ok := ConvStr(val); ok {
+		return len(s)
+	}
+	if s, ok := ConvStrSlice(val); ok {
 		return len(s)
 	}
 	return 0

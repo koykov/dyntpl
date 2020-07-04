@@ -102,6 +102,20 @@ func ConvBytes(val interface{}) (b []byte, ok bool) {
 	return
 }
 
+// Try to convert value to slice of byte slice.
+func ConvBytesSlice(val interface{}) (b [][]byte, ok bool) {
+	ok = true
+	switch val.(type) {
+	case [][]byte:
+		b = val.([][]byte)
+	case *[][]byte:
+		b = *val.(*[][]byte)
+	default:
+		ok = false
+	}
+	return
+}
+
 // Try to convert value to string.
 func ConvStr(val interface{}) (s string, ok bool) {
 	ok = true
@@ -110,6 +124,20 @@ func ConvStr(val interface{}) (s string, ok bool) {
 		s = val.(string)
 	case *string:
 		s = *val.(*string)
+	default:
+		ok = false
+	}
+	return
+}
+
+// Try to convert value to string slice.
+func ConvStrSlice(val interface{}) (s []string, ok bool) {
+	ok = true
+	switch val.(type) {
+	case []string:
+		s = val.([]string)
+	case *[]string:
+		s = *val.(*[]string)
 	default:
 		ok = false
 	}
