@@ -55,6 +55,8 @@ var (
 	loopCnt    = []byte("continue")
 	swDefault  = []byte("default")
 	swEnd      = []byte("endswitch")
+	jq         = []byte("jsonquote")
+	jqEnd      = []byte("endjsonquote")
 
 	// Print prefixes and replacements.
 	outmJ = []byte("j")          // json quote
@@ -495,6 +497,20 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 	// Check tpl interrupt.
 	if bytes.Equal(t, ctlExit) {
 		root.typ = TypeExit
+		nodes = addNode(nodes, *root)
+		offset = pos + len(ctl)
+		return nodes, offset, up, err
+	}
+
+	// Check json quote.
+	if bytes.Equal(t, jq) {
+		root.typ = TypeJsonQ
+		nodes = addNode(nodes, *root)
+		offset = pos + len(ctl)
+		return nodes, offset, up, err
+	}
+	if bytes.Equal(t, jqEnd) {
+		root.typ = TypeEndJsonQ
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
 		return nodes, offset, up, err

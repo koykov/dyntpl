@@ -19,6 +19,8 @@ type Ctx struct {
 	ln   int
 	// Check square brackets flag.
 	chQB bool
+	// Check json quote flag.
+	chJQ bool
 	// Internal buffers.
 	buf  []byte
 	bufS []string
@@ -203,6 +205,7 @@ func (c *Ctx) Reset() {
 	c.Err = nil
 	c.bufX = nil
 	c.chQB = false
+	c.chJQ = false
 	c.ln = 0
 	c.bufS = c.bufS[:0]
 	c.Buf.Reset()

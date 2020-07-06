@@ -23,6 +23,8 @@ const (
 	TypeCase      Type = 12
 	TypeDefault   Type = 13
 	TypeDiv       Type = 14
+	TypeJsonQ     Type = 15
+	TypeEndJsonQ  Type = 16
 	TypeExit      Type = 99
 
 	// Must be in sync with inspector.Op type.

@@ -126,8 +126,19 @@ func render(w io.Writer, tpl *Tpl, ctx *Ctx) (err error) {
 func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 	switch node.typ {
 	case TypeRaw:
-		// Raw node writes as is.
-		_, err = w.Write(node.raw)
+		if ctx.chJQ {
+			// JSON quote mode.
+			ctx.Buf.Reset().Write(node.raw)
+			err = modJsonEscape(ctx, &ctx.bufX, &ctx.Buf, nil)
+			if err != nil {
+				_, err = w.Write(node.raw)
+			} else {
+				_, err = w.Write(ctx.bufX.(*ByteBuf).Bytes())
+			}
+		} else {
+			// Raw node writes as is.
+			_, err = w.Write(node.raw)
+		}
 	case TypeTpl:
 		// Get data from the context.
 		raw := ctx.get(node.raw)
@@ -426,6 +437,10 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 	case TypeExit:
 		// Interrupt template evaluation.
 		err = ErrInterrupt
+	case TypeJsonQ:
+		ctx.chJQ = true
+	case TypeEndJsonQ:
+		ctx.chJQ = false
 	default:
 		// Unknown node type caught.
 		err = ErrUnknownCtl
