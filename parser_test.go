@@ -254,11 +254,10 @@ func TestParseCutComments(t *testing.T) {
 		{# some comment #}
 		Payload line #1
 		{# EOT #}`)
-	exp := []byte(`		Payload line #0
-		Payload line #1
-`)
+	exp := []byte(`Payload line #0Payload line #1`)
 	p := &Parser{tpl: tpl}
 	p.cutComments()
+	p.cutFmt()
 	if !bytes.Equal(exp, p.tpl) {
 		t.Errorf("comment cut test failed\nexp: %s\ngot: %s", string(exp), string(p.tpl))
 	}

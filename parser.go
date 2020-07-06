@@ -81,7 +81,7 @@ var (
 	opDec = []byte("--")
 
 	// Regexp to clear template.
-	reCutComments = regexp.MustCompile(`\t*{#[^#]*#}\n*`)
+	reCutComments = regexp.MustCompile(`{#[^#]*#}`)
 	reCutFmt      = regexp.MustCompile(`\n+\t*\s*`)
 
 	// Regexp to parse print instructions.
