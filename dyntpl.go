@@ -144,6 +144,15 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			} else {
 				_, err = w.Write(ctx.bufX.(*ByteBuf).Bytes())
 			}
+		} else if ctx.chUE {
+			// URL encode mode.
+			ctx.Buf.Reset().Write(node.raw)
+			err = modUrlEncode(ctx, &ctx.bufX, &ctx.Buf, nil)
+			if err != nil {
+				_, err = w.Write(node.raw)
+			} else {
+				_, err = w.Write(ctx.bufX.(*ByteBuf).Bytes())
+			}
 		} else {
 			// Raw node writes as is.
 			_, err = w.Write(node.raw)
@@ -454,6 +463,10 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 		ctx.chHE = true
 	case TypeEndHtmlE:
 		ctx.chHE = false
+	case TypeUrlEnc:
+		ctx.chUE = true
+	case TypeEndUrlEnc:
+		ctx.chUE = false
 	default:
 		// Unknown node type caught.
 		err = ErrUnknownCtl

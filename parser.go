@@ -59,6 +59,8 @@ var (
 	jqEnd      = []byte("endjsonquote")
 	he         = []byte("htmlescape")
 	heEnd      = []byte("endhtmlescape")
+	ue         = []byte("urlencode")
+	ueEnd      = []byte("endurlencode")
 
 	// Print prefixes and replacements.
 	outmJ = []byte("j")          // json quote
@@ -527,6 +529,20 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 	}
 	if bytes.Equal(t, heEnd) {
 		root.typ = TypeEndHtmlE
+		nodes = addNode(nodes, *root)
+		offset = pos + len(ctl)
+		return nodes, offset, up, err
+	}
+
+	// Check URL encode.
+	if bytes.Equal(t, ue) {
+		root.typ = TypeUrlEnc
+		nodes = addNode(nodes, *root)
+		offset = pos + len(ctl)
+		return nodes, offset, up, err
+	}
+	if bytes.Equal(t, ueEnd) {
+		root.typ = TypeEndUrlEnc
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
 		return nodes, offset, up, err

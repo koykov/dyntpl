@@ -27,6 +27,8 @@ const (
 	TypeEndJsonQ  Type = 16
 	TypeHtmlE     Type = 17
 	TypeEndHtmlE  Type = 18
+	TypeUrlEnc    Type = 19
+	TypeEndUrlEnc Type = 20
 	TypeExit      Type = 99
 
 	// Must be in sync with inspector.Op type.
