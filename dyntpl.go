@@ -135,6 +135,15 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			} else {
 				_, err = w.Write(ctx.bufX.(*ByteBuf).Bytes())
 			}
+		} else if ctx.chHE {
+			// HTML escape mode.
+			ctx.Buf.Reset().Write(node.raw)
+			err = modHtmlEscape(ctx, &ctx.bufX, &ctx.Buf, nil)
+			if err != nil {
+				_, err = w.Write(node.raw)
+			} else {
+				_, err = w.Write(ctx.bufX.(*ByteBuf).Bytes())
+			}
 		} else {
 			// Raw node writes as is.
 			_, err = w.Write(node.raw)
@@ -441,6 +450,10 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 		ctx.chJQ = true
 	case TypeEndJsonQ:
 		ctx.chJQ = false
+	case TypeHtmlE:
+		ctx.chHE = true
+	case TypeEndHtmlE:
+		ctx.chHE = false
 	default:
 		// Unknown node type caught.
 		err = ErrUnknownCtl

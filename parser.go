@@ -57,6 +57,8 @@ var (
 	swEnd      = []byte("endswitch")
 	jq         = []byte("jsonquote")
 	jqEnd      = []byte("endjsonquote")
+	he         = []byte("htmlescape")
+	heEnd      = []byte("endhtmlescape")
 
 	// Print prefixes and replacements.
 	outmJ = []byte("j")          // json quote
@@ -511,6 +513,20 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 	}
 	if bytes.Equal(t, jqEnd) {
 		root.typ = TypeEndJsonQ
+		nodes = addNode(nodes, *root)
+		offset = pos + len(ctl)
+		return nodes, offset, up, err
+	}
+
+	// Check HTML escape.
+	if bytes.Equal(t, he) {
+		root.typ = TypeHtmlE
+		nodes = addNode(nodes, *root)
+		offset = pos + len(ctl)
+		return nodes, offset, up, err
+	}
+	if bytes.Equal(t, heEnd) {
+		root.typ = TypeEndHtmlE
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
 		return nodes, offset, up, err
