@@ -255,3 +255,18 @@ After declaring and registering you can use the helper in conditions:
 {% if <condFnName>(var0, var1, "static val", 0, 15.234) %}...{% endif %}
 ```
 Function will make a decision according arguments you take and will return true or false.
+
+## Bound tags
+
+Dyntpl support special tags to escape/quote the output. Currently, allows three types:
+* `{% jsonquote %}...{% endjsonquote %}` apply JSON escape for all text data.
+* `{% htmlescape %}...{% endhtmlescape %}` apply HTML escape.
+* `{% urlencode %}...{% endurlencode %}` URL encode all text data.
+
+Note, these tags escapes only text data inside. All variables should be escaped using corresponding modifiers. Example:
+```json
+{"key": "{% jsonquote %}Lorem ipsum "dolor sit amet", {%j= var0 %}.{%endjsonquote%}"}
+```
+Here, `{% end/jsonquote %}` applies only for text data `Lorem ipsum "dolor sit amet",`, whereas `var0` prints using JSON-escape printing prefix.
+
+`{% end/htmlescape %}` and `{% end/urlencode %}` works the same.
