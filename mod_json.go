@@ -13,7 +13,7 @@ var (
 	jqCr = byte('\r')
 	jqT  = byte('\t')
 	jqFf = byte('\f')
-	jqBs = byte('\f')
+	jqBs = byte('\b')
 	jqLt = byte('<')
 	jqQs = byte('\'')
 	jqZ  = byte(0)
