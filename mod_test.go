@@ -10,10 +10,12 @@ var (
 	tplModDefStatic = []byte(`{% ctx defaultCost = 999.99 %}Cost is: {%= user.Cost|default(defaultCost) %} USD`)
 	expectModDef    = []byte(`Cost is: 999.99 USD`)
 
-	tplModJsonEscape      = []byte(`{"id":"foo","name":"{%= userName|jsonEscape %}"}`)
-	tplModJsonEscapeShort = []byte(`{"id":"foo","name":"{%j= userName %}"}`)
-	tplModJsonQuoteShort  = []byte(`{"id":"foo","name":{%q= userName %}}`)
-	expectModJson         = []byte(`{"id":"foo","name":"Foo\"bar"}`)
+	tplModJsonEscape       = []byte(`{"id":"foo","name":"{%= userName|jsonEscape %}"}`)
+	tplModJsonEscapeShort  = []byte(`{"id":"foo","name":"{%j= userName %}"}`)
+	tplModJsonQuoteShort   = []byte(`{"id":"foo","name":{%q= userName %}}`)
+	expectModJson          = []byte(`{"id":"foo","name":"Foo\"bar"}`)
+	tplModJsonEscapeDbl    = []byte(`{"obj":"{% jsonquote %}{"inner":"{%j= valueWithQuotes %}"}{% endjsonquote %}"}`)
+	expectModJsonEscapeDbl = []byte(`{"obj":"{\"inner\":\"He said: \\\"welcome friend\\\"\"}"}`)
 
 	tplModUrlEncode    = []byte(`<a href="https://redir.com/{%u= url %}">go to >>></a>`)
 	expectModUrlEncode = []byte(`<a href="https://redir.com/https%3A%2F%2Fgolang.org%2Fsrc%2Fnet%2Furl%2Furl.go%23L100">go to >>></a>`)
@@ -72,6 +74,20 @@ func TestTplModJsonEscape(t *testing.T) {
 	}
 	if !bytes.Equal(result, expectModJson) {
 		t.Error("json escape tpl mismatch")
+	}
+}
+
+func TestTplModJsonEscapeDbl(t *testing.T) {
+	pretest()
+
+	ctx := NewCtx()
+	ctx.SetStatic("valueWithQuotes", `He said: "welcome friend"`)
+	result, err := Render("tplModJsonEscapeDbl", ctx)
+	if err != nil {
+		t.Error(err)
+	}
+	if !bytes.Equal(result, expectModJsonEscapeDbl) {
+		t.Error("json escape (dbl) tpl mismatch")
 	}
 }
 
@@ -166,6 +182,25 @@ func BenchmarkTplModJsonQuote(b *testing.B) {
 		}
 		if !bytes.Equal(buf.Bytes(), expectModJson) {
 			b.Error("json quote tpl mismatch")
+		}
+		ReleaseCtx(ctx)
+	}
+}
+
+func BenchmarkTplModJsonEscapeDbl(b *testing.B) {
+	pretest()
+
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		ctx := AcquireCtx()
+		buf.Reset()
+		ctx.SetStatic("valueWithQuotes", `He said: "welcome friend"`)
+		err := RenderTo(&buf, "tplModJsonEscapeDbl", ctx)
+		if err != nil {
+			b.Error(err)
+		}
+		if !bytes.Equal(buf.Bytes(), expectModJsonEscapeDbl) {
+			b.Error("json escape (dbl) tpl mismatch")
 		}
 		ReleaseCtx(ctx)
 	}

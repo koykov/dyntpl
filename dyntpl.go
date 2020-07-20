@@ -129,12 +129,8 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 		if ctx.chJQ {
 			// JSON quote mode.
 			ctx.Buf.Reset().Write(node.raw)
-			err = modJsonEscape(ctx, &ctx.bufX, &ctx.Buf, nil)
-			if err != nil {
-				_, err = w.Write(node.raw)
-			} else {
-				_, err = w.Write(ctx.bufX.(*ByteBuf).Bytes())
-			}
+			ctx.Buf1 = jsonEscape(node.raw, ctx.Buf1)
+			_, err = w.Write(ctx.Buf1.Bytes())
 		} else if ctx.chHE {
 			// HTML escape mode.
 			ctx.Buf.Reset().Write(node.raw)

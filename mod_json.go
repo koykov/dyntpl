@@ -46,9 +46,8 @@ func modJsonQuote(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{}) 
 // JSON escape of string value.
 func modJsonEscape(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{}) error {
 	var (
-		b    []byte
-		l, o int
-		err  error
+		b   []byte
+		err error
 	)
 	ctx.Buf2.Reset()
 	if p, ok := ConvBytes(val); ok {
@@ -60,48 +59,62 @@ func modJsonEscape(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{})
 	} else {
 		return ErrModNoStr
 	}
-	l = len(b)
-	if l == 0 {
-		return nil
+	ctx.Buf1 = jsonEscape(b, ctx.Buf1)
+	if ctx.chJQ {
+		// Double escape when "jsonquote" bonds found.
+		ctx.Buf2.Reset()
+		ctx.Buf2 = jsonEscape(ctx.Buf1.Bytes(), ctx.Buf2)
+		*buf = &ctx.Buf2
+	} else {
+		*buf = &ctx.Buf1
 	}
-	ctx.Buf1.Reset()
+
+	return nil
+}
+
+// Internal JSON escape helper.
+func jsonEscape(b []byte, buf ByteBuf) ByteBuf {
+	var o int
+	l := len(b)
+	if l == 0 {
+		return buf
+	}
+	buf.Reset()
 	_ = b[l-1]
 	for i := 0; i < l; i++ {
 		switch b[i] {
 		case jqQd:
-			ctx.Buf1.Write(b[o:i]).Write(jqQdR)
+			buf.Write(b[o:i]).Write(jqQdR)
 			o = i + 1
 		case jqSl:
-			ctx.Buf1.Write(b[o:i]).Write(jqSlR)
+			buf.Write(b[o:i]).Write(jqSlR)
 			o = i + 1
 		case jqNl:
-			ctx.Buf1.Write(b[o:i]).Write(jqNlR)
+			buf.Write(b[o:i]).Write(jqNlR)
 			o = i + 1
 		case jqCr:
-			ctx.Buf1.Write(b[o:i]).Write(jqCrR)
+			buf.Write(b[o:i]).Write(jqCrR)
 			o = i + 1
 		case jqT:
-			ctx.Buf1.Write(b[o:i]).Write(jqTR)
+			buf.Write(b[o:i]).Write(jqTR)
 			o = i + 1
 		case jqFf:
-			ctx.Buf1.Write(b[o:i]).Write(jqFfR)
+			buf.Write(b[o:i]).Write(jqFfR)
 			o = i + 1
 		case jqBs:
-			ctx.Buf1.Write(b[o:i]).Write(jqBsR)
+			buf.Write(b[o:i]).Write(jqBsR)
 			o = i + 1
 		case jqLt:
-			ctx.Buf1.Write(b[o:i]).Write(jqLtR)
+			buf.Write(b[o:i]).Write(jqLtR)
 			o = i + 1
 		case jqQs:
-			ctx.Buf1.Write(b[o:i]).Write(jqQsR)
+			buf.Write(b[o:i]).Write(jqQsR)
 			o = i + 1
 		case jqZ:
-			ctx.Buf1.Write(b[o:i]).Write(jqZR)
+			buf.Write(b[o:i]).Write(jqZR)
 			o = i + 1
 		}
 	}
-	ctx.Buf1.Write(b[o:])
-	*buf = &ctx.Buf1
-
-	return nil
+	buf.Write(b[o:])
+	return buf
 }
