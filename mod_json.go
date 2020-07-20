@@ -59,6 +59,7 @@ func modJsonEscape(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{})
 	} else {
 		return ErrModNoStr
 	}
+	ctx.Buf1.Reset()
 	ctx.Buf1 = jsonEscape(b, ctx.Buf1)
 	if ctx.chJQ {
 		// Double escape when "jsonquote" bonds found.
