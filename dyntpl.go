@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/koykov/any2bytes"
+	"github.com/koykov/bytealg"
 	"github.com/koykov/fastconv"
 	"github.com/koykov/inspector"
 )
@@ -138,7 +139,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			if err != nil {
 				_, err = w.Write(node.raw)
 			} else {
-				_, err = w.Write(ctx.bufX.(*ByteBuf).Bytes())
+				_, err = w.Write(ctx.bufX.(*bytealg.ChainBuf).Bytes())
 			}
 		} else if ctx.chUE {
 			// URL encode mode.
@@ -147,7 +148,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			if err != nil {
 				_, err = w.Write(node.raw)
 			} else {
-				_, err = w.Write(ctx.bufX.(*ByteBuf).Bytes())
+				_, err = w.Write(ctx.bufX.(*bytealg.ChainBuf).Bytes())
 			}
 		} else {
 			// Raw node writes as is.

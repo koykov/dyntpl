@@ -1,7 +1,5 @@
 package dyntpl
 
-import "github.com/koykov/any2bytes"
-
 func init() {
 	// Register simple builtin modifiers.
 	RegisterModFn("default", "def", modDefault)
@@ -26,7 +24,4 @@ func init() {
 	RegisterCondFn("lenEq0", condLenEq0)
 	RegisterCondFn("lenGt0", condLenGt0)
 	RegisterCondFn("lenGtq0", condLenGtq0)
-
-	// Register byte buffer to bytes function.
-	any2bytes.RegisterAnyToBytesFn(ByteBufToBytes)
 }

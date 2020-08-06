@@ -31,7 +31,7 @@ type Ctx struct {
 	rl *RangeLoop
 
 	// External buffers to use in modifier and condition helpers.
-	Buf, Buf1, Buf2 ByteBuf
+	Buf, Buf1, Buf2 bytealg.ChainBuf
 
 	BufB bool
 	BufI int64
@@ -66,9 +66,9 @@ func NewCtx() *Ctx {
 	ctx := Ctx{
 		vars: make([]ctxVar, 0),
 		bufS: make([]string, 0),
-		Buf:  make(ByteBuf, 0),
-		Buf1: make(ByteBuf, 0),
-		Buf2: make(ByteBuf, 0),
+		Buf:  make(bytealg.ChainBuf, 0),
+		Buf1: make(bytealg.ChainBuf, 0),
+		Buf2: make(bytealg.ChainBuf, 0),
 		buf:  make([]byte, 0),
 		bufA: make([]interface{}, 0),
 	}

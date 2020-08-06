@@ -4,7 +4,7 @@ import "regexp"
 
 var (
 	// Regexp to check is argument is static value.
-	isStaticRE = regexp.MustCompile(`^\d+\.*\d*|true|false|nil|"[^"]*"|'[^']*'$`)
+	isStaticRE = regexp.MustCompile(`^(\d+\.*\d*|true|false|nil|"[^"]*"|'[^']*')$`)
 )
 
 // Check if arg is static value.

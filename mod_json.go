@@ -2,6 +2,7 @@ package dyntpl
 
 import (
 	"github.com/koykov/any2bytes"
+	"github.com/koykov/bytealg"
 	"github.com/koykov/fastconv"
 )
 
@@ -33,12 +34,12 @@ var (
 
 // JSON quote of string value - '"' + JSON escape + '"'.
 func modJsonQuote(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{}) error {
-	ctx.Buf.Reset().WriteB(jqQd)
+	ctx.Buf.Reset().WriteByte(jqQd)
 	err := modJsonEscape(ctx, buf, val, nil)
 	if err == nil {
 		ctx.Buf.Write(ctx.Buf1)
 	}
-	ctx.Buf.WriteB(jqQd)
+	ctx.Buf.WriteByte(jqQd)
 	*buf = &ctx.Buf
 	return nil
 }
@@ -74,7 +75,7 @@ func modJsonEscape(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{})
 }
 
 // Internal JSON escape helper.
-func jsonEscape(b []byte, buf ByteBuf) ByteBuf {
+func jsonEscape(b []byte, buf bytealg.ChainBuf) bytealg.ChainBuf {
 	var o int
 	l := len(b)
 	if l == 0 {

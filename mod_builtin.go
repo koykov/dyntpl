@@ -227,11 +227,11 @@ func modUrlEncode(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{}) 
 	for i := 0; i < l; i++ {
 		switch {
 		case b[i] >= 'a' && b[i] <= 'z' || b[i] >= 'A' && b[i] <= 'Z' || b[i] >= '0' && b[i] <= '9' || b[i] == '-' || b[i] == '.' || b[i] == '_':
-			ctx.Buf.WriteB(b[i])
+			ctx.Buf.WriteByte(b[i])
 		case b[i] == ' ':
-			ctx.Buf.WriteB('+')
+			ctx.Buf.WriteByte('+')
 		default:
-			ctx.Buf.WriteB('%').WriteB(hexUp[b[i]>>4]).WriteB(hexUp[b[i]&15])
+			ctx.Buf.WriteByte('%').WriteByte(hexUp[b[i]>>4]).WriteByte(hexUp[b[i]&15])
 		}
 	}
 	*buf = &ctx.Buf
