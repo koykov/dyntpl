@@ -223,16 +223,19 @@ func modUrlEncode(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{}) 
 		return ErrModEmptyStr
 	}
 	ctx.Buf.Reset()
-	_ = b[l-1]
-	for i := 0; i < l; i++ {
-		switch {
-		case b[i] >= 'a' && b[i] <= 'z' || b[i] >= 'A' && b[i] <= 'Z' || b[i] >= '0' && b[i] <= '9' || b[i] == '-' || b[i] == '.' || b[i] == '_':
+	// Use goto+if instead of for loop to make function inline and speed up it.
+	i := 0
+loop:
+	if i < l {
+		if b[i] >= 'a' && b[i] <= 'z' || b[i] >= 'A' && b[i] <= 'Z' || b[i] >= '0' && b[i] <= '9' || b[i] == '-' || b[i] == '.' || b[i] == '_' {
 			ctx.Buf.WriteByte(b[i])
-		case b[i] == ' ':
+		} else if b[i] == ' ' {
 			ctx.Buf.WriteByte('+')
-		default:
+		} else {
 			ctx.Buf.WriteByte('%').WriteByte(hexUp[b[i]>>4]).WriteByte(hexUp[b[i]&15])
 		}
+		i++
+		goto loop
 	}
 	*buf = &ctx.Buf
 	return

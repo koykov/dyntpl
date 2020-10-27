@@ -82,40 +82,53 @@ func jsonEscape(b []byte, buf bytealg.ChainBuf) bytealg.ChainBuf {
 		return buf
 	}
 	buf.Reset()
-	_ = b[l-1]
-	for i := 0; i < l; i++ {
-		switch b[i] {
-		case jqQd:
+	// Use goto+if instead of for loop to make function inline and speed up it.
+	i := 0
+loop:
+	if i < l {
+		c := b[i]
+		if c == jqQd {
 			buf.Write(b[o:i]).Write(jqQdR)
 			o = i + 1
-		case jqSl:
+		}
+		if c == jqSl {
 			buf.Write(b[o:i]).Write(jqSlR)
 			o = i + 1
-		case jqNl:
+		}
+		if c == jqNl {
 			buf.Write(b[o:i]).Write(jqNlR)
 			o = i + 1
-		case jqCr:
+		}
+		if c == jqCr {
 			buf.Write(b[o:i]).Write(jqCrR)
 			o = i + 1
-		case jqT:
+		}
+		if c == jqT {
 			buf.Write(b[o:i]).Write(jqTR)
 			o = i + 1
-		case jqFf:
+		}
+		if c == jqFf {
 			buf.Write(b[o:i]).Write(jqFfR)
 			o = i + 1
-		case jqBs:
+		}
+		if c == jqBs {
 			buf.Write(b[o:i]).Write(jqBsR)
 			o = i + 1
-		case jqLt:
+		}
+		if c == jqLt {
 			buf.Write(b[o:i]).Write(jqLtR)
 			o = i + 1
-		case jqQs:
+		}
+		if c == jqQs {
 			buf.Write(b[o:i]).Write(jqQsR)
 			o = i + 1
-		case jqZ:
+		}
+		if c == jqZ {
 			buf.Write(b[o:i]).Write(jqZR)
 			o = i + 1
 		}
+		i++
+		goto loop
 	}
 	buf.Write(b[o:])
 	return buf
