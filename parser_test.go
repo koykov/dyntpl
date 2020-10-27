@@ -57,6 +57,11 @@ raw: "key5": "foo bar"}
 tpl: user.Name mod default("anonymous")
 raw: !
 `)
+	tplModNoVarOrigin = []byte(`Welcome, {%= testNameOf(user, "anonymous") %}!`)
+	tplModNoVarExpect = []byte(`raw: Welcome, 
+tpl:  mod testNameOf(user, "anonymous")
+raw: !
+`)
 
 	tplExitOrigin = []byte(`{% if user.Status == 0 %}
 	{% exit %}
@@ -307,6 +312,14 @@ func TestParseMod(t *testing.T) {
 	r := tree.HumanReadable()
 	if !bytes.Equal(r, tplModExpect) {
 		t.Errorf("mod test failed\nexp: %s\ngot: %s", string(tplModExpect), string(r))
+	}
+}
+
+func TestParseModNoVar(t *testing.T) {
+	tree, _ := Parse(tplModNoVarOrigin, false)
+	r := tree.HumanReadable()
+	if !bytes.Equal(r, tplModNoVarExpect) {
+		t.Errorf("mod (no var) test failed\nexp: %s\ngot: %s", string(tplModNoVarExpect), string(r))
 	}
 }
 

@@ -24,4 +24,7 @@ func init() {
 	RegisterCondFn("lenEq0", condLenEq0)
 	RegisterCondFn("lenGt0", condLenGt0)
 	RegisterCondFn("lenGtq0", condLenGtq0)
+
+	// Register test modifiers.
+	RegisterModFn("testNameOf", "", modTestNameOf)
 }

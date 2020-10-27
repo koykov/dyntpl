@@ -237,3 +237,8 @@ func modUrlEncode(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{}) 
 	*buf = &ctx.Buf
 	return
 }
+
+func modTestNameOf(_ *Ctx, _ *interface{}, _ interface{}, _ []interface{}) (err error) {
+	// do nothing
+	return
+}

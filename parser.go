@@ -91,12 +91,13 @@ var (
 	reCutFmt      = regexp.MustCompile(`\n+\t*\s*`)
 
 	// Regexp to parse print instructions.
-	reTplPS   = regexp.MustCompile(`^([jhqu]*|[fF]\.*\d*)=\s*(.*) (?:prefix|pfx) (.*) (?:suffix|sfx) (.*)`)
-	reTplP    = regexp.MustCompile(`^([jhqu]*|[fF]\.*\d*)=\s*(.*) (?:prefix|pfx) (.*)`)
-	reTplS    = regexp.MustCompile(`^([jhqu]*|[fF]\.*\d*)=\s*(.*) (?:suffix|sfx) (.*)`)
-	reTpl     = regexp.MustCompile(`^([jhqu]*|[fF]\.*\d*)= (.*)`)
-	reModPfxF = regexp.MustCompile(`([fF]+)\.*(\d*)`)
-	reMod     = regexp.MustCompile(`([^(]+)\(*([^)]*)\)*`)
+	reTplPS    = regexp.MustCompile(`^([jhqu]*|[fF]\.*\d*)=\s*(.*) (?:prefix|pfx) (.*) (?:suffix|sfx) (.*)`)
+	reTplP     = regexp.MustCompile(`^([jhqu]*|[fF]\.*\d*)=\s*(.*) (?:prefix|pfx) (.*)`)
+	reTplS     = regexp.MustCompile(`^([jhqu]*|[fF]\.*\d*)=\s*(.*) (?:suffix|sfx) (.*)`)
+	reTpl      = regexp.MustCompile(`^([jhqu]*|[fF]\.*\d*)= (.*)`)
+	reModPfxF  = regexp.MustCompile(`([fF]+)\.*(\d*)`)
+	reModNoVar = regexp.MustCompile(`([^(]+)\(([^)]*)\)`)
+	reMod      = regexp.MustCompile(`([^(]+)\(*([^)]*)\)*`)
 
 	// Regexp to parse context instruction.
 	reCtxAs = regexp.MustCompile(`(?:context|ctx) (\w+)\s*=\s*([\w\s.,|()]+) as (\w*)`)
@@ -605,11 +606,17 @@ func (p *Parser) parseOp(src []byte) Op {
 
 // Split print structure to value and mods list.
 func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
-	if bytes.Contains(t, vline) || len(outm) > 0 {
+	hasVline := bytes.Contains(t, vline)
+	modNoVar := reModNoVar.Match(t) && !hasVline
+	if hasVline || modNoVar || len(outm) > 0 {
 		// First try to extract suffix mods, like ...|default(0).
 		mods := make([]mod, 0)
 		chunks := bytes.Split(t, vline)
-		for i := 1; i < len(chunks); i++ {
+		var idx = 1
+		if modNoVar {
+			idx = 0
+		}
+		for i := idx; i < len(chunks); i++ {
 			if m := reMod.FindSubmatch(chunks[i]); m != nil {
 				fn := GetModFn(fastconv.B2S(m[1]))
 				if fn == nil {
@@ -682,6 +689,9 @@ func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
 			}
 		}
 
+		if modNoVar {
+			return nil, mods
+		}
 		return chunks[0], mods
 	} else {
 		return t, nil
