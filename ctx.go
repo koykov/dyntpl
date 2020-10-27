@@ -200,6 +200,7 @@ func (c *Ctx) Get(path string) interface{} {
 func (c *Ctx) Reset() {
 	for i := 0; i < c.ln; i++ {
 		c.vars[i].cntrF = false
+		c.vars[i].val = nil
 	}
 
 	c.Err = nil
