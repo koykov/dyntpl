@@ -162,6 +162,7 @@ func (c *Ctx) setCntr(key string, val int) {
 			c.vars[i].cntr = val
 			c.vars[i].ins = ins
 			c.vars[i].val = nil
+			c.vars[i].buf = c.vars[i].buf[:0]
 			return
 		}
 	}
@@ -171,6 +172,7 @@ func (c *Ctx) setCntr(key string, val int) {
 		c.vars[c.ln].cntr = val
 		c.vars[c.ln].ins = ins
 		c.vars[c.ln].val = nil
+		c.vars[c.ln].buf = c.vars[c.ln].buf[:0]
 	} else {
 		v := ctxVar{
 			key:   key,
@@ -201,6 +203,7 @@ func (c *Ctx) Reset() {
 	for i := 0; i < c.ln; i++ {
 		c.vars[i].cntrF = false
 		c.vars[i].val = nil
+		c.vars[i].buf = c.vars[i].buf[:0]
 	}
 
 	c.Err = nil
@@ -244,7 +247,7 @@ func (c *Ctx) get(path []byte) interface{} {
 		}
 		if v.key == c.bufS[0] {
 			// Var found.
-			if v.val == nil && v.buf != nil {
+			if v.val == nil && len(v.buf) > 0 {
 				// Special case: var is a byte slice.
 				c.Buf.Write(v.buf)
 				c.bufX = &c.Buf
