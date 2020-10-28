@@ -249,7 +249,7 @@ func (c *Ctx) get(path []byte) interface{} {
 			// Var found.
 			if v.val == nil && len(v.buf) > 0 {
 				// Special case: var is a byte slice.
-				c.Buf.Write(v.buf)
+				c.Buf.Reset().Write(v.buf)
 				c.bufX = &c.Buf
 				return c.bufX
 			}
