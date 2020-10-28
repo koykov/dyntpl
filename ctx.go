@@ -138,9 +138,9 @@ func (c *Ctx) SetBytes(key string, val []byte) {
 	} else {
 		v := ctxVar{
 			key: key,
-			buf: val,
 			ins: ins,
 		}
+		v.buf = append(v.buf, val...)
 		c.vars = append(c.vars, v)
 	}
 	c.ln++
