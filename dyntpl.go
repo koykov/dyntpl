@@ -3,12 +3,12 @@ package dyntpl
 import (
 	"bytes"
 	"io"
-	"sync"
 
 	"github.com/koykov/any2bytes"
 	"github.com/koykov/bytealg"
 	"github.com/koykov/fastconv"
 	"github.com/koykov/inspector"
+	"github.com/koykov/policy"
 )
 
 // Main template object.
@@ -21,7 +21,7 @@ type Tpl struct {
 
 var (
 	// Templates registry.
-	mux         sync.Mutex
+	lock        policy.Lock
 	tplRegistry = map[string]*Tpl{}
 
 	// Suppress go vet warning.
@@ -36,9 +36,9 @@ func RegisterTpl(id string, tree *Tree) {
 		Id:   id,
 		tree: tree,
 	}
-	mux.Lock()
+	lock.Lock()
 	tplRegistry[id] = &tpl
-	mux.Unlock()
+	lock.Unlock()
 }
 
 // Render template with id according given context.
@@ -74,9 +74,9 @@ func RenderFb(id, fbId string, ctx *Ctx) ([]byte, error) {
 //
 // Using this function together with byte buffer pool reduces allocations.
 func RenderTo(w io.Writer, id string, ctx *Ctx) (err error) {
-	mux.Lock()
+	lock.Lock()
 	tpl, ok := tplRegistry[id]
-	mux.Unlock()
+	lock.Unlock()
 	if !ok {
 		err = ErrTplNotFound
 		return
@@ -93,12 +93,12 @@ func RenderFbTo(w io.Writer, id, fbId string, ctx *Ctx) (err error) {
 		tpl *Tpl
 		ok  bool
 	)
-	mux.Lock()
+	lock.Lock()
 	tpl, ok = tplRegistry[id]
 	if !ok {
 		tpl, ok = tplRegistry[fbId]
 	}
-	mux.Unlock()
+	lock.Unlock()
 	if !ok {
 		err = ErrTplNotFound
 		return
