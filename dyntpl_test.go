@@ -202,6 +202,8 @@ func pretest() {
 		"tplModHtmlEscape":      tplModHtmlEscape,
 		"tplModHtmlEscapeShort": tplModHtmlEscapeShort,
 		"tplModUrlEncode":       tplModUrlEncode,
+		"tplModUrlEncode2":      tplModUrlEncode2,
+		"tplModUrlEncode3":      tplModUrlEncode3,
 		"tplModIfThen":          tplModIfThen,
 		"tplModIfThenElse":      tplModIfThenElse,
 		"tplModRound":           tplModRound,

@@ -36,6 +36,7 @@ type target map[int]int
 var (
 	// Byte constants.
 	empty      []byte
+	one        = []byte("1")
 	space      = []byte(" ")
 	comma      = []byte(",")
 	uscore     = []byte("_")
@@ -642,40 +643,51 @@ func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
 		}
 
 		// Second check prefix mods, like {%q= ... %}, {%u= ... %}, ...
+		// check single or multiple prefix mod
+		checkEqMany := func(a, b []byte) (*arg, bool) {
+			if len(a) == 1 && len(b) == 1 && bytes.Equal(a, b) {
+				return &arg{val: one, static: true}, true
+			}
+			if len(a) > 1 && len(b) == 1 && a[0] == b[0] {
+				cnt := strconv.Itoa(len(a))
+				return &arg{val: fastconv.S2B(cnt), static: true}, bytes.Equal(a, bytes.Repeat(b, len(a)))
+			}
+			return nil, false
+		}
 		// - {%j= ... %} - JSON escape.
-		if bytes.Equal(outm, outmJ) {
+		if a, ok := checkEqMany(outm, outmJ); ok {
 			fn := GetModFn("jsonEscape")
 			mods = append(mods, mod{
 				id:  idJ,
 				fn:  fn,
-				arg: make([]*arg, 0),
+				arg: []*arg{a},
 			})
 		}
 		// - {%q= ... %} - JSON quote.
-		if bytes.Equal(outm, outmQ) {
+		if a, ok := checkEqMany(outm, outmQ); ok {
 			fn := GetModFn("jsonQuote")
 			mods = append(mods, mod{
 				id:  idQ,
 				fn:  fn,
-				arg: make([]*arg, 0),
+				arg: []*arg{a},
 			})
 		}
 		// - {%h= ... %} - HTML escape.
-		if bytes.Equal(outm, outmH) {
+		if a, ok := checkEqMany(outm, outmH); ok {
 			fn := GetModFn("htmlEscape")
 			mods = append(mods, mod{
 				id:  idH,
 				fn:  fn,
-				arg: make([]*arg, 0),
+				arg: []*arg{a},
 			})
 		}
 		// - {%u= ... %} - URL encode.
-		if bytes.Equal(outm, outmU) {
+		if a, ok := checkEqMany(outm, outmU); ok {
 			fn := GetModFn("urlEncode")
 			mods = append(mods, mod{
 				id:  idU,
 				fn:  fn,
-				arg: make([]*arg, 0),
+				arg: []*arg{a},
 			})
 		}
 		if m := reModPfxF.FindSubmatch(outm); m != nil {

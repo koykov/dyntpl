@@ -17,8 +17,12 @@ var (
 	tplModJsonEscapeDbl    = []byte(`{"obj":"{% jsonquote %}{"inner":"{%j= valueWithQuotes %}"}{% endjsonquote %}"}`)
 	expectModJsonEscapeDbl = []byte(`{"obj":"{\"inner\":\"He said: \\\"welcome friend\\\"\"}"}`)
 
-	tplModUrlEncode    = []byte(`<a href="https://redir.com/{%u= url %}">go to >>></a>`)
-	expectModUrlEncode = []byte(`<a href="https://redir.com/https%3A%2F%2Fgolang.org%2Fsrc%2Fnet%2Furl%2Furl.go%23L100">go to >>></a>`)
+	tplModUrlEncode     = []byte(`<a href="https://redir.com/{%u= url %}">go to >>></a>`)
+	expectModUrlEncode  = []byte(`<a href="https://redir.com/https%3A%2F%2Fgolang.org%2Fsrc%2Fnet%2Furl%2Furl.go%23L100">go to >>></a>`)
+	tplModUrlEncode2    = []byte(`<a href="https://redir.com/{%uu= url %}">go to >>></a>`)
+	expectModUrlEncode2 = []byte(`<a href="https://redir.com/https%253A%252F%252Fgolang.org%252Fsrc%252Fnet%252Furl%252Furl.go%2523L100">go to >>></a>`)
+	tplModUrlEncode3    = []byte(`<a href="https://redir.com/{%uuu= url %}">go to >>></a>`)
+	expectModUrlEncode3 = []byte(`<a href="https://redir.com/https%25253A%25252F%25252Fgolang.org%25252Fsrc%25252Fnet%25252Furl%25252Furl.go%252523L100">go to >>></a>`)
 
 	tplModHtmlEscape      = []byte(`<a href="https://golang.org/" title="{%= title|htmlEscape %}">{%= text|he %}</a>`)
 	tplModHtmlEscapeShort = []byte(`<a href="https://golang.org/" title="{%h= title %}">{%h= text %}</a>`)
@@ -117,6 +121,34 @@ func TestTplModUrlEncode(t *testing.T) {
 	}
 	if !bytes.Equal(result, expectModUrlEncode) {
 		t.Error("url encode tpl mismatch")
+	}
+}
+
+func TestTplModUrlEncode2(t *testing.T) {
+	pretest()
+
+	ctx := NewCtx()
+	ctx.SetStatic("url", `https://golang.org/src/net/url/url.go#L100`)
+	result, err := Render("tplModUrlEncode2", ctx)
+	if err != nil {
+		t.Error(err)
+	}
+	if !bytes.Equal(result, expectModUrlEncode2) {
+		t.Error("url encode 2 tpl mismatch")
+	}
+}
+
+func TestTplModUrlEncode3(t *testing.T) {
+	pretest()
+
+	ctx := NewCtx()
+	ctx.SetStatic("url", `https://golang.org/src/net/url/url.go#L100`)
+	result, err := Render("tplModUrlEncode3", ctx)
+	if err != nil {
+		t.Error(err)
+	}
+	if !bytes.Equal(result, expectModUrlEncode3) {
+		t.Error("url encode 3 tpl mismatch")
 	}
 }
 
@@ -226,7 +258,7 @@ func BenchmarkTplModHtmlEscape(b *testing.B) {
 	}
 }
 
-func BenchmarkTplModUrlEncode(b *testing.B) {
+func benchModUrlEncode(b *testing.B, tplID string, expect []byte, failMsg string) {
 	pretest()
 
 	b.ReportAllocs()
@@ -234,15 +266,27 @@ func BenchmarkTplModUrlEncode(b *testing.B) {
 		ctx := AcquireCtx()
 		buf.Reset()
 		ctx.SetStatic("url", `https://golang.org/src/net/url/url.go#L100`)
-		err := RenderTo(&buf, "tplModUrlEncode", ctx)
+		err := RenderTo(&buf, tplID, ctx)
 		if err != nil {
 			b.Error(err)
 		}
-		if !bytes.Equal(buf.Bytes(), expectModUrlEncode) {
-			b.Error("url encode tpl mismatch")
+		if !bytes.Equal(buf.Bytes(), expect) {
+			b.Error(failMsg)
 		}
 		ReleaseCtx(ctx)
 	}
+}
+
+func BenchmarkTplModUrlEncode(b *testing.B) {
+	benchModUrlEncode(b, "tplModUrlEncode", expectModUrlEncode, "url encode tpl mismatch")
+}
+
+func BenchmarkTplModUrlEncode2(b *testing.B) {
+	benchModUrlEncode(b, "tplModUrlEncode2", expectModUrlEncode2, "url encode 2 tpl mismatch")
+}
+
+func BenchmarkTplModUrlEncode3(b *testing.B) {
+	benchModUrlEncode(b, "tplModUrlEncode3", expectModUrlEncode3, "url encode 3 tpl mismatch")
 }
 
 func BenchmarkTplModIfThen(b *testing.B) {

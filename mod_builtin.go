@@ -2,6 +2,7 @@ package dyntpl
 
 import (
 	"math"
+	"strconv"
 
 	"github.com/koykov/fastconv"
 )
@@ -206,36 +207,43 @@ func roundHelper(f float64, mode int, args []interface{}) float64 {
 // URL encode string value.
 //
 // see https://golang.org/src/net/url/url.go#L100
-func modUrlEncode(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{}) (err error) {
-	var (
-		b []byte
-		l int
-	)
+func modUrlEncode(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
+	// Get count of encode iterations (cases: uu=, uuu=, ...).
+	itr := 1
+	if len(args) > 0 {
+		if itrRaw, ok := args[0].(*[]byte); ok {
+			if itr64, err := strconv.ParseInt(fastconv.B2S(*itrRaw), 10, 64); err == nil {
+				itr = int(itr64)
+			}
+		}
+	}
+
+	// Get the source.
 	if p, ok := ConvBytes(val); ok {
-		b = p
+		ctx.buf = append(ctx.buf[:0], p...)
 	} else if s, ok := ConvStr(val); ok {
-		b = fastconv.S2B(s)
+		ctx.buf = append(ctx.buf[:0], fastconv.S2B(s)...)
 	} else {
 		return ErrModNoStr
 	}
-	l = len(b)
+	l := len(ctx.buf)
 	if l == 0 {
 		return ErrModEmptyStr
 	}
-	ctx.Buf.Reset()
-	// Use goto+if instead of for loop to make function inline and speed up it.
-	i := 0
-loop:
-	if i < l {
-		if b[i] >= 'a' && b[i] <= 'z' || b[i] >= 'A' && b[i] <= 'Z' || b[i] >= '0' && b[i] <= '9' || b[i] == '-' || b[i] == '.' || b[i] == '_' {
-			ctx.Buf.WriteByte(b[i])
-		} else if b[i] == ' ' {
-			ctx.Buf.WriteByte('+')
-		} else {
-			ctx.Buf.WriteByte('%').WriteByte(hexUp[b[i]>>4]).WriteByte(hexUp[b[i]&15])
+	for c := 0; c < itr; c++ {
+		ctx.Buf.Reset()
+		for i := 0; i < l; i++ {
+			if ctx.buf[i] >= 'a' && ctx.buf[i] <= 'z' || ctx.buf[i] >= 'A' && ctx.buf[i] <= 'Z' ||
+				ctx.buf[i] >= '0' && ctx.buf[i] <= '9' || ctx.buf[i] == '-' || ctx.buf[i] == '.' || ctx.buf[i] == '_' {
+				ctx.Buf.WriteByte(ctx.buf[i])
+			} else if ctx.buf[i] == ' ' {
+				ctx.Buf.WriteByte('+')
+			} else {
+				ctx.Buf.WriteByte('%').WriteByte(hexUp[ctx.buf[i]>>4]).WriteByte(hexUp[ctx.buf[i]&15])
+			}
 		}
-		i++
-		goto loop
+		ctx.buf = append(ctx.buf[:0], ctx.Buf...)
+		l = ctx.Buf.Len()
 	}
 	*buf = &ctx.Buf
 	return
