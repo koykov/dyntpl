@@ -152,6 +152,26 @@ func (t *Tree) hrHelper(buf *bytes.Buffer, nodes []Node, indent []byte, depth in
 			buf.WriteString("val ")
 			buf.Write(node.caseL)
 		}
+		if len(node.caseHlp) > 0 {
+			buf.Write(node.caseHlp)
+			if len(node.caseHlpArg) > 0 {
+				buf.WriteByte('(')
+				for j, a := range node.caseHlpArg {
+					if j > 0 {
+						buf.WriteByte(',')
+						buf.WriteByte(' ')
+					}
+					if a.static {
+						buf.WriteByte('"')
+						buf.Write(a.val)
+						buf.WriteByte('"')
+					} else {
+						buf.Write(a.val)
+					}
+				}
+				buf.WriteByte(')')
+			}
+		}
 
 		if len(node.mod) > 0 {
 			buf.WriteString(" mod")

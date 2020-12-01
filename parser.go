@@ -121,8 +121,9 @@ var (
 	reLoopCount = regexp.MustCompile(`for (\w*)\s*:*=\s*(\w+)\s*;\s*\w+\s*(<|<=|>|>=|!=)+\s*([^;]+)\s*;\s*\w*(--|\+\+)+\s*(?:separator|sep)*\s*(.*)`)
 
 	// Regexp to parse switch instruction.
-	reSwitch     = regexp.MustCompile(`^switch\s*(.*)`)
-	reSwitchCase = regexp.MustCompile(`case ([^<=>!]+)([<=>!]{2})*(.*)`)
+	reSwitch           = regexp.MustCompile(`^switch\s*(.*)`)
+	reSwitchCase       = regexp.MustCompile(`case ([^<=>!]+)([<=>!]{2})*(.*)`)
+	reSwitchCaseHelper = regexp.MustCompile(`case ([^(]+)\(*([^)]*)\)`)
 
 	// Suppress go vet warning.
 	_ = ParseFile
@@ -475,7 +476,16 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 		nodes = addNode(nodes, *root)
 		return nodes, offset, up, err
 	}
-	// Check switch's case.
+	// Check switch's case with condition helper.
+	if m := reSwitchCaseHelper.FindSubmatch(t); m != nil {
+		root.typ = TypeCase
+		root.caseHlp = m[1]
+		root.caseHlpArg = p.extractArgs(m[2])
+		nodes = addNode(nodes, *root)
+		offset = pos + len(ctl)
+		return nodes, offset, up, err
+	}
+	// Check switch's case with simple condition.
 	if reSwitchCase.Match(t) {
 		root.typ = TypeCase
 		root.caseL, root.caseR, root.caseStaticL, root.caseStaticR, root.caseOp = p.parseCaseExpr(t)

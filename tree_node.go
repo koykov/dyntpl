@@ -47,6 +47,8 @@ type Node struct {
 	caseStaticL bool
 	caseStaticR bool
 	caseOp      Op
+	caseHlp     []byte
+	caseHlpArg  []*arg
 
 	mod []mod
 

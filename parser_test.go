@@ -251,6 +251,31 @@ switch:
 		raw: "no_data": true
 raw: }]
 `)
+	switchNoCondHelperOrigin = []byte(`
+[
+	{
+		{% switch %}
+		{% case firstItem(item) %}
+			"name": {%= item.Name %},
+		{% case secondItem(item, false) %}
+			{%= item.Slug pfx "slug": sfx , %}
+		{% case anonItem(item, 1) %}
+			"no_data": true
+		{% endswitch %}
+	}
+]`)
+	switchNoCondHelperExpect = []byte(`raw: [{
+switch: 
+	case: firstItem(item)
+		raw: "name": 
+		tpl: item.Name
+		raw: ,
+	case: secondItem(item, "false")
+		tpl: item.Slug pfx "slug": sfx ,
+	case: anonItem(item, "1")
+		raw: "no_data": true
+raw: }]
+`)
 )
 
 func TestParseCutComments(t *testing.T) {
@@ -378,5 +403,11 @@ func TestParseSwitch(t *testing.T) {
 	rNC := treeNC.HumanReadable()
 	if !bytes.Equal(rNC, switchNoCondExpect) {
 		t.Errorf("switch no cond test failed\nexp: %s\ngot: %s", string(switchNoCondExpect), string(rNC))
+	}
+
+	treeNCH, _ := Parse(switchNoCondHelperOrigin, false)
+	rNCH := treeNCH.HumanReadable()
+	if !bytes.Equal(rNCH, switchNoCondHelperExpect) {
+		t.Errorf("switch no cond with helper condition test failed\nexp: %s\ngot: %s", string(switchNoCondHelperExpect), string(rNCH))
 	}
 }

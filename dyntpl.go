@@ -407,27 +407,50 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			// Switch without condition case.
 			for _, ch := range node.child {
 				if ch.typ == TypeCase {
-					sl := ch.caseStaticL
-					sr := ch.caseStaticR
-					if sl && sr {
-						err = ErrSenselessCond
-						return
-					}
-					if sr {
-						// Right side is static.
-						r = ctx.cmp(ch.caseL, ch.caseOp, ch.caseR)
-					} else if sl {
-						// Left side is static.
-						r = ctx.cmp(ch.caseR, ch.caseOp.Swap(), ch.caseL)
-					} else {
-						// Both sides isn't static.
-						ctx.get(ch.caseR)
-						if ctx.Err == nil {
-							ctx.Buf, err = any2bytes.AnyToBytes(ctx.Buf, ctx.bufX)
-							if err != nil {
-								return
+					if len(node.caseHlp) > 0 {
+						// Case condition helper caught.
+						fn := GetCondFn(fastconv.B2S(node.caseHlp))
+						if fn == nil {
+							err = ErrCondHlpNotFound
+							return
+						}
+						// Prepare arguments list.
+						ctx.bufA = ctx.bufA[:0]
+						if len(node.caseHlpArg) > 0 {
+							for _, arg := range node.caseHlpArg {
+								if arg.static {
+									ctx.bufA = append(ctx.bufA, &arg.val)
+								} else {
+									val := ctx.get(arg.val)
+									ctx.bufA = append(ctx.bufA, val)
+								}
 							}
-							r = ctx.cmp(ch.caseL, ch.caseOp, ctx.Buf)
+						}
+						// Call condition helper func.
+						r = (*fn)(ctx, ctx.bufA)
+					} else {
+						sl := ch.caseStaticL
+						sr := ch.caseStaticR
+						if sl && sr {
+							err = ErrSenselessCond
+							return
+						}
+						if sr {
+							// Right side is static.
+							r = ctx.cmp(ch.caseL, ch.caseOp, ch.caseR)
+						} else if sl {
+							// Left side is static.
+							r = ctx.cmp(ch.caseR, ch.caseOp.Swap(), ch.caseL)
+						} else {
+							// Both sides isn't static.
+							ctx.get(ch.caseR)
+							if ctx.Err == nil {
+								ctx.Buf, err = any2bytes.AnyToBytes(ctx.Buf, ctx.bufX)
+								if err != nil {
+									return
+								}
+								r = ctx.cmp(ch.caseL, ch.caseOp, ctx.Buf)
+							}
 						}
 					}
 					if ctx.Err != nil {
