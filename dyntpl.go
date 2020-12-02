@@ -407,17 +407,17 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			// Switch without condition case.
 			for _, ch := range node.child {
 				if ch.typ == TypeCase {
-					if len(node.caseHlp) > 0 {
+					if len(ch.caseHlp) > 0 {
 						// Case condition helper caught.
-						fn := GetCondFn(fastconv.B2S(node.caseHlp))
+						fn := GetCondFn(fastconv.B2S(ch.caseHlp))
 						if fn == nil {
 							err = ErrCondHlpNotFound
 							return
 						}
 						// Prepare arguments list.
 						ctx.bufA = ctx.bufA[:0]
-						if len(node.caseHlpArg) > 0 {
-							for _, arg := range node.caseHlpArg {
+						if len(ch.caseHlpArg) > 0 {
+							for _, arg := range ch.caseHlpArg {
 								if arg.static {
 									ctx.bufA = append(ctx.bufA, &arg.val)
 								} else {
