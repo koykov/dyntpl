@@ -2,9 +2,8 @@ package dyntpl
 
 import (
 	"math"
-	"strconv"
 
-	"github.com/koykov/fastconv"
+	"github.com/koykov/any2bytes"
 )
 
 const (
@@ -209,20 +208,15 @@ func roundHelper(f float64, mode int, args []interface{}) float64 {
 // see https://golang.org/src/net/url/url.go#L100
 func modUrlEncode(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
 	// Get count of encode iterations (cases: uu=, uuu=, ...).
-	itr := 1
-	if len(args) > 0 {
-		if itrRaw, ok := args[0].(*[]byte); ok {
-			if itr64, err := strconv.ParseInt(fastconv.B2S(*itrRaw), 10, 64); err == nil {
-				itr = int(itr64)
-			}
-		}
-	}
+	itr := printIterations(args)
 
 	// Get the source.
 	if p, ok := ConvBytes(val); ok {
 		ctx.buf = append(ctx.buf[:0], p...)
 	} else if s, ok := ConvStr(val); ok {
-		ctx.buf = append(ctx.buf[:0], fastconv.S2B(s)...)
+		ctx.buf = append(ctx.buf[:0], s...)
+	} else if ctx.Buf2, err = any2bytes.AnyToBytes(ctx.Buf2, val); err == nil {
+		ctx.buf = append(ctx.buf[:0], ctx.Buf2...)
 	} else {
 		return ErrModNoStr
 	}
@@ -232,6 +226,7 @@ func modUrlEncode(ctx *Ctx, buf *interface{}, val interface{}, args []interface{
 	}
 	for c := 0; c < itr; c++ {
 		ctx.Buf.Reset()
+		_ = ctx.buf[l-1]
 		for i := 0; i < l; i++ {
 			if ctx.buf[i] >= 'a' && ctx.buf[i] <= 'z' || ctx.buf[i] >= 'A' && ctx.buf[i] <= 'Z' ||
 				ctx.buf[i] >= '0' && ctx.buf[i] <= '9' || ctx.buf[i] == '-' || ctx.buf[i] == '.' || ctx.buf[i] == '_' {

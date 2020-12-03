@@ -1,5 +1,11 @@
 package dyntpl
 
+import (
+	"strconv"
+
+	"github.com/koykov/fastconv"
+)
+
 // Signature of the modifier functions.
 //
 // Arguments description:
@@ -35,4 +41,17 @@ func GetModFn(name string) *ModFn {
 		return &fn
 	}
 	return nil
+}
+
+// Get count of print iterations.
+func printIterations(args []interface{}) int {
+	itr := 1
+	if len(args) > 0 {
+		if itrRaw, ok := args[0].(*[]byte); ok {
+			if itr64, err := strconv.ParseInt(fastconv.B2S(*itrRaw), 10, 64); err == nil {
+				itr = int(itr64)
+			}
+		}
+	}
+	return itr
 }

@@ -3,7 +3,6 @@ package dyntpl
 import (
 	"github.com/koykov/any2bytes"
 	"github.com/koykov/bytealg"
-	"github.com/koykov/fastconv"
 )
 
 var (
@@ -45,23 +44,30 @@ func modJsonQuote(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{}) 
 }
 
 // JSON escape of string value.
-func modJsonEscape(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{}) error {
+func modJsonEscape(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) error {
 	var (
-		b   []byte
 		err error
 	)
+
+	// Get count of encode iterations (cases: jj=, jjj=, ...).
+	itr := printIterations(args)
+
 	ctx.Buf2.Reset()
 	if p, ok := ConvBytes(val); ok {
-		b = p
+		ctx.buf = append(ctx.buf[:0], p...)
 	} else if s, ok := ConvStr(val); ok {
-		b = fastconv.S2B(s)
+		ctx.buf = append(ctx.buf[:0], s...)
 	} else if ctx.Buf2, err = any2bytes.AnyToBytes(ctx.Buf2, val); err == nil {
-		b = ctx.Buf2
+		ctx.buf = append(ctx.buf[:0], ctx.Buf2...)
 	} else {
 		return ErrModNoStr
 	}
-	ctx.Buf1.Reset()
-	ctx.Buf1 = jsonEscape(b, ctx.Buf1)
+	for c := 0; c < itr; c++ {
+		ctx.Buf1.Reset()
+		ctx.Buf1 = jsonEscape(ctx.buf, ctx.Buf1)
+
+		ctx.buf = append(ctx.buf[:0], ctx.Buf1...)
+	}
 	if ctx.chJQ {
 		// Double escape when "jsonquote" bonds found.
 		ctx.Buf2.Reset()
