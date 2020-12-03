@@ -43,10 +43,8 @@ func modHtmlEscape(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{})
 		return nil
 	}
 	ctx.Buf.Reset()
-	// Use goto+if instead of for loop to make function inline and speed up it.
-	i := 0
-loop:
-	if i < l {
+	_ = b[l-1]
+	for i := 0; i < l; i++ {
 		c := b[i]
 		if c == heLt {
 			ctx.Buf.Write(b[o:i]).Write(heLtR)
@@ -68,8 +66,6 @@ loop:
 			ctx.Buf.Write(b[o:i]).Write(heAmpR)
 			o = i + 1
 		}
-		i++
-		goto loop
 	}
 	ctx.Buf.Write(b[o:])
 	*buf = &ctx.Buf

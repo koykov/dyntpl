@@ -82,10 +82,8 @@ func jsonEscape(b []byte, buf bytealg.ChainBuf) bytealg.ChainBuf {
 		return buf
 	}
 	buf.Reset()
-	// Use goto+if instead of for loop to make function inline and speed up it.
-	i := 0
-loop:
-	if i < l {
+	_ = b[l-1]
+	for i := 0; i < l; i++ {
 		c := b[i]
 		if c == jqQd {
 			buf.Write(b[o:i]).Write(jqQdR)
@@ -127,8 +125,6 @@ loop:
 			buf.Write(b[o:i]).Write(jqZR)
 			o = i + 1
 		}
-		i++
-		goto loop
 	}
 	buf.Write(b[o:])
 	return buf
