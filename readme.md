@@ -134,6 +134,10 @@ There are special directives before `=` that modifies output before printing:
 
 Note, that none of these directives doesn't apply by default. It's your responsibility to controls what and where you print.
 
+Directives `j`, `h` and `u` supports multipliers, like `jj=`, `uu=`, `uuu=`, ...
+
+For example, the following instruction `{%uu= someUrl %}` will print double url-encoded value of `someUrl`.
+
 Print construction supports prefix and suffix attributes, it may be handy when you print HTML or XML:
 ```html
 <ul>
