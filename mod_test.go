@@ -219,6 +219,25 @@ func BenchmarkTplModJsonQuote(b *testing.B) {
 	}
 }
 
+func BenchmarkTplModJsonEscape(b *testing.B) {
+	pretest()
+
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		ctx := AcquireCtx()
+		buf.Reset()
+		ctx.SetStatic("userName", `Foo"bar`)
+		err := RenderTo(&buf, "tplModJsonEscapeShort", ctx)
+		if err != nil {
+			b.Error(err)
+		}
+		if !bytes.Equal(buf.Bytes(), expectModJson) {
+			b.Error("json escape tpl mismatch")
+		}
+		ReleaseCtx(ctx)
+	}
+}
+
 func BenchmarkTplModJsonEscapeDbl(b *testing.B) {
 	pretest()
 
