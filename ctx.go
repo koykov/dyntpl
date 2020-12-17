@@ -225,6 +225,9 @@ func (c *Ctx) Reset() {
 //
 // See Ctx.Get().
 func (c *Ctx) get(path []byte) interface{} {
+	// Reset error to avoid catching errors from previous nodes.
+	c.Err = nil
+
 	// Special case: check square brackets on counter loops.
 	// See Ctx.replaceQB().
 	if c.chQB {
