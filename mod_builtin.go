@@ -265,7 +265,8 @@ func modInclude(ctx *Ctx, buf *interface{}, _ interface{}, args []interface{}) (
 	if err = RenderFbTo(w, id, fbID, ctx); err != nil {
 		return
 	}
-	*buf = w.Bytes()
+	ctx.buf = append(ctx.buf[:0], w.Bytes()...)
+	*buf = &ctx.buf
 	return
 }
 
