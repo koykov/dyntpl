@@ -4,6 +4,7 @@ import (
 	"math"
 
 	"github.com/koykov/any2bytes"
+	"github.com/koykov/fastconv"
 )
 
 const (
@@ -241,6 +242,30 @@ func modUrlEncode(ctx *Ctx, buf *interface{}, val interface{}, args []interface{
 		l = ctx.Buf.Len()
 	}
 	*buf = &ctx.Buf
+	return
+}
+
+func modInclude(ctx *Ctx, buf *interface{}, _ interface{}, args []interface{}) (err error) {
+	if len(args) < 0 {
+		err = ErrModPoorArgs
+		return
+	}
+	// Get tpl identifier and fallback id.
+	var id, fbID string
+	if idRaw, ok := args[0].(*[]byte); ok {
+		id = fastconv.B2S(*idRaw)
+	}
+	if len(args) > 1 {
+		if idRaw, ok := args[1].(*[]byte); ok {
+			fbID = fastconv.B2S(*idRaw)
+		}
+	}
+	// Try to render template using the same context object.
+	w := ctx.getW()
+	if err = RenderFbTo(w, id, fbID, ctx); err != nil {
+		return
+	}
+	*buf = w.Bytes()
 	return
 }
 

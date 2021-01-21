@@ -172,6 +172,13 @@ var (
 	expectCntr1 = []byte(`[1,2,3,4,5]`)
 
 	tplExit = []byte(`{% if user.Status < 100 %}{% exit %}{% endif %}foobar`)
+
+	tplIncHost     = []byte(`foo {%= include('sub') %} bar`)
+	tplIncSub      = []byte(`welcome {%= user.Name %}!`)
+	expectTplInc   = []byte(`foo welcome John! bar`)
+	tplIncHostJS   = []byte(`{"a":{%q= include('sub1', 'subjs') %}}`)
+	tplIncSubJS    = []byte(`welcome {%j= user.Id|default('anon') %}!`)
+	expectTplIncJS = []byte(`{"a":"welcome 115!"}`)
 )
 
 func pretest() {
@@ -207,6 +214,11 @@ func pretest() {
 		"tplModIfThen":          tplModIfThen,
 		"tplModIfThenElse":      tplModIfThenElse,
 		"tplModRound":           tplModRound,
+
+		"tplIncHost":   tplIncHost,
+		"sub":          tplIncSub,
+		"tplIncHostJS": tplIncHostJS,
+		"subjs":        tplIncSubJS,
 	}
 	for name, body := range tpl {
 		tree, _ := Parse(body, false)
@@ -327,6 +339,14 @@ func TestCntr1Exit(t *testing.T) {
 
 func TestTplExit(t *testing.T) {
 	testBase(t, "tplExit", nil, "exit tpl mismatch")
+}
+
+func TestTplInc(t *testing.T) {
+	testBase(t, "tplIncHost", expectTplInc, "include tpl mismatch")
+}
+
+func TestTplIncJS(t *testing.T) {
+	testBase(t, "tplIncHostJS", expectTplIncJS, "include tpl (js) mismatch")
 }
 
 func BenchmarkTplSimple(b *testing.B) {

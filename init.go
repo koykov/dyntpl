@@ -20,6 +20,9 @@ func init() {
 	RegisterModFn("floor", "floor", modFloor)
 	RegisterModFn("floorPrec", "floorp", modFloorPrec)
 
+	// Register IO modifiers.
+	RegisterModFn("include", "inc", modInclude)
+
 	// Register builtin condition helpers.
 	RegisterCondFn("lenEq0", condLenEq0)
 	RegisterCondFn("lenGt0", condLenGt0)
