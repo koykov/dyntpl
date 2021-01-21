@@ -341,11 +341,11 @@ func TestTplExit(t *testing.T) {
 	testBase(t, "tplExit", nil, "exit tpl mismatch")
 }
 
-func TestTplInc(t *testing.T) {
+func TestTplInclude(t *testing.T) {
 	testBase(t, "tplIncHost", expectTplInc, "include tpl mismatch")
 }
 
-func TestTplIncJS(t *testing.T) {
+func TestTplIncludeJS(t *testing.T) {
 	testBase(t, "tplIncHostJS", expectTplIncJS, "include tpl (js) mismatch")
 }
 
@@ -424,4 +424,12 @@ func BenchmarkTplCntr1(b *testing.B) {
 
 func BenchmarkTplExit(b *testing.B) {
 	benchBase(b, "tplExit", nil, "exit tpl mismatch")
+}
+
+func BenchmarkTplInclude(b *testing.B) {
+	benchBase(b, "tplIncHost", expectTplInc, "include tpl mismatch")
+}
+
+func BenchmarkTplIncludeJS(b *testing.B) {
+	benchBase(b, "tplIncHostJS", expectTplIncJS, "include tpl (js) mismatch")
 }
