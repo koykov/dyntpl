@@ -30,6 +30,7 @@ type Ctx struct {
 	// Range loop helper.
 	rl *RangeLoop
 
+	// List of internal byte writers to process include expressions.
 	w  []bytes.Buffer
 	wl int
 
@@ -504,6 +505,9 @@ func (c *Ctx) replaceQB(path []byte) []byte {
 	return path
 }
 
+// Get new or existing byte writer.
+//
+// Made to write output of including sub-templates.
 func (c *Ctx) getW() *bytes.Buffer {
 	if c.wl < len(c.w) {
 		b := &c.w[c.wl]

@@ -258,6 +258,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			}
 
 			if b, ok := ConvBytes(raw); ok && len(b) > 0 {
+				// Set byte array as bytes variable if possible.
 				ctx.SetBytes(fastconv.B2S(node.ctxVar), b)
 			} else {
 				ctx.Set(fastconv.B2S(node.ctxVar), raw, ins)
