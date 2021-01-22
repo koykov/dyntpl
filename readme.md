@@ -234,6 +234,12 @@ The output that will produced:
 As you see, commas between 2nd and last elements was added by dyntpl without any additional handling like `...{% if i>0 %},{% endif %}{% endfor %}`.
 Separator has shorthand variant `sep`.
 
+## Include sub-templates
+
+Just call `{% include subTplID %}` (example `{% include sidebar/right %}`) to render and include output of that template
+inside current template.
+Sub-template will used parent template's context to access the data.
+
 ## Modifier helpers
 
 Modifiers is a special functions that may perform modifications over the data during print. These function have signature:

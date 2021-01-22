@@ -95,6 +95,8 @@ func ConvBytes(val interface{}) (b []byte, ok bool) {
 		b = val.([]byte)
 	case *[]byte:
 		b = *val.(*[]byte)
+	case bytealg.ChainBuf:
+		b = val.(bytealg.ChainBuf)
 	case *bytealg.ChainBuf:
 		b = *val.(*bytealg.ChainBuf)
 	default:

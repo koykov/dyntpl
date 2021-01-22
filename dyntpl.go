@@ -257,7 +257,12 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 				return err
 			}
 
-			ctx.Set(fastconv.B2S(node.ctxVar), raw, ins)
+			if b, ok := ConvBytes(raw); ok && len(b) > 0 {
+				// Set byte array as bytes variable if possible.
+				ctx.SetBytes(fastconv.B2S(node.ctxVar), b)
+			} else {
+				ctx.Set(fastconv.B2S(node.ctxVar), raw, ins)
+			}
 		}
 	case TypeCounter:
 		if node.cntrInitF {
@@ -471,6 +476,26 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 					break
 				}
 			}
+		}
+	case TypeInclude:
+		// Include sub-template expression.
+		var tpl *Tpl
+		mux.Lock()
+		for i := 0; i < len(node.tpl); i++ {
+			if t, ok := tplRegistry[fastconv.B2S(node.tpl[i])]; ok {
+				tpl = t
+				break
+			}
+		}
+		mux.Unlock()
+		if tpl != nil {
+			w1 := ctx.getW()
+			if err = render(w1, tpl, ctx); err != nil {
+				return
+			}
+			_, err = w.Write(w1.Bytes())
+		} else {
+			err = ErrTplNotFound
 		}
 	case TypeExit:
 		// Interrupt template evaluation.
