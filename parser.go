@@ -126,6 +126,9 @@ var (
 	reSwitchCase       = regexp.MustCompile(`case ([^<=>!]+)([<=>!]{2})*(.*)`)
 	reSwitchCaseHelper = regexp.MustCompile(`case ([^(]+)\(*([^)]*)\)`)
 
+	// Regexp to parse include instruction.
+	reInc = regexp.MustCompile(`include (.*)`)
+
 	// Suppress go vet warning.
 	_ = ParseFile
 )
@@ -555,6 +558,15 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 	}
 	if bytes.Equal(t, ueEnd) {
 		root.typ = TypeEndUrlEnc
+		nodes = addNode(nodes, *root)
+		offset = pos + len(ctl)
+		return nodes, offset, up, err
+	}
+
+	// Check include.
+	if m := reInc.FindSubmatch(t); m != nil {
+		root.typ = TypeInclude
+		root.tpl = bytes.Split(m[1], space)
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
 		return nodes, offset, up, err

@@ -476,6 +476,21 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 				}
 			}
 		}
+	case TypeInclude:
+		var id, fbID string
+		if len(node.tpl) > 0 {
+			id = fastconv.B2S(node.tpl[0])
+		}
+		if len(node.tpl) > 1 {
+			fbID = fastconv.B2S(node.tpl[1])
+		}
+		// Get writer for including template.
+		w1 := ctx.getW()
+		// Try to render template using the same context object.
+		if err = RenderFbTo(w1, id, fbID, ctx); err != nil {
+			return
+		}
+		_, err = w.Write(w1.Bytes())
 	case TypeExit:
 		// Interrupt template evaluation.
 		err = ErrInterrupt

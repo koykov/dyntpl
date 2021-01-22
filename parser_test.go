@@ -276,6 +276,11 @@ switch:
 		raw: "no_data": true
 raw: }]
 `)
+	incOrigin = []byte(`foo {% include sidebar/right %} bar`)
+	incExpect = []byte(`raw: foo 
+inc: sidebar/right 
+raw:  bar
+`)
 )
 
 func TestParseCutComments(t *testing.T) {
@@ -409,5 +414,13 @@ func TestParseSwitch(t *testing.T) {
 	rNCH := treeNCH.HumanReadable()
 	if !bytes.Equal(rNCH, switchNoCondHelperExpect) {
 		t.Errorf("switch no cond with helper condition test failed\nexp: %s\ngot: %s", string(switchNoCondHelperExpect), string(rNCH))
+	}
+}
+
+func TestParseInclude(t *testing.T) {
+	tree, _ := Parse(incOrigin, false)
+	r := tree.HumanReadable()
+	if !bytes.Equal(r, incExpect) {
+		t.Errorf("include test failed\nexp: %s\ngot: %s", string(incExpect), string(r))
 	}
 }

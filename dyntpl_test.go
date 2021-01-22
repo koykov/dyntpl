@@ -173,10 +173,10 @@ var (
 
 	tplExit = []byte(`{% if user.Status < 100 %}{% exit %}{% endif %}foobar`)
 
-	tplIncHost     = []byte(`foo {%= include('sub') %} bar`)
+	tplIncHost     = []byte(`foo {% include sub %} bar`)
 	tplIncSub      = []byte(`welcome {%= user.Name %}!`)
 	expectTplInc   = []byte(`foo welcome John! bar`)
-	tplIncHostJS   = []byte(`{"a":{%q= include('sub1', 'subjs') %}}`)
+	tplIncHostJS   = []byte(`{"a":"{% include sub1 subjs %}"}`)
 	tplIncSubJS    = []byte(`welcome {%j= user.Id|default('anon') %}!`)
 	expectTplIncJS = []byte(`{"a":"welcome 115!"}`)
 )
