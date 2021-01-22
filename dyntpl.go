@@ -257,7 +257,11 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 				return err
 			}
 
-			ctx.Set(fastconv.B2S(node.ctxVar), raw, ins)
+			if b, ok := ConvBytes(raw); ok && len(b) > 0 {
+				ctx.SetBytes(fastconv.B2S(node.ctxVar), b)
+			} else {
+				ctx.Set(fastconv.B2S(node.ctxVar), raw, ins)
+			}
 		}
 	case TypeCounter:
 		if node.cntrInitF {
