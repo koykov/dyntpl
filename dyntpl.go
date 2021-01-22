@@ -477,20 +477,25 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			}
 		}
 	case TypeInclude:
-		var id, fbID string
-		if len(node.tpl) > 0 {
-			id = fastconv.B2S(node.tpl[0])
+		// Include sub-template expression.
+		var tpl *Tpl
+		mux.Lock()
+		for i := 0; i < len(node.tpl); i++ {
+			if t, ok := tplRegistry[fastconv.B2S(node.tpl[i])]; ok {
+				tpl = t
+				break
+			}
 		}
-		if len(node.tpl) > 1 {
-			fbID = fastconv.B2S(node.tpl[1])
+		mux.Unlock()
+		if tpl != nil {
+			w1 := ctx.getW()
+			if err = render(w1, tpl, ctx); err != nil {
+				return
+			}
+			_, err = w.Write(w1.Bytes())
+		} else {
+			err = ErrTplNotFound
 		}
-		// Get writer for including template.
-		w1 := ctx.getW()
-		// Try to render template using the same context object.
-		if err = RenderFbTo(w1, id, fbID, ctx); err != nil {
-			return
-		}
-		_, err = w.Write(w1.Bytes())
 	case TypeExit:
 		// Interrupt template evaluation.
 		err = ErrInterrupt
