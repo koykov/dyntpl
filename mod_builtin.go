@@ -3,7 +3,7 @@ package dyntpl
 import (
 	"math"
 
-	"github.com/koykov/any2bytes"
+	"github.com/koykov/x2bytes"
 )
 
 const (
@@ -215,7 +215,7 @@ func modUrlEncode(ctx *Ctx, buf *interface{}, val interface{}, args []interface{
 		ctx.buf = append(ctx.buf[:0], p...)
 	} else if s, ok := ConvStr(val); ok {
 		ctx.buf = append(ctx.buf[:0], s...)
-	} else if ctx.Buf2, err = any2bytes.AnyToBytes(ctx.Buf2, val); err == nil {
+	} else if ctx.Buf2, err = x2bytes.ToBytesWR(ctx.Buf2, val); err == nil {
 		ctx.buf = append(ctx.buf[:0], ctx.Buf2...)
 	} else {
 		return ErrModNoStr

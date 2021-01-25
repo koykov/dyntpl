@@ -5,10 +5,10 @@ import (
 	"io"
 	"sync"
 
-	"github.com/koykov/any2bytes"
 	"github.com/koykov/bytealg"
 	"github.com/koykov/fastconv"
 	"github.com/koykov/inspector"
+	"github.com/koykov/x2bytes"
 )
 
 // Main template object.
@@ -193,7 +193,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			return
 		}
 		// Convert modified data to bytes array.
-		ctx.Buf, err = any2bytes.AnyToBytes(ctx.Buf, raw)
+		ctx.Buf, err = x2bytes.ToBytesWR(ctx.Buf, raw)
 		if err == nil {
 			if len(node.prefix) > 0 {
 				// Write prefix.
@@ -329,7 +329,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 				// Both sides isn't static. This is a bad case, since need to inspect variables twice.
 				ctx.get(node.condR)
 				if ctx.Err == nil {
-					ctx.Buf, err = any2bytes.AnyToBytes(ctx.Buf, ctx.bufX)
+					ctx.Buf, err = x2bytes.ToBytesWR(ctx.Buf, ctx.bufX)
 					if err != nil {
 						return
 					}
@@ -395,7 +395,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 					} else {
 						ctx.get(ch.caseL)
 						if ctx.Err == nil {
-							ctx.Buf, err = any2bytes.AnyToBytes(ctx.Buf, ctx.bufX)
+							ctx.Buf, err = x2bytes.ToBytesWR(ctx.Buf, ctx.bufX)
 							if err != nil {
 								return
 							}
@@ -450,7 +450,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 							// Both sides isn't static.
 							ctx.get(ch.caseR)
 							if ctx.Err == nil {
-								ctx.Buf, err = any2bytes.AnyToBytes(ctx.Buf, ctx.bufX)
+								ctx.Buf, err = x2bytes.ToBytesWR(ctx.Buf, ctx.bufX)
 								if err != nil {
 									return
 								}

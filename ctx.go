@@ -5,10 +5,10 @@ import (
 	"io"
 	"strconv"
 
-	"github.com/koykov/any2bytes"
 	"github.com/koykov/bytealg"
 	"github.com/koykov/fastconv"
 	"github.com/koykov/inspector"
+	"github.com/koykov/x2bytes"
 )
 
 // Context object. Contains list of variables available to inspect.
@@ -491,7 +491,7 @@ func (c *Ctx) replaceQB(path []byte) []byte {
 		c.chQB = false
 		c.bufX = c.get(path[qbLi+1 : qbRi])
 		if c.bufX != nil {
-			c.Buf1, c.Err = any2bytes.AnyToBytes(c.Buf1, c.bufX)
+			c.Buf1, c.Err = x2bytes.ToBytesWR(c.Buf1, c.bufX)
 			if c.Err != nil {
 				c.chQB = true
 				return nil
