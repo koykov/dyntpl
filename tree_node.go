@@ -50,6 +50,8 @@ type Node struct {
 	caseHlp     []byte
 	caseHlpArg  []*arg
 
+	tpl [][]byte
+
 	mod []mod
 
 	child []Node

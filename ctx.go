@@ -5,10 +5,10 @@ import (
 	"io"
 	"strconv"
 
-	"github.com/koykov/any2bytes"
 	"github.com/koykov/bytealg"
 	"github.com/koykov/fastconv"
 	"github.com/koykov/inspector"
+	"github.com/koykov/x2bytes"
 )
 
 // Context object. Contains list of variables available to inspect.
@@ -29,6 +29,10 @@ type Ctx struct {
 	bufA []interface{}
 	// Range loop helper.
 	rl *RangeLoop
+
+	// List of internal byte writers to process include expressions.
+	w  []bytes.Buffer
+	wl int
 
 	// External buffers to use in modifier and condition helpers.
 	Buf, Buf1, Buf2 bytealg.ChainBuf
@@ -205,11 +209,16 @@ func (c *Ctx) Reset() {
 		c.vars[i].val = nil
 		c.vars[i].buf = c.vars[i].buf[:0]
 	}
+	c.ln = 0
+
+	for i := 0; i < c.wl; i++ {
+		c.w[i].Reset()
+	}
+	c.wl = 0
 
 	c.Err = nil
 	c.bufX = nil
 	c.chQB, c.chJQ, c.chHE, c.chUE = false, false, false, false
-	c.ln = 0
 	c.bufS = c.bufS[:0]
 	c.Buf.Reset()
 	c.Buf1.Reset()
@@ -482,7 +491,7 @@ func (c *Ctx) replaceQB(path []byte) []byte {
 		c.chQB = false
 		c.bufX = c.get(path[qbLi+1 : qbRi])
 		if c.bufX != nil {
-			c.Buf1, c.Err = any2bytes.AnyToBytes(c.Buf1, c.bufX)
+			c.Buf1, c.Err = x2bytes.ToBytesWR(c.Buf1, c.bufX)
 			if c.Err != nil {
 				c.chQB = true
 				return nil
@@ -494,4 +503,20 @@ func (c *Ctx) replaceQB(path []byte) []byte {
 		path = c.Buf
 	}
 	return path
+}
+
+// Get new or existing byte writer.
+//
+// Made to write output of including sub-templates.
+func (c *Ctx) getW() *bytes.Buffer {
+	if c.wl < len(c.w) {
+		b := &c.w[c.wl]
+		c.wl++
+		return b
+	} else {
+		b := bytes.Buffer{}
+		c.w = append(c.w, bytes.Buffer{})
+		c.wl++
+		return &b
+	}
 }

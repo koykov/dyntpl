@@ -5,10 +5,10 @@ import (
 	"io"
 	"sync"
 
-	"github.com/koykov/any2bytes"
 	"github.com/koykov/bytealg"
 	"github.com/koykov/fastconv"
 	"github.com/koykov/inspector"
+	"github.com/koykov/x2bytes"
 )
 
 // Main template object.
@@ -193,7 +193,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			return
 		}
 		// Convert modified data to bytes array.
-		ctx.Buf, err = any2bytes.AnyToBytes(ctx.Buf, raw)
+		ctx.Buf, err = x2bytes.ToBytesWR(ctx.Buf, raw)
 		if err == nil {
 			if len(node.prefix) > 0 {
 				// Write prefix.
@@ -257,7 +257,12 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 				return err
 			}
 
-			ctx.Set(fastconv.B2S(node.ctxVar), raw, ins)
+			if b, ok := ConvBytes(raw); ok && len(b) > 0 {
+				// Set byte array as bytes variable if possible.
+				ctx.SetBytes(fastconv.B2S(node.ctxVar), b)
+			} else {
+				ctx.Set(fastconv.B2S(node.ctxVar), raw, ins)
+			}
 		}
 	case TypeCounter:
 		if node.cntrInitF {
@@ -324,7 +329,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 				// Both sides isn't static. This is a bad case, since need to inspect variables twice.
 				ctx.get(node.condR)
 				if ctx.Err == nil {
-					ctx.Buf, err = any2bytes.AnyToBytes(ctx.Buf, ctx.bufX)
+					ctx.Buf, err = x2bytes.ToBytesWR(ctx.Buf, ctx.bufX)
 					if err != nil {
 						return
 					}
@@ -390,7 +395,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 					} else {
 						ctx.get(ch.caseL)
 						if ctx.Err == nil {
-							ctx.Buf, err = any2bytes.AnyToBytes(ctx.Buf, ctx.bufX)
+							ctx.Buf, err = x2bytes.ToBytesWR(ctx.Buf, ctx.bufX)
 							if err != nil {
 								return
 							}
@@ -445,7 +450,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 							// Both sides isn't static.
 							ctx.get(ch.caseR)
 							if ctx.Err == nil {
-								ctx.Buf, err = any2bytes.AnyToBytes(ctx.Buf, ctx.bufX)
+								ctx.Buf, err = x2bytes.ToBytesWR(ctx.Buf, ctx.bufX)
 								if err != nil {
 									return
 								}
@@ -471,6 +476,26 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 					break
 				}
 			}
+		}
+	case TypeInclude:
+		// Include sub-template expression.
+		var tpl *Tpl
+		mux.Lock()
+		for i := 0; i < len(node.tpl); i++ {
+			if t, ok := tplRegistry[fastconv.B2S(node.tpl[i])]; ok {
+				tpl = t
+				break
+			}
+		}
+		mux.Unlock()
+		if tpl != nil {
+			w1 := ctx.getW()
+			if err = render(w1, tpl, ctx); err != nil {
+				return
+			}
+			_, err = w.Write(w1.Bytes())
+		} else {
+			err = ErrTplNotFound
 		}
 	case TypeExit:
 		// Interrupt template evaluation.

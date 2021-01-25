@@ -29,6 +29,7 @@ const (
 	TypeEndHtmlE  Type = 18
 	TypeUrlEnc    Type = 19
 	TypeEndUrlEnc Type = 20
+	TypeInclude   Type = 21
 	TypeExit      Type = 99
 
 	// Must be in sync with inspector.Op type.
@@ -76,6 +77,8 @@ func (typ Type) String() string {
 		return "def"
 	case TypeDiv:
 		return "div"
+	case TypeInclude:
+		return "inc"
 	case TypeExit:
 		return "exit"
 	default:
