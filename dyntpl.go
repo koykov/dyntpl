@@ -493,7 +493,24 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			if err = render(w1, tpl, ctx); err != nil {
 				return
 			}
-			_, err = w.Write(w1.Bytes())
+
+			// Consider print prefixes like {%j= ... %}, {%h= ... %}, ...
+			switch {
+			case ctx.chJQ:
+				ctx.Buf1 = jsonEscape(w1.Bytes(), ctx.Buf1)
+				ctx.bufX = &ctx.Buf1
+			case ctx.chHE:
+				err = modHtmlEscape(ctx, &ctx.bufX, w1.Bytes(), ctx.bufA[:0])
+			case ctx.chUE:
+				err = modUrlEncode(ctx, &ctx.bufX, w1.Bytes(), ctx.bufA[:0])
+			default:
+				b := w1.Bytes()
+				ctx.bufX = &b
+			}
+			if err == nil {
+				b, _ := ctx.bufX.(*bytealg.ChainBuf)
+				_, err = w.Write(*b)
+			}
 		} else {
 			err = ErrTplNotFound
 		}
