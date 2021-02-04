@@ -494,25 +494,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 				return
 			}
 
-			// Consider print prefixes like {%j= ... %}, {%h= ... %}, ...
-			switch {
-			case ctx.chJQ:
-				ctx.Buf1 = jsonEscape(w1.Bytes(), ctx.Buf1)
-				ctx.bufX = &ctx.Buf1
-			case ctx.chHE:
-				err = modHtmlEscape(ctx, &ctx.bufX, w1.Bytes(), ctx.bufA[:0])
-			case ctx.chUE:
-				err = modUrlEncode(ctx, &ctx.bufX, w1.Bytes(), ctx.bufA[:0])
-			default:
-				ctx.Buf1.Reset().Write(w1.Bytes())
-				ctx.bufX = &ctx.Buf1
-			}
-			if err == nil {
-				ctx.buf, err = x2bytes.ToBytesWR(ctx.buf, ctx.bufX)
-				if err == nil {
-					_, _ = w.Write(ctx.buf)
-				}
-			}
+			_, err = w.Write(w1.Bytes())
 		} else {
 			err = ErrTplNotFound
 		}
