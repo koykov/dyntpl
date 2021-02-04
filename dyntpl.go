@@ -504,12 +504,14 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			case ctx.chUE:
 				err = modUrlEncode(ctx, &ctx.bufX, w1.Bytes(), ctx.bufA[:0])
 			default:
-				b := w1.Bytes()
-				ctx.bufX = &b
+				ctx.Buf1.Reset().Write(w1.Bytes())
+				ctx.bufX = &ctx.Buf1
 			}
 			if err == nil {
-				b, _ := ctx.bufX.(*bytealg.ChainBuf)
-				_, err = w.Write(*b)
+				ctx.buf, err = x2bytes.ToBytesWR(ctx.buf, ctx.bufX)
+				if err == nil {
+					_, _ = w.Write(ctx.buf)
+				}
 			}
 		} else {
 			err = ErrTplNotFound
