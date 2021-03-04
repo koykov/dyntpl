@@ -93,25 +93,9 @@ BenchmarkTplModIfThenElse-8        3000000       372 ns/op       0 B/op       0 
 ```
 Highly recommend to check `*_test.go` files in the project, since them contains a lot of typical language constructions that supports this engine.
 
-`cmp_test` dir contains comparison tests with corresponding [quicktemplate's test](https://github.com/valyala/quicktemplate/tree/master/tests):
-* for [templates timings](https://github.com/valyala/quicktemplate/blob/master/tests/templates_timing_test.go)
-```
-BenchmarkDyntpl1-8                 	 5000000	       328 ns/op	       0 B/op	       0 allocs/op
-BenchmarkDyntpl10-8                	 1000000	      1427 ns/op	       0 B/op	       0 allocs/op
-BenchmarkDyntpl100-8               	  100000	     14454 ns/op	       0 B/op	       0 allocs/op
-``` 
-* for [marshal timings](https://github.com/valyala/quicktemplate/blob/master/tests/marshal_timing_test.go)
-```
-BenchmarkMarshalJSONDyntpl1-8      	 3000000	       433 ns/op	       0 B/op	       0 allocs/op
-BenchmarkMarshalJSONDyntpl10-8     	 1000000	      2226 ns/op	       0 B/op	       0 allocs/op
-BenchmarkMarshalJSONDyntpl100-8    	  100000	     20331 ns/op	       0 B/op	       0 allocs/op
-BenchmarkMarshalJSONDyntpl1000-8   	   10000	    203189 ns/op	       8 B/op	       0 allocs/op
-BenchmarkMarshalXMLDyntpl1-8       	 3000000	       444 ns/op	       0 B/op	       0 allocs/op
-BenchmarkMarshalXMLDyntpl10-8      	 1000000	      2182 ns/op	       0 B/op	       0 allocs/op
-BenchmarkMarshalXMLDyntpl100-8     	  100000	     19500 ns/op	       0 B/op	       0 allocs/op
-BenchmarkMarshalXMLDyntpl1000-8    	   10000	    196965 ns/op	       9 B/op	       0 allocs/op
-```
-As you can see, dyntpl in ~3-4 times slowest than quicktemplates. That is a cost for dynamics. There is no way to write template engine that will fastests than native Go code.
+See [versus/dyntpl](https://github.com/koykov/versus/tree/master/dyntpl) for comparison benchmarks with [quicktemplate](https://github.com/valyala/quicktemplate) and native marshaler/template.
+
+As you can see, dyntpl in ~3-4 times slowest than [quicktemplates](https://github.com/valyala/quicktemplate). That is a cost for dynamics. There is no way to write template engine that will fastests than native Go code.
 
 ## Syntax
 
