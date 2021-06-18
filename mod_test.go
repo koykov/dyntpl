@@ -28,6 +28,9 @@ var (
 	tplModHtmlEscapeShort = []byte(`<a href="https://golang.org/" title="{%h= title %}">{%h= text %}</a>`)
 	expectModHtml         = []byte(`<a href="https://golang.org/" title="&lt;h1&gt;Go is an open source programming language that makes it easy to build &lt;strong&gt;simple&lt;strong&gt;, &lt;strong&gt;reliable&lt;/strong&gt;, and &lt;strong&gt;efficient&lt;/strong&gt; software.&lt;/h1&gt;">Visit &gt;</a>`)
 
+	tplModLinkEscape    = []byte(`<a href="{%l= link %}">`)
+	expectModLinkEscape = []byte(`<a href="http://x.com/link-with-\"-symbol">`)
+
 	tplModIfThen        = []byte(`{%= allow|ifThen("You're allow to buy!") %}`)
 	expectModIfThen     = []byte(`You're allow to buy!`)
 	tplModIfThenElse    = []byte(`Welcome, {%= logged|ifThenElse(userName, "anonymous") %}!`)
@@ -107,6 +110,20 @@ func TestTplModHtmlEscape(t *testing.T) {
 	}
 	if !bytes.Equal(result, expectModHtml) {
 		t.Error("html escape tpl mismatch")
+	}
+}
+
+func TestTplModLinkEscape(t *testing.T) {
+	pretest()
+
+	ctx := NewCtx()
+	ctx.SetStatic("link", `http://x.com/link-with-"-symbol`)
+	result, err := Render("tplModLinkEscape", ctx)
+	if err != nil {
+		t.Error(err)
+	}
+	if !bytes.Equal(result, expectModLinkEscape) {
+		t.Error("link escape tpl mismatch")
 	}
 }
 
@@ -272,6 +289,25 @@ func BenchmarkTplModHtmlEscape(b *testing.B) {
 		}
 		if !bytes.Equal(buf.Bytes(), expectModHtml) {
 			b.Error("html escape tpl mismatch")
+		}
+		ReleaseCtx(ctx)
+	}
+}
+
+func BenchmarkTplModLinkEscape(b *testing.B) {
+	pretest()
+
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		ctx := AcquireCtx()
+		buf.Reset()
+		ctx.SetStatic("link", `http://x.com/link-with-"-symbol`)
+		err := RenderTo(&buf, "tplModLinkEscape", ctx)
+		if err != nil {
+			b.Error(err)
+		}
+		if !bytes.Equal(buf.Bytes(), expectModLinkEscape) {
+			b.Error("link escape tpl mismatch")
 		}
 		ReleaseCtx(ctx)
 	}

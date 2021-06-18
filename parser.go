@@ -70,6 +70,8 @@ var (
 	idQ   = []byte("jsonQuote")  // json quote
 	outmH = []byte("h")          // html escape
 	idH   = []byte("htmlEscape") // html escape
+	outmL = []byte("l")          // link escape
+	idL   = []byte("linkEscape") // link escape
 	outmU = []byte("u")          // url encode
 	idU   = []byte("urlEncode")  // url encode
 	outmf = 'f'                  // float precision floor
@@ -92,10 +94,10 @@ var (
 	reCutFmt      = regexp.MustCompile(`\n+\t*\s*`)
 
 	// Regexp to parse print instructions.
-	reTplPS    = regexp.MustCompile(`^([jhqu]*|[fF]\.*\d*)=\s*(.*) (?:prefix|pfx) (.*) (?:suffix|sfx) (.*)`)
-	reTplP     = regexp.MustCompile(`^([jhqu]*|[fF]\.*\d*)=\s*(.*) (?:prefix|pfx) (.*)`)
-	reTplS     = regexp.MustCompile(`^([jhqu]*|[fF]\.*\d*)=\s*(.*) (?:suffix|sfx) (.*)`)
-	reTpl      = regexp.MustCompile(`^([jhqu]*|[fF]\.*\d*)= (.*)`)
+	reTplPS    = regexp.MustCompile(`^([jhqlu]*|[fF]\.*\d*)=\s*(.*) (?:prefix|pfx) (.*) (?:suffix|sfx) (.*)`)
+	reTplP     = regexp.MustCompile(`^([jhqlu]*|[fF]\.*\d*)=\s*(.*) (?:prefix|pfx) (.*)`)
+	reTplS     = regexp.MustCompile(`^([jhqlu]*|[fF]\.*\d*)=\s*(.*) (?:suffix|sfx) (.*)`)
+	reTpl      = regexp.MustCompile(`^([jhqlu]*|[fF]\.*\d*)= (.*)`)
 	reModPfxF  = regexp.MustCompile(`([fF]+)\.*(\d*)`)
 	reModNoVar = regexp.MustCompile(`([^(]+)\(([^)]*)\)`)
 	reMod      = regexp.MustCompile(`([^(]+)\(*([^)]*)\)*`)
@@ -702,6 +704,15 @@ func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
 			fn := GetModFn("htmlEscape")
 			mods = append(mods, mod{
 				id:  idH,
+				fn:  fn,
+				arg: []*arg{a},
+			})
+		}
+		// - {%l= ... %} - link escape.
+		if a, ok := checkEqMany(outm, outmL); ok {
+			fn := GetModFn("linkEscape")
+			mods = append(mods, mod{
+				id:  idL,
 				fn:  fn,
 				arg: []*arg{a},
 			})
