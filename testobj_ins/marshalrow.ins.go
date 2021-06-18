@@ -25,7 +25,9 @@ func (i3 *MarshalRowInspector) GetTo(src interface{}, buf *interface{}, path ...
 	}
 	var x *testobj.MarshalRow
 	_ = x
-	if p, ok := src.(*testobj.MarshalRow); ok {
+	if p, ok := src.(**testobj.MarshalRow); ok {
+		x = *p
+	} else if p, ok := src.(*testobj.MarshalRow); ok {
 		x = p
 	} else if v, ok := src.(testobj.MarshalRow); ok {
 		x = &v
@@ -60,7 +62,9 @@ func (i3 *MarshalRowInspector) Cmp(src interface{}, cond inspector.Op, right str
 	}
 	var x *testobj.MarshalRow
 	_ = x
-	if p, ok := src.(*testobj.MarshalRow); ok {
+	if p, ok := src.(**testobj.MarshalRow); ok {
+		x = *p
+	} else if p, ok := src.(*testobj.MarshalRow); ok {
 		x = p
 	} else if v, ok := src.(testobj.MarshalRow); ok {
 		x = &v
@@ -125,7 +129,9 @@ func (i3 *MarshalRowInspector) Loop(src interface{}, l inspector.Looper, buf *[]
 	}
 	var x *testobj.MarshalRow
 	_ = x
-	if p, ok := src.(*testobj.MarshalRow); ok {
+	if p, ok := src.(**testobj.MarshalRow); ok {
+		x = *p
+	} else if p, ok := src.(*testobj.MarshalRow); ok {
 		x = p
 	} else if v, ok := src.(testobj.MarshalRow); ok {
 		x = &v
@@ -138,7 +144,7 @@ func (i3 *MarshalRowInspector) Loop(src interface{}, l inspector.Looper, buf *[]
 	return
 }
 
-func (i3 *MarshalRowInspector) Set(dst, value interface{}, path ...string) error {
+func (i3 *MarshalRowInspector) SetWB(dst, value interface{}, buf inspector.AccumulativeBuffer, path ...string) error {
 	if len(path) == 0 {
 		return nil
 	}
@@ -147,7 +153,9 @@ func (i3 *MarshalRowInspector) Set(dst, value interface{}, path ...string) error
 	}
 	var x *testobj.MarshalRow
 	_ = x
-	if p, ok := dst.(*testobj.MarshalRow); ok {
+	if p, ok := dst.(**testobj.MarshalRow); ok {
+		x = *p
+	} else if p, ok := dst.(*testobj.MarshalRow); ok {
 		x = p
 	} else if v, ok := dst.(testobj.MarshalRow); ok {
 		x = &v
@@ -157,23 +165,17 @@ func (i3 *MarshalRowInspector) Set(dst, value interface{}, path ...string) error
 
 	if len(path) > 0 {
 		if path[0] == "Msg" {
-			if exact, ok := value.(*string); ok {
-				x.Msg = *exact
-			}
-			if exact, ok := value.(string); ok {
-				x.Msg = exact
-			}
+			inspector.AssignBuf(&x.Msg, value, buf)
 			return nil
 		}
 		if path[0] == "N" {
-			if exact, ok := value.(*int); ok {
-				x.N = *exact
-			}
-			if exact, ok := value.(int); ok {
-				x.N = exact
-			}
+			inspector.AssignBuf(&x.N, value, buf)
 			return nil
 		}
 	}
 	return nil
+}
+
+func (i3 *MarshalRowInspector) Set(dst, value interface{}, path ...string) error {
+	return i3.SetWB(dst, value, nil, path...)
 }

@@ -25,7 +25,9 @@ func (i1 *BenchRowsInspector) GetTo(src interface{}, buf *interface{}, path ...s
 	}
 	var x *testobj.BenchRows
 	_ = x
-	if p, ok := src.(*testobj.BenchRows); ok {
+	if p, ok := src.(**testobj.BenchRows); ok {
+		x = *p
+	} else if p, ok := src.(*testobj.BenchRows); ok {
 		x = p
 	} else if v, ok := src.(testobj.BenchRows); ok {
 		x = &v
@@ -85,7 +87,9 @@ func (i1 *BenchRowsInspector) Cmp(src interface{}, cond inspector.Op, right stri
 	}
 	var x *testobj.BenchRows
 	_ = x
-	if p, ok := src.(*testobj.BenchRows); ok {
+	if p, ok := src.(**testobj.BenchRows); ok {
+		x = *p
+	} else if p, ok := src.(*testobj.BenchRows); ok {
 		x = p
 	} else if v, ok := src.(testobj.BenchRows); ok {
 		x = &v
@@ -182,7 +186,9 @@ func (i1 *BenchRowsInspector) Loop(src interface{}, l inspector.Looper, buf *[]b
 	}
 	var x *testobj.BenchRows
 	_ = x
-	if p, ok := src.(*testobj.BenchRows); ok {
+	if p, ok := src.(**testobj.BenchRows); ok {
+		x = *p
+	} else if p, ok := src.(*testobj.BenchRows); ok {
 		x = p
 	} else if v, ok := src.(testobj.BenchRows); ok {
 		x = &v
@@ -214,7 +220,7 @@ func (i1 *BenchRowsInspector) Loop(src interface{}, l inspector.Looper, buf *[]b
 	return
 }
 
-func (i1 *BenchRowsInspector) Set(dst, value interface{}, path ...string) error {
+func (i1 *BenchRowsInspector) SetWB(dst, value interface{}, buf inspector.AccumulativeBuffer, path ...string) error {
 	if len(path) == 0 {
 		return nil
 	}
@@ -223,7 +229,9 @@ func (i1 *BenchRowsInspector) Set(dst, value interface{}, path ...string) error 
 	}
 	var x *testobj.BenchRows
 	_ = x
-	if p, ok := dst.(*testobj.BenchRows); ok {
+	if p, ok := dst.(**testobj.BenchRows); ok {
+		x = *p
+	} else if p, ok := dst.(*testobj.BenchRows); ok {
 		x = p
 	} else if v, ok := dst.(testobj.BenchRows); ok {
 		x = &v
@@ -234,6 +242,14 @@ func (i1 *BenchRowsInspector) Set(dst, value interface{}, path ...string) error 
 	if len(path) > 0 {
 		if path[0] == "Rows" {
 			x0 := x.Rows
+			if uvalue, ok := value.(*[]testobj.BenchRow); ok {
+				x0 = *uvalue
+			}
+			if x0 == nil {
+				z := make([]testobj.BenchRow, 0)
+				x0 = z
+				x.Rows = x0
+			}
 			_ = x0
 			if len(path) > 1 {
 				var i int
@@ -247,30 +263,15 @@ func (i1 *BenchRowsInspector) Set(dst, value interface{}, path ...string) error 
 					_ = x1
 					if len(path) > 2 {
 						if path[2] == "ID" {
-							if exact, ok := value.(*int); ok {
-								x1.ID = *exact
-							}
-							if exact, ok := value.(int); ok {
-								x1.ID = exact
-							}
+							inspector.AssignBuf(&x1.ID, value, buf)
 							return nil
 						}
 						if path[2] == "Message" {
-							if exact, ok := value.(*string); ok {
-								x1.Message = *exact
-							}
-							if exact, ok := value.(string); ok {
-								x1.Message = exact
-							}
+							inspector.AssignBuf(&x1.Message, value, buf)
 							return nil
 						}
 						if path[2] == "Print" {
-							if exact, ok := value.(*bool); ok {
-								x1.Print = *exact
-							}
-							if exact, ok := value.(bool); ok {
-								x1.Print = exact
-							}
+							inspector.AssignBuf(&x1.Print, value, buf)
 							return nil
 						}
 					}
@@ -278,7 +279,12 @@ func (i1 *BenchRowsInspector) Set(dst, value interface{}, path ...string) error 
 					return nil
 				}
 			}
+			x.Rows = x0
 		}
 	}
 	return nil
+}
+
+func (i1 *BenchRowsInspector) Set(dst, value interface{}, path ...string) error {
+	return i1.SetWB(dst, value, nil, path...)
 }

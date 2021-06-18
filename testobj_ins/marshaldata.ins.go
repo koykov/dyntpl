@@ -25,7 +25,9 @@ func (i2 *MarshalDataInspector) GetTo(src interface{}, buf *interface{}, path ..
 	}
 	var x *testobj.MarshalData
 	_ = x
-	if p, ok := src.(*testobj.MarshalData); ok {
+	if p, ok := src.(**testobj.MarshalData); ok {
+		x = *p
+	} else if p, ok := src.(*testobj.MarshalData); ok {
 		x = p
 	} else if v, ok := src.(testobj.MarshalData); ok {
 		x = &v
@@ -89,7 +91,9 @@ func (i2 *MarshalDataInspector) Cmp(src interface{}, cond inspector.Op, right st
 	}
 	var x *testobj.MarshalData
 	_ = x
-	if p, ok := src.(*testobj.MarshalData); ok {
+	if p, ok := src.(**testobj.MarshalData); ok {
+		x = *p
+	} else if p, ok := src.(*testobj.MarshalData); ok {
 		x = p
 	} else if v, ok := src.(testobj.MarshalData); ok {
 		x = &v
@@ -215,7 +219,9 @@ func (i2 *MarshalDataInspector) Loop(src interface{}, l inspector.Looper, buf *[
 	}
 	var x *testobj.MarshalData
 	_ = x
-	if p, ok := src.(*testobj.MarshalData); ok {
+	if p, ok := src.(**testobj.MarshalData); ok {
+		x = *p
+	} else if p, ok := src.(*testobj.MarshalData); ok {
 		x = p
 	} else if v, ok := src.(testobj.MarshalData); ok {
 		x = &v
@@ -247,7 +253,7 @@ func (i2 *MarshalDataInspector) Loop(src interface{}, l inspector.Looper, buf *[
 	return
 }
 
-func (i2 *MarshalDataInspector) Set(dst, value interface{}, path ...string) error {
+func (i2 *MarshalDataInspector) SetWB(dst, value interface{}, buf inspector.AccumulativeBuffer, path ...string) error {
 	if len(path) == 0 {
 		return nil
 	}
@@ -256,7 +262,9 @@ func (i2 *MarshalDataInspector) Set(dst, value interface{}, path ...string) erro
 	}
 	var x *testobj.MarshalData
 	_ = x
-	if p, ok := dst.(*testobj.MarshalData); ok {
+	if p, ok := dst.(**testobj.MarshalData); ok {
+		x = *p
+	} else if p, ok := dst.(*testobj.MarshalData); ok {
 		x = p
 	} else if v, ok := dst.(testobj.MarshalData); ok {
 		x = &v
@@ -266,25 +274,23 @@ func (i2 *MarshalDataInspector) Set(dst, value interface{}, path ...string) erro
 
 	if len(path) > 0 {
 		if path[0] == "Foo" {
-			if exact, ok := value.(*int); ok {
-				x.Foo = *exact
-			}
-			if exact, ok := value.(int); ok {
-				x.Foo = exact
-			}
+			inspector.AssignBuf(&x.Foo, value, buf)
 			return nil
 		}
 		if path[0] == "Bar" {
-			if exact, ok := value.(*string); ok {
-				x.Bar = *exact
-			}
-			if exact, ok := value.(string); ok {
-				x.Bar = exact
-			}
+			inspector.AssignBuf(&x.Bar, value, buf)
 			return nil
 		}
 		if path[0] == "Rows" {
 			x0 := x.Rows
+			if uvalue, ok := value.(*[]testobj.MarshalRow); ok {
+				x0 = *uvalue
+			}
+			if x0 == nil {
+				z := make([]testobj.MarshalRow, 0)
+				x0 = z
+				x.Rows = x0
+			}
 			_ = x0
 			if len(path) > 1 {
 				var i int
@@ -298,21 +304,11 @@ func (i2 *MarshalDataInspector) Set(dst, value interface{}, path ...string) erro
 					_ = x1
 					if len(path) > 2 {
 						if path[2] == "Msg" {
-							if exact, ok := value.(*string); ok {
-								x1.Msg = *exact
-							}
-							if exact, ok := value.(string); ok {
-								x1.Msg = exact
-							}
+							inspector.AssignBuf(&x1.Msg, value, buf)
 							return nil
 						}
 						if path[2] == "N" {
-							if exact, ok := value.(*int); ok {
-								x1.N = *exact
-							}
-							if exact, ok := value.(int); ok {
-								x1.N = exact
-							}
+							inspector.AssignBuf(&x1.N, value, buf)
 							return nil
 						}
 					}
@@ -320,7 +316,12 @@ func (i2 *MarshalDataInspector) Set(dst, value interface{}, path ...string) erro
 					return nil
 				}
 			}
+			x.Rows = x0
 		}
 	}
 	return nil
+}
+
+func (i2 *MarshalDataInspector) Set(dst, value interface{}, path ...string) error {
+	return i2.SetWB(dst, value, nil, path...)
 }

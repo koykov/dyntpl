@@ -25,7 +25,9 @@ func (i0 *BenchRowInspector) GetTo(src interface{}, buf *interface{}, path ...st
 	}
 	var x *testobj.BenchRow
 	_ = x
-	if p, ok := src.(*testobj.BenchRow); ok {
+	if p, ok := src.(**testobj.BenchRow); ok {
+		x = *p
+	} else if p, ok := src.(*testobj.BenchRow); ok {
 		x = p
 	} else if v, ok := src.(testobj.BenchRow); ok {
 		x = &v
@@ -64,7 +66,9 @@ func (i0 *BenchRowInspector) Cmp(src interface{}, cond inspector.Op, right strin
 	}
 	var x *testobj.BenchRow
 	_ = x
-	if p, ok := src.(*testobj.BenchRow); ok {
+	if p, ok := src.(**testobj.BenchRow); ok {
+		x = *p
+	} else if p, ok := src.(*testobj.BenchRow); ok {
 		x = p
 	} else if v, ok := src.(testobj.BenchRow); ok {
 		x = &v
@@ -143,7 +147,9 @@ func (i0 *BenchRowInspector) Loop(src interface{}, l inspector.Looper, buf *[]by
 	}
 	var x *testobj.BenchRow
 	_ = x
-	if p, ok := src.(*testobj.BenchRow); ok {
+	if p, ok := src.(**testobj.BenchRow); ok {
+		x = *p
+	} else if p, ok := src.(*testobj.BenchRow); ok {
 		x = p
 	} else if v, ok := src.(testobj.BenchRow); ok {
 		x = &v
@@ -156,7 +162,7 @@ func (i0 *BenchRowInspector) Loop(src interface{}, l inspector.Looper, buf *[]by
 	return
 }
 
-func (i0 *BenchRowInspector) Set(dst, value interface{}, path ...string) error {
+func (i0 *BenchRowInspector) SetWB(dst, value interface{}, buf inspector.AccumulativeBuffer, path ...string) error {
 	if len(path) == 0 {
 		return nil
 	}
@@ -165,7 +171,9 @@ func (i0 *BenchRowInspector) Set(dst, value interface{}, path ...string) error {
 	}
 	var x *testobj.BenchRow
 	_ = x
-	if p, ok := dst.(*testobj.BenchRow); ok {
+	if p, ok := dst.(**testobj.BenchRow); ok {
+		x = *p
+	} else if p, ok := dst.(*testobj.BenchRow); ok {
 		x = p
 	} else if v, ok := dst.(testobj.BenchRow); ok {
 		x = &v
@@ -175,32 +183,21 @@ func (i0 *BenchRowInspector) Set(dst, value interface{}, path ...string) error {
 
 	if len(path) > 0 {
 		if path[0] == "ID" {
-			if exact, ok := value.(*int); ok {
-				x.ID = *exact
-			}
-			if exact, ok := value.(int); ok {
-				x.ID = exact
-			}
+			inspector.AssignBuf(&x.ID, value, buf)
 			return nil
 		}
 		if path[0] == "Message" {
-			if exact, ok := value.(*string); ok {
-				x.Message = *exact
-			}
-			if exact, ok := value.(string); ok {
-				x.Message = exact
-			}
+			inspector.AssignBuf(&x.Message, value, buf)
 			return nil
 		}
 		if path[0] == "Print" {
-			if exact, ok := value.(*bool); ok {
-				x.Print = *exact
-			}
-			if exact, ok := value.(bool); ok {
-				x.Print = exact
-			}
+			inspector.AssignBuf(&x.Print, value, buf)
 			return nil
 		}
 	}
 	return nil
+}
+
+func (i0 *BenchRowInspector) Set(dst, value interface{}, path ...string) error {
+	return i0.SetWB(dst, value, nil, path...)
 }
