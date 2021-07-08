@@ -39,32 +39,30 @@ func modDefault(_ *Ctx, buf *interface{}, val interface{}, args []interface{}) (
 			*buf = args[0]
 			return
 		}
-	}
-	if f, ok := ConvFloat(val); ok {
+	} else if f, ok := ConvFloat(val); ok {
 		if f == 0 {
 			*buf = args[0]
 			return
 		}
-	}
-	if b, ok := ConvBytes(val); ok {
+	} else if b, ok := ConvBytes(val); ok {
 		if len(b) == 0 {
 			*buf = args[0]
 			return
 		}
-	}
-	if s, ok := ConvStr(val); ok {
+	} else if s, ok := ConvStr(val); ok {
 		if len(s) == 0 {
 			*buf = args[0]
 			return
 		}
-	}
-	if b, ok := ConvBool(val); ok {
+	} else if b, ok := ConvBool(val); ok {
 		if !b {
 			*buf = args[0]
 			return
 		}
+	} else {
+		*buf = args[0]
 	}
-	return nil
+	return
 }
 
 // Shorthand replacement of {% if ... %}{%= ... %}{% endif %} statement.

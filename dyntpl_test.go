@@ -202,6 +202,7 @@ func pretest() {
 
 		"tplModDef":             tplModDef,
 		"tplModDefStatic":       tplModDefStatic,
+		"tplModDef1":            tplModDef1,
 		"tplModJsonEscape":      tplModJsonEscape,
 		"tplModJsonEscapeShort": tplModJsonEscapeShort,
 		"tplModJsonEscapeDbl":   tplModJsonEscapeDbl,

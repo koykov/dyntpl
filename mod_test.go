@@ -10,6 +10,9 @@ var (
 	tplModDefStatic = []byte(`{% ctx defaultCost = 999.99 %}Cost is: {%= user.Cost|default(defaultCost) %} USD`)
 	expectModDef    = []byte(`Cost is: 999.99 USD`)
 
+	tplModDef1    = []byte(`<span style="background-color:{%= user.ProfileColor|default("#fff") %}"></span>"`)
+	expectModDef1 = []byte(`<span style="background-color:#fff"></span>"`)
+
 	tplModJsonEscape       = []byte(`{"id":"foo","name":"{%= userName|jsonEscape %}"}`)
 	tplModJsonEscapeShort  = []byte(`{"id":"foo","name":"{%j= userName %}"}`)
 	tplModJsonQuoteShort   = []byte(`{"id":"foo","name":{%q= userName %}}`)
@@ -48,12 +51,20 @@ func TestTplModDefStatic(t *testing.T) {
 	testBase(t, "tplModDefStatic", expectModDef, "mod def static tpl mismatch")
 }
 
+func TestTplModArgs(t *testing.T) {
+	testBase(t, "tplModDef1", expectModDef1, "mod def (hex color arg) tpl mismatch")
+}
+
 func BenchmarkTplModDef(b *testing.B) {
 	benchBase(b, "tplModDef", expectModDef, "mod def tpl mismatch")
 }
 
 func BenchmarkTplModDefStatic(b *testing.B) {
 	benchBase(b, "tplModDefStatic", expectModDef, "mod def static tpl mismatch")
+}
+
+func BenchmarkTplModArgs(b *testing.B) {
+	benchBase(b, "tplModDef1", expectModDef1, "mod def (hex color arg) static tpl mismatch")
 }
 
 func TestTplModJsonQuote(t *testing.T) {
