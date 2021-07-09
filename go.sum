@@ -2,8 +2,8 @@ github.com/koykov/bytealg v0.0.0-20210623150855-7ecea3d656f4 h1:ampZgfo9Fo+OizSV
 github.com/koykov/bytealg v0.0.0-20210623150855-7ecea3d656f4/go.mod h1:GsRL37HNnRhJ5Igs0WV7sIVWo8R7qBB9KJh6wzVUFe0=
 github.com/koykov/fastconv v0.0.0-20200216201335-c0ba44f9d207 h1:7O5l39lvbODHwriV0iKBvkpTE0YsVw75Fj9FpzU38Pw=
 github.com/koykov/fastconv v0.0.0-20200216201335-c0ba44f9d207/go.mod h1:JXdtdh0aCcSmxLsVUoYP61lmxpL6dWOXEKxCIR+MlGg=
-github.com/koykov/inspector v0.0.0-20210609204639-a096f8b63478 h1:XzZiwbIXzUCpNVdvECygxWQLm3TKQP34QF2bjePoa4E=
-github.com/koykov/inspector v0.0.0-20210609204639-a096f8b63478/go.mod h1:6QAZFyU1Ezq/OP+m5YLCt4OlMioSy4FUI6wRmNlBWzE=
+github.com/koykov/inspector v0.0.0-20210709074729-5d3152550e8a h1:P1oO+Zy9KP0jujda+NHjCzJrYgO3ZYT5GXj2gHXEAOI=
+github.com/koykov/inspector v0.0.0-20210709074729-5d3152550e8a/go.mod h1:6QAZFyU1Ezq/OP+m5YLCt4OlMioSy4FUI6wRmNlBWzE=
 github.com/koykov/x2bytes v0.0.0-20210125202922-e56731f1055a h1:toVWeFXfGurBG8ibs7sPLIdabEYA3uLKrCh4eHH8ZGw=
 github.com/koykov/x2bytes v0.0.0-20210125202922-e56731f1055a/go.mod h1:WYC0GA70RW4XAE3FRTVCYmC8UhHO3LEm26g795qn7Jo=
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=

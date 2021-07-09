@@ -26,6 +26,16 @@ func init() {
 	RegisterCondFn("lenGt0", condLenGt0)
 	RegisterCondFn("lenGtq0", condLenGtq0)
 
+	// Register builtin empty check helpers.
+	RegisterEmptyCheckFn("int", EmptyCheckInt)
+	RegisterEmptyCheckFn("uint", EmptyCheckUint)
+	RegisterEmptyCheckFn("float", EmptyCheckFloat)
+	RegisterEmptyCheckFn("bytes", EmptyCheckBytes)
+	RegisterEmptyCheckFn("bytes_slice", EmptyCheckBytesSlice)
+	RegisterEmptyCheckFn("str", EmptyCheckStr)
+	RegisterEmptyCheckFn("str_slice", EmptyCheckStrSlice)
+	RegisterEmptyCheckFn("bool", EmptyCheckBool)
+
 	// Register test modifiers.
 	RegisterModFn("testNameOf", "", modTestNameOf)
 }

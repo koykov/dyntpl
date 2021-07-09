@@ -53,7 +53,6 @@ func (i0 *BenchRowInspector) GetTo(src interface{}, buf *interface{}, path ...st
 			return
 		}
 	}
-	*buf = &(*x)
 	return
 }
 

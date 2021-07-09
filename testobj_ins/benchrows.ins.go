@@ -74,7 +74,6 @@ func (i1 *BenchRowsInspector) GetTo(src interface{}, buf *interface{}, path ...s
 			return
 		}
 	}
-	*buf = &(*x)
 	return
 }
 

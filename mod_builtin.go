@@ -15,7 +15,7 @@ const (
 )
 
 // If var is empty, the given default value (first in args) will print instead.
-func modDefault(_ *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
+func modDefault(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
 	if len(args) == 0 {
 		err = ErrModNoArgs
 		return
@@ -28,38 +28,7 @@ func modDefault(_ *Ctx, buf *interface{}, val interface{}, args []interface{}) (
 	// * string
 	// * bool
 	// ... and check if value is empty.
-	if i, ok := ConvInt(val); ok {
-		if i == 0 {
-			*buf = args[0]
-			return
-		}
-	}
-	if u, ok := ConvUint(val); ok {
-		if u == 0 {
-			*buf = args[0]
-			return
-		}
-	} else if f, ok := ConvFloat(val); ok {
-		if f == 0 {
-			*buf = args[0]
-			return
-		}
-	} else if b, ok := ConvBytes(val); ok {
-		if len(b) == 0 {
-			*buf = args[0]
-			return
-		}
-	} else if s, ok := ConvStr(val); ok {
-		if len(s) == 0 {
-			*buf = args[0]
-			return
-		}
-	} else if b, ok := ConvBool(val); ok {
-		if !b {
-			*buf = args[0]
-			return
-		}
-	} else {
+	if EmptyCheck(ctx, val) {
 		*buf = args[0]
 	}
 	return

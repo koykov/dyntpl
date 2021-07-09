@@ -49,7 +49,6 @@ func (i3 *MarshalRowInspector) GetTo(src interface{}, buf *interface{}, path ...
 			return
 		}
 	}
-	*buf = &(*x)
 	return
 }
 
