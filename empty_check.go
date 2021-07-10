@@ -6,6 +6,8 @@ type EmptyCheckFn func(ctx *Ctx, val interface{}) bool
 var (
 	// Registry of empty check helpers.
 	emptyCheckRegistry = map[string]EmptyCheckFn{}
+	// Suppress go vet warning.
+	_ = GetEmptyCheckFn
 )
 
 // Register new empty check helper.
