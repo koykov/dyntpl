@@ -20,14 +20,7 @@ func modDefault(ctx *Ctx, buf *interface{}, val interface{}, args []interface{})
 		err = ErrModNoArgs
 		return
 	}
-	// Consecutive try to assert value to known (builtin) types:
-	// * int
-	// * uint
-	// * float
-	// * bytes
-	// * string
-	// * bool
-	// ... and check if value is empty.
+	// Check is value is empty.
 	if EmptyCheck(ctx, val) {
 		*buf = args[0]
 	}
