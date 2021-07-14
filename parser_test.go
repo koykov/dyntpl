@@ -88,6 +88,9 @@ tpl: var1
 	ctxExpect1 = []byte(`ctx: var fin src obj.Finance ins TestFinance
 tpl: fin
 `)
+	ctxOriginModDot = []byte(`{% ctx history = user.History|default("date").(TestHistory) %}`)
+	ctxExpectModDot = []byte(`ctx: var history src user.History ins TestHistory mod default("date")
+`)
 
 	cntrOrigin = []byte(`{% counter i = 0 %}
 {% cntr j=5 %}
@@ -370,17 +373,16 @@ func TestParseCtxAs(t *testing.T) {
 }
 
 func TestParseCtxDot(t *testing.T) {
-	tree, _ := Parse(ctxOriginDot, false)
-	r := tree.HumanReadable()
-	if !bytes.Equal(r, ctxExpect) {
-		t.Errorf("ctxDot test failed\nexp: %s\ngot: %s", string(ctxExpect), string(r))
+	tst := func(t *testing.T, key string, tpl, expect []byte) {
+		tree, _ := Parse(tpl, false)
+		r := tree.HumanReadable()
+		if !bytes.Equal(r, expect) {
+			t.Errorf("%s test failed\nexp: %s\ngot: %s", key, string(expect), string(r))
+		}
 	}
-
-	tree, _ = Parse(ctxOriginDot1, false)
-	r = tree.HumanReadable()
-	if !bytes.Equal(r, ctxExpect1) {
-		t.Errorf("ctxDot1 test failed\nexp: %s\ngot: %s", string(ctxExpect1), string(r))
-	}
+	tst(t, "ctxDot", ctxOriginDot, ctxExpect)
+	tst(t, "ctxDot1", ctxOriginDot1, ctxExpect1)
+	tst(t, "ctxModDot", ctxOriginModDot, ctxExpectModDot)
 }
 
 func TestParseCntr(t *testing.T) {
