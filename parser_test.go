@@ -374,15 +374,7 @@ func TestParseModNoVar(t *testing.T) {
 	}
 }
 
-func TestParseCtxAs(t *testing.T) {
-	tree, _ := Parse(ctxOriginAs, false)
-	r := tree.HumanReadable()
-	if !bytes.Equal(r, ctxExpect) {
-		t.Errorf("ctxAs test failed\nexp: %s\ngot: %s", string(ctxExpect), string(r))
-	}
-}
-
-func TestParseCtxDot(t *testing.T) {
+func TestParseCtx(t *testing.T) {
 	tst := func(t *testing.T, key string, tpl, expect []byte) {
 		tree, _ := Parse(tpl, false)
 		r := tree.HumanReadable()
@@ -390,6 +382,7 @@ func TestParseCtxDot(t *testing.T) {
 			t.Errorf("%s test failed\nexp: %s\ngot: %s", key, string(expect), string(r))
 		}
 	}
+	tst(t, "ctxOriginAs", ctxOriginAs, ctxExpect)
 	tst(t, "ctxDot", ctxOriginDot, ctxExpect)
 	tst(t, "ctxDot1", ctxOriginDot1, ctxExpect1)
 	tst(t, "ctxModDot", ctxOriginModDot, ctxExpectModDot)
