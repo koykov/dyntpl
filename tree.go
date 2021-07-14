@@ -48,6 +48,10 @@ func (t *Tree) hrHelper(buf *bytes.Buffer, nodes []Node, indent []byte, depth in
 		if len(node.ctxVar) > 0 && len(node.ctxSrc) > 0 {
 			buf.WriteString("var ")
 			buf.Write(node.ctxVar)
+			if len(node.ctxOK) > 0 {
+				buf.WriteString(", ")
+				buf.Write(node.ctxOK)
+			}
 			buf.WriteString(" src ")
 			buf.Write(node.ctxSrc)
 			if len(node.ctxIns) > 0 {

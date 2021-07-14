@@ -11,6 +11,7 @@ type Node struct {
 
 	ctxVar       []byte
 	ctxSrc       []byte
+	ctxOK        []byte
 	ctxSrcStatic bool
 	ctxIns       []byte
 

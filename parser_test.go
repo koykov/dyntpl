@@ -91,6 +91,16 @@ tpl: fin
 	ctxOriginModDot = []byte(`{% ctx history = user.History|default("date").(TestHistory) %}`)
 	ctxExpectModDot = []byte(`ctx: var history src user.History ins TestHistory mod default("date")
 `)
+	ctxOriginAsOK = []byte(`{% ctx mask, ok = user.Flags[mask] %}
+{%= mask %}`)
+	ctxExpectAsOK = []byte(`ctx: var mask, ok src user.Flags[mask] ins static
+tpl: mask
+`)
+	ctxOriginAsOK1 = []byte(`{% ctx list, ok = user.History.(TestHistory) %}
+{%= list %}`)
+	ctxExpectAsOK1 = []byte(`ctx: var list, ok src user.History ins TestHistory
+tpl: list
+`)
 
 	cntrOrigin = []byte(`{% counter i = 0 %}
 {% cntr j=5 %}
@@ -383,6 +393,8 @@ func TestParseCtxDot(t *testing.T) {
 	tst(t, "ctxDot", ctxOriginDot, ctxExpect)
 	tst(t, "ctxDot1", ctxOriginDot1, ctxExpect1)
 	tst(t, "ctxModDot", ctxOriginModDot, ctxExpectModDot)
+	tst(t, "ctxOriginAsOK", ctxOriginAsOK, ctxExpectAsOK)
+	tst(t, "ctxOriginAsOK1", ctxOriginAsOK1, ctxExpectAsOK1)
 }
 
 func TestParseCntr(t *testing.T) {

@@ -103,11 +103,11 @@ var (
 	reMod      = regexp.MustCompile(`([^(]+)\(*([^)]*)\)*`)
 
 	// Regexp to parse context instruction.
-	reCtxAs  = regexp.MustCompile(`(?:context|ctx) (\w+)\s*=\s*([\w\s.,|()]+) as (\w*)`)
-	reCtxDot = regexp.MustCompile(`(?:context|ctx) (\w+)\s*=\s*([\w\s.,|()]+)\.\((\w*)\)`)
-	reCtx    = regexp.MustCompile(`(?:context|ctx) (\w+)\s*=\s*([\w\s.,|()]+)`)
-	reCtxS0  = regexp.MustCompile(`(?:context|ctx) (\w+)\s*=\s*"+([^"]+)"+`)
-	reCtxS1  = regexp.MustCompile(`(?:context|ctx) (\w+)\s*=\s*'+([^']+)+'`)
+	reCtxAs  = regexp.MustCompile(`(?:context|ctx) (\w+),*\s*(\w*)\s*=\s*([\w\s.,|()"'\[\]]+) as (\w*)`)
+	reCtxDot = regexp.MustCompile(`(?:context|ctx) (\w+),*\s*(\w*)\s*=\s*([\w\s.,|()"'\[\]]+)\.\((\w*)\)`)
+	reCtx    = regexp.MustCompile(`(?:context|ctx) (\w+),*\s*(\w*)\s*=\s*([\w\s.,|()"'\[\]]+)`)
+	reCtxS0  = regexp.MustCompile(`(?:context|ctx) (\w+),*\s*(\w*)\s*=\s*"+([^"]+)"+`)
+	reCtxS1  = regexp.MustCompile(`(?:context|ctx) (\w+),*\s*(\w*)\s*=\s*'+([^']+)+'`)
 
 	// Regexp to parse counter instructions.
 	reCntr     = regexp.MustCompile(`(?:counter|cntr) (\w+)`)
@@ -292,11 +292,11 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 		if m == nil {
 			m = reCtx.FindSubmatch(t)
 		}
-		root.ctxVar = m[1]
-		root.ctxSrc, root.mod = p.extractMods(m[2], nil)
+		root.ctxVar, root.ctxOK = m[1], m[2]
+		root.ctxSrc, root.mod = p.extractMods(m[3], nil)
 		root.ctxSrcStatic = isStatic(root.ctxSrc) || forceStatic
-		if len(m) > 3 && len(m[3]) > 0 {
-			root.ctxIns = m[3]
+		if len(m) > 4 && len(m[4]) > 0 {
+			root.ctxIns = m[4]
 		} else {
 			root.ctxIns = ctxStatic
 		}
