@@ -157,6 +157,15 @@ tpl: brand
 				tpl: user.Name
 				raw: , you should confirm your account first.
 `)
+	condOriginOK = []byte(`{%= x %}{% if v, ok := filterVar(vars); ok %}{%= v %}{% else %}N/D{%endif%}foo`)
+	condExpectOK = []byte(`tpl: x
+condOK: v, ok hlp filterVar(vars); left ok
+	true: 
+		tpl: v
+	false: 
+		raw: N/D
+raw: foo
+`)
 
 	loopOrigin = []byte(`
 <h2>Export history</h2>
@@ -409,6 +418,14 @@ func TestParseCondition(t *testing.T) {
 	rNested := treeNested.HumanReadable()
 	if !bytes.Equal(rNested, condNestedExpect) {
 		t.Errorf("nested condition test failed\nexp: %s\ngot: %s", string(condNestedExpect), string(rNested))
+	}
+}
+
+func TestParseConditionOK(t *testing.T) {
+	tree, _ := Parse(condOriginOK, false)
+	r := tree.HumanReadable()
+	if !bytes.Equal(r, condExpectOK) {
+		t.Errorf("condition-ok test failed\nexp: %s\ngot: %s", string(condExpect), string(r))
 	}
 }
 

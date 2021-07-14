@@ -74,36 +74,80 @@ func (t *Tree) hrHelper(buf *bytes.Buffer, nodes []Node, indent []byte, depth in
 			}
 		}
 
-		if len(node.condL) > 0 {
-			buf.WriteString("left ")
-			buf.Write(node.condL)
-		}
-		if node.condOp != 0 {
-			buf.WriteString(" op ")
-			buf.WriteString(node.condOp.String())
-		}
-		if len(node.condR) > 0 {
-			buf.WriteString(" right ")
-			buf.Write(node.condR)
-		}
-		if len(node.condHlp) > 0 {
-			buf.Write(node.condHlp)
-			if len(node.condHlpArg) > 0 {
-				buf.WriteByte('(')
-				for j, a := range node.condHlpArg {
-					if j > 0 {
-						buf.WriteByte(',')
-						buf.WriteByte(' ')
+		if node.typ == TypeCond {
+			if len(node.condL) > 0 {
+				buf.WriteString("left ")
+				buf.Write(node.condL)
+			}
+			if node.condOp != 0 {
+				buf.WriteString(" op ")
+				buf.WriteString(node.condOp.String())
+			}
+			if len(node.condR) > 0 {
+				buf.WriteString(" right ")
+				buf.Write(node.condR)
+			}
+			if len(node.condHlp) > 0 {
+				buf.Write(node.condHlp)
+				if len(node.condHlpArg) > 0 {
+					buf.WriteByte('(')
+					for j, a := range node.condHlpArg {
+						if j > 0 {
+							buf.WriteByte(',')
+							buf.WriteByte(' ')
+						}
+						if a.static {
+							buf.WriteByte('"')
+							buf.Write(a.val)
+							buf.WriteByte('"')
+						} else {
+							buf.Write(a.val)
+						}
 					}
-					if a.static {
-						buf.WriteByte('"')
-						buf.Write(a.val)
-						buf.WriteByte('"')
-					} else {
-						buf.Write(a.val)
-					}
+					buf.WriteByte(')')
 				}
-				buf.WriteByte(')')
+			}
+		}
+
+		if node.typ == TypeCondOK {
+			buf.Write(node.condOKL)
+			buf.WriteString(", ")
+			buf.Write(node.condOKR)
+
+			if len(node.condHlp) > 0 {
+				buf.WriteString(" hlp ")
+				buf.Write(node.condHlp)
+				if len(node.condHlpArg) > 0 {
+					buf.WriteByte('(')
+					for j, a := range node.condHlpArg {
+						if j > 0 {
+							buf.WriteByte(',')
+							buf.WriteByte(' ')
+						}
+						if a.static {
+							buf.WriteByte('"')
+							buf.Write(a.val)
+							buf.WriteByte('"')
+						} else {
+							buf.Write(a.val)
+						}
+					}
+					buf.WriteByte(')')
+				}
+			}
+			buf.WriteString("; ")
+
+			if len(node.condL) > 0 {
+				buf.WriteString("left ")
+				buf.Write(node.condL)
+			}
+			if node.condOp != 0 {
+				buf.WriteString(" op ")
+				buf.WriteString(node.condOp.String())
+			}
+			if len(node.condR) > 0 {
+				buf.WriteString(" right ")
+				buf.Write(node.condR)
 			}
 		}
 

@@ -120,6 +120,10 @@ var (
 	reCondExpr    = regexp.MustCompile(`if (.*)(==|!=|>=|<=|>|<)(.*)`)
 	reCondHelper  = regexp.MustCompile(`if ([^(]+)\(*([^)]*)\)`)
 	reCondComplex = regexp.MustCompile(`if .*&&|\|\||\(|\).*`)
+	reCondOK      = regexp.MustCompile(`if (\w+),*\s*(\w*)\s*:*=\s*([^(]+)\(*([^)]*)\)()\s*;\s*(\w+)`)
+	reCondAsOK    = regexp.MustCompile(`if (\w+),*\s*(\w*)\s*:*=\s*([^(]+)\(*([^)]*)\) as (\w*)\s*;\s*(\w+)`)
+	reCondDotOK   = regexp.MustCompile(`if (\w+),*\s*(\w*)\s*:*=\s*([^(]+)\(*([^)]*)\)\.\((\w*)\)\s*;\s*(\w+)`)
+	reCondExprOK  = regexp.MustCompile(`if .*;\s*(\w+)(.*)(.*)`)
 
 	// Regexp to parse loop instruction.
 	reLoop      = regexp.MustCompile(`for .*`)
@@ -343,6 +347,43 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 		return nodes, offset, up, err
 	}
 
+	// Check if-ok instruction.
+	if reCondOK.Match(t) {
+		root.typ = TypeCondOK
+		var m [][]byte
+		m = reCondAsOK.FindSubmatch(t)
+		if m == nil {
+			m = reCondDotOK.FindSubmatch(t)
+		}
+		if m == nil {
+			m = reCondOK.FindSubmatch(t)
+		}
+		root.condOKL, root.condOKR = m[1], m[2]
+		root.condHlp, root.condHlpArg = m[3], p.extractArgs(m[4])
+		if len(m[5]) > 0 {
+			root.condIns = m[5]
+		}
+		root.condL, root.condR, root.condStaticL, root.condStaticR, root.condOp = p.parseCondExpr(reCondExprOK, t)
+
+		target := newTarget(p)
+		p.cc++
+
+		subNodes := make([]Node, 0)
+		subNodes, offset, err = p.parseTpl(subNodes, pos+len(ctl), target)
+		split := splitNodes(subNodes)
+		if len(split) > 0 {
+			nodeTrue := Node{typ: TypeCondTrue, child: split[0]}
+			root.child = append(root.child, nodeTrue)
+		}
+		if len(split) > 1 {
+			nodeFalse := Node{typ: TypeCondFalse, child: split[1]}
+			root.child = append(root.child, nodeFalse)
+		}
+
+		nodes = addNode(nodes, *root)
+		return nodes, offset, up, err
+	}
+
 	// Check condition structure.
 	if reCond.Match(t) {
 		// Check complexity of the condition first.
@@ -359,7 +400,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 				root.typ = TypeCond
 				root.condHlp = m[1]
 				root.condHlpArg = p.extractArgs(m[2])
-				root.condL, root.condR, root.condStaticL, root.condStaticR, root.condOp = p.parseCondExpr(t)
+				root.condL, root.condR, root.condStaticL, root.condStaticR, root.condOp = p.parseCondExpr(reCondExpr, t)
 				if len(split) > 0 {
 					nodeTrue := Node{typ: TypeCondTrue, child: split[0]}
 					root.child = append(root.child, nodeTrue)
@@ -384,7 +425,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 		split := splitNodes(subNodes)
 
 		root.typ = TypeCond
-		root.condL, root.condR, root.condStaticL, root.condStaticR, root.condOp = p.parseCondExpr(t)
+		root.condL, root.condR, root.condStaticL, root.condStaticR, root.condOp = p.parseCondExpr(reCondExpr, t)
 		if len(split) > 0 {
 			nodeTrue := Node{typ: TypeCondTrue, child: split[0]}
 			root.child = append(root.child, nodeTrue)
@@ -595,8 +636,8 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 }
 
 // Parse condition to left/right parts and condition operator.
-func (p *Parser) parseCondExpr(expr []byte) (l, r []byte, sl, sr bool, op Op) {
-	if m := reCondExpr.FindSubmatch(expr); m != nil {
+func (p *Parser) parseCondExpr(re *regexp.Regexp, expr []byte) (l, r []byte, sl, sr bool, op Op) {
+	if m := re.FindSubmatch(expr); m != nil {
 		l = bytealg.Trim(m[1], space)
 		r = bytealg.Trim(m[3], space)
 		sl = isStatic(l)

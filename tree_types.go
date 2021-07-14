@@ -11,26 +11,27 @@ const (
 	TypeRaw       Type = 0
 	TypeTpl       Type = 1
 	TypeCond      Type = 2
-	TypeCondTrue  Type = 3
-	TypeCondFalse Type = 4
-	TypeLoopRange Type = 5
-	TypeLoopCount Type = 6
-	TypeBreak     Type = 7
-	TypeContinue  Type = 8
-	TypeCtx       Type = 9
-	TypeCounter   Type = 10
-	TypeSwitch    Type = 11
-	TypeCase      Type = 12
-	TypeDefault   Type = 13
-	TypeDiv       Type = 14
-	TypeJsonQ     Type = 15
-	TypeEndJsonQ  Type = 16
-	TypeHtmlE     Type = 17
-	TypeEndHtmlE  Type = 18
-	TypeUrlEnc    Type = 19
-	TypeEndUrlEnc Type = 20
-	TypeInclude   Type = 21
-	TypeExit      Type = 99
+	TypeCondOK    Type = 3
+	TypeCondTrue  Type = 4
+	TypeCondFalse Type = 5
+	TypeLoopRange Type = 6
+	TypeLoopCount Type = 7
+	TypeBreak     Type = 8
+	TypeContinue  Type = 9
+	TypeCtx       Type = 10
+	TypeCounter   Type = 11
+	TypeSwitch    Type = 12
+	TypeCase      Type = 13
+	TypeDefault   Type = 14
+	TypeDiv       Type = 15
+	TypeJsonQ     Type = 16
+	TypeEndJsonQ  Type = 17
+	TypeHtmlE     Type = 18
+	TypeEndHtmlE  Type = 19
+	TypeUrlEnc    Type = 20
+	TypeEndUrlEnc Type = 21
+	TypeInclude   Type = 22
+	TypeExit      Type = 93
 
 	// Must be in sync with inspector.Op type.
 	OpUnk Op = 0
@@ -53,6 +54,8 @@ func (typ Type) String() string {
 		return "tpl"
 	case TypeCond:
 		return "cond"
+	case TypeCondOK:
+		return "condOK"
 	case TypeCondTrue:
 		return "true"
 	case TypeCondFalse:

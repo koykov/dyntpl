@@ -21,13 +21,14 @@ type Node struct {
 	cntrOp    Op
 	cntrOpArg int
 
-	condL       []byte
-	condR       []byte
-	condStaticL bool
-	condStaticR bool
-	condOp      Op
-	condHlp     []byte
-	condHlpArg  []*arg
+	condL, condOKL []byte
+	condR, condOKR []byte
+	condStaticL    bool
+	condStaticR    bool
+	condOp         Op
+	condHlp        []byte
+	condHlpArg     []*arg
+	condIns        []byte
 
 	loopKey       []byte
 	loopVal       []byte
