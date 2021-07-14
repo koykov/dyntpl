@@ -73,12 +73,20 @@ Allowed items: ...`)
 raw: Allowed items: ...
 `)
 
-	ctxOrigin = []byte(`{% ctx var0 = obj.Key as static %}
+	ctxOriginAs = []byte(`{% ctx var0 = obj.Key as static %}
 {% ctx var1=user.Id as static %}
+{%= var1 %}`)
+	ctxOriginDot = []byte(`{% ctx var0 = obj.Key.(static) %}
+{% ctx var1=user.Id.(static) %}
 {%= var1 %}`)
 	ctxExpect = []byte(`ctx: var var0 src obj.Key ins static
 ctx: var var1 src user.Id ins static
 tpl: var1
+`)
+	ctxOriginDot1 = []byte(`{% ctx fin = obj.Finance.(TestFinance) %}
+{%= fin %}`)
+	ctxExpect1 = []byte(`ctx: var fin src obj.Finance ins TestFinance
+tpl: fin
 `)
 
 	cntrOrigin = []byte(`{% counter i = 0 %}
@@ -353,11 +361,25 @@ func TestParseModNoVar(t *testing.T) {
 	}
 }
 
-func TestParseCtx(t *testing.T) {
-	tree, _ := Parse(ctxOrigin, false)
+func TestParseCtxAs(t *testing.T) {
+	tree, _ := Parse(ctxOriginAs, false)
 	r := tree.HumanReadable()
 	if !bytes.Equal(r, ctxExpect) {
-		t.Errorf("ctx test failed\nexp: %s\ngot: %s", string(ctxExpect), string(r))
+		t.Errorf("ctxAs test failed\nexp: %s\ngot: %s", string(ctxExpect), string(r))
+	}
+}
+
+func TestParseCtxDot(t *testing.T) {
+	tree, _ := Parse(ctxOriginDot, false)
+	r := tree.HumanReadable()
+	if !bytes.Equal(r, ctxExpect) {
+		t.Errorf("ctxDot test failed\nexp: %s\ngot: %s", string(ctxExpect), string(r))
+	}
+
+	tree, _ = Parse(ctxOriginDot1, false)
+	r = tree.HumanReadable()
+	if !bytes.Equal(r, ctxExpect1) {
+		t.Errorf("ctxDot1 test failed\nexp: %s\ngot: %s", string(ctxExpect1), string(r))
 	}
 }
 

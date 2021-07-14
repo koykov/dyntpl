@@ -103,10 +103,11 @@ var (
 	reMod      = regexp.MustCompile(`([^(]+)\(*([^)]*)\)*`)
 
 	// Regexp to parse context instruction.
-	reCtxAs = regexp.MustCompile(`(?:context|ctx) (\w+)\s*=\s*([\w\s.,|()]+) as (\w*)`)
-	reCtx   = regexp.MustCompile(`(?:context|ctx) (\w+)\s*=\s*([\w\s.,|()]+)`)
-	reCtxS0 = regexp.MustCompile(`(?:context|ctx) (\w+)\s*=\s*"+([^"]+)"+`)
-	reCtxS1 = regexp.MustCompile(`(?:context|ctx) (\w+)\s*=\s*'+([^']+)+'`)
+	reCtxAs  = regexp.MustCompile(`(?:context|ctx) (\w+)\s*=\s*([\w\s.,|()]+) as (\w*)`)
+	reCtxDot = regexp.MustCompile(`(?:context|ctx) (\w+)\s*=\s*([\w\s.,|()]+)\.\((\w*)\)`)
+	reCtx    = regexp.MustCompile(`(?:context|ctx) (\w+)\s*=\s*([\w\s.,|()]+)`)
+	reCtxS0  = regexp.MustCompile(`(?:context|ctx) (\w+)\s*=\s*"+([^"]+)"+`)
+	reCtxS1  = regexp.MustCompile(`(?:context|ctx) (\w+)\s*=\s*'+([^']+)+'`)
 
 	// Regexp to parse counter instructions.
 	reCntr     = regexp.MustCompile(`(?:counter|cntr) (\w+)`)
@@ -277,6 +278,9 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 			forceStatic bool
 		)
 		m = reCtxAs.FindSubmatch(t)
+		if m == nil {
+			m = reCtxDot.FindSubmatch(t)
+		}
 		if m == nil {
 			m = reCtxS0.FindSubmatch(t)
 			forceStatic = m != nil
