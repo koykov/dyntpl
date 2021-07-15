@@ -63,6 +63,13 @@ var (
 	tplCondHlp    = []byte(`{% if lenGt0(user.Id) %}greater than zero{% endif %}`)
 	expectCondHlp = []byte(`greater than zero`)
 
+	tplCondOK = []byte(`<ul>{% for i:=0; i<5; i++ %}
+	{% if h, ok := __testUserNextHistory999(user.Finance).(TestHistory); ok %}
+		<li>{%= h.Cost %}</li>
+	{% endif %}
+{%endfor%}</ul>`)
+	expectCondOK = []byte(`<ul><li>14.345241</li><li>-3.0000342543</li><li>2325242534.3532453</li></ul>`)
+
 	tplSwitch = []byte(`{% ctx exactStatus = 78 %}{
 	"permission": "{% switch user.Status %}
 	{% case 10 %}
@@ -191,6 +198,7 @@ func pretest() {
 		"tplCond":              tplCond,
 		"tplCondNoStatic":      tplCondNoStatic,
 		"tplCondHlp":           tplCondHlp,
+		"tplCondOK":            tplCondOK,
 		"tplSwitch":            tplSwitch,
 		"tplSwitchNoCond":      tplSwitchNoCond,
 		"tplLoopRange":         tplLoopRange,
@@ -243,6 +251,7 @@ func testBase(t *testing.T, tplName string, expectResult []byte, errMsg string) 
 	}
 	if len(expectResult) == 0 && len(result) != 0 {
 		t.Error(errMsg)
+		return
 	}
 	if !bytes.Equal(result, expectResult) {
 		t.Error(errMsg)
@@ -285,6 +294,10 @@ func TestTplCond(t *testing.T) {
 
 func TestTplCondNoStatic(t *testing.T) {
 	testBase(t, "tplCondNoStatic", expectCond, "cond (no static) tpl mismatch")
+}
+
+func TestCondOK(t *testing.T) {
+	testBase(t, "tplCondOK", expectCondOK, "cond-ok tpl mismatch")
 }
 
 func TestTplCondHlp(t *testing.T) {
@@ -373,6 +386,10 @@ func BenchmarkTplCondNoStatic(b *testing.B) {
 
 func BenchmarkTplCondHlp(b *testing.B) {
 	benchBase(b, "tplCondHlp", expectCondHlp, "cond (helper) tpl mismatch")
+}
+
+func BenchmarkTplCondOK(b *testing.B) {
+	benchBase(b, "tplCondOK", expectCondOK, "cond-ok tpl mismatch")
 }
 
 func BenchmarkTplSwitch(b *testing.B) {
