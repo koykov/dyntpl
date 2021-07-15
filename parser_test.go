@@ -166,6 +166,15 @@ condOK: v, ok hlp filterVar(vars); left ok
 		raw: N/D
 raw: foo
 `)
+	condOriginNotOK = []byte(`{%= x %}{% if v, ok := filterVar(vars); !ok %}{%= v %}{% else %}N/D{%endif%}foo`)
+	condExpectNotOK = []byte(`tpl: x
+condOK: v, ok hlp filterVar(vars); left ok op != right true
+	true: 
+		tpl: v
+	false: 
+		raw: N/D
+raw: foo
+`)
 
 	loopOrigin = []byte(`
 <h2>Export history</h2>
@@ -425,7 +434,15 @@ func TestParseConditionOK(t *testing.T) {
 	tree, _ := Parse(condOriginOK, false)
 	r := tree.HumanReadable()
 	if !bytes.Equal(r, condExpectOK) {
-		t.Errorf("condition-ok test failed\nexp: %s\ngot: %s", string(condExpect), string(r))
+		t.Errorf("condition-ok test failed\nexp: %s\ngot: %s", string(condExpectOK), string(r))
+	}
+}
+
+func TestParseConditionNotOK(t *testing.T) {
+	tree, _ := Parse(condOriginNotOK, false)
+	r := tree.HumanReadable()
+	if !bytes.Equal(r, condExpectNotOK) {
+		t.Errorf("condition-!ok test failed\nexp: %s\ngot: %s", string(condExpectNotOK), string(r))
 	}
 }
 

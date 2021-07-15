@@ -62,6 +62,8 @@ var (
 	heEnd      = []byte("endhtmlescape")
 	ue         = []byte("urlencode")
 	ueEnd      = []byte("endurlencode")
+	bTrue      = []byte("true")
+	bFalse     = []byte("false")
 
 	// Print prefixes and replacements.
 	outmJ = []byte("j")          // json quote
@@ -120,10 +122,10 @@ var (
 	reCondExpr    = regexp.MustCompile(`if (.*)(==|!=|>=|<=|>|<)(.*)`)
 	reCondHelper  = regexp.MustCompile(`if ([^(]+)\(*([^)]*)\)`)
 	reCondComplex = regexp.MustCompile(`if .*&&|\|\||\(|\).*`)
-	reCondOK      = regexp.MustCompile(`if (\w+),*\s*(\w*)\s*:*=\s*([^(]+)\(*([^)]*)\)(.*)\s*;\s*(\w+)`)
-	reCondAsOK    = regexp.MustCompile(`if (\w+),*\s*(\w*)\s*:*=\s*([^(]+)\(*([^)]*)\) as (\w*)\s*;\s*(\w+)`)
-	reCondDotOK   = regexp.MustCompile(`if (\w+),*\s*(\w*)\s*:*=\s*([^(]+)\(*([^)]*)\)\.\((\w*)\)\s*;\s*(\w+)`)
-	reCondExprOK  = regexp.MustCompile(`if .*;\s*(\w+)(.*)(.*)`)
+	reCondOK      = regexp.MustCompile(`if (\w+),*\s*(\w*)\s*:*=\s*([^(]+)\(*([^)]*)\)(.*)\s*;\s*([!\w]+)`)
+	reCondAsOK    = regexp.MustCompile(`if (\w+),*\s*(\w*)\s*:*=\s*([^(]+)\(*([^)]*)\) as (\w*)\s*;\s*([!\w]+)`)
+	reCondDotOK   = regexp.MustCompile(`if (\w+),*\s*(\w*)\s*:*=\s*([^(]+)\(*([^)]*)\)\.\((\w*)\)\s*;\s*([!\w]+)`)
+	reCondExprOK  = regexp.MustCompile(`if .*;\s*([!\w]+)(.*)(.*)`)
 
 	// Regexp to parse loop instruction.
 	reLoop      = regexp.MustCompile(`for .*`)
@@ -641,10 +643,18 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 func (p *Parser) parseCondExpr(re *regexp.Regexp, expr []byte) (l, r []byte, sl, sr bool, op Op) {
 	if m := re.FindSubmatch(expr); m != nil {
 		l = bytealg.Trim(m[1], space)
-		r = bytealg.Trim(m[3], space)
-		sl = isStatic(l)
-		sr = isStatic(r)
-		op = p.parseOp(m[2])
+		if len(l) > 0 && l[0] == '!' {
+			l = l[1:]
+			r = bTrue
+			sl = false
+			sr = true
+			op = OpNq
+		} else {
+			r = bytealg.Trim(m[3], space)
+			sl = isStatic(l)
+			sr = isStatic(r)
+			op = p.parseOp(m[2])
+		}
 	}
 	return
 }
