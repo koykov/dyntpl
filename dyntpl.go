@@ -7,7 +7,6 @@ import (
 
 	"github.com/koykov/bytealg"
 	"github.com/koykov/fastconv"
-	"github.com/koykov/inspector"
 	"github.com/koykov/x2bytes"
 )
 
@@ -209,12 +208,13 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 	case TypeCtx:
 		// Context node sets new variable, example:
 		// {% ctx name = user.Name %} or {% ctx limit = 10 %}
+
 		// It's a speed improvement trick.
 		if node.ctxSrcStatic {
 			ctx.SetBytes(fastconv.B2S(node.ctxVar), node.ctxSrc)
 		} else {
 			// Get the inspector.
-			ins, err := inspector.GetInspector(fastconv.B2S(node.ctxIns))
+			ins, err := GetInspector(fastconv.B2S(node.ctxVar), fastconv.B2S(node.ctxIns))
 			if err != nil {
 				return err
 			}
@@ -252,9 +252,13 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 				err = ctx.Err
 				return err
 			}
-			if raw == nil || raw == "" {
+			empty := raw == nil || raw == ""
+			if len(node.ctxOK) == 0 && empty {
 				err = ErrEmptyArg
 				return err
+			}
+			if len(node.ctxOK) > 0 {
+				ctx.SetStatic(fastconv.B2S(node.ctxOK), !empty)
 			}
 
 			if b, ok := ConvBytes(raw); ok && len(b) > 0 {

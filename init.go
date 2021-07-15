@@ -1,5 +1,7 @@
 package dyntpl
 
+import "github.com/koykov/inspector/testobj_ins"
+
 func init() {
 	// Register simple builtin modifiers.
 	RegisterModFn("default", "def", modDefault)
@@ -38,4 +40,7 @@ func init() {
 
 	// Register test modifiers.
 	RegisterModFn("testNameOf", "", modTestNameOf)
+
+	// Register test variable-inspector pairs.
+	RegisterVarInsPair("__testFin999", &testobj_ins.TestFinanceInspector{})
 }

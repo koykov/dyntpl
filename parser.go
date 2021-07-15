@@ -120,7 +120,7 @@ var (
 	reCondExpr    = regexp.MustCompile(`if (.*)(==|!=|>=|<=|>|<)(.*)`)
 	reCondHelper  = regexp.MustCompile(`if ([^(]+)\(*([^)]*)\)`)
 	reCondComplex = regexp.MustCompile(`if .*&&|\|\||\(|\).*`)
-	reCondOK      = regexp.MustCompile(`if (\w+),*\s*(\w*)\s*:*=\s*([^(]+)\(*([^)]*)\)()\s*;\s*(\w+)`)
+	reCondOK      = regexp.MustCompile(`if (\w+),*\s*(\w*)\s*:*=\s*([^(]+)\(*([^)]*)\)(.*)\s*;\s*(\w+)`)
 	reCondAsOK    = regexp.MustCompile(`if (\w+),*\s*(\w*)\s*:*=\s*([^(]+)\(*([^)]*)\) as (\w*)\s*;\s*(\w+)`)
 	reCondDotOK   = regexp.MustCompile(`if (\w+),*\s*(\w*)\s*:*=\s*([^(]+)\(*([^)]*)\)\.\((\w*)\)\s*;\s*(\w+)`)
 	reCondExprOK  = regexp.MustCompile(`if .*;\s*(\w+)(.*)(.*)`)
@@ -302,7 +302,9 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 		if len(m) > 4 && len(m[4]) > 0 {
 			root.ctxIns = m[4]
 		} else {
-			root.ctxIns = ctxStatic
+			if _, ok := GetInsByVarName(fastconv.B2S(root.ctxVar)); !ok {
+				root.ctxIns = ctxStatic
+			}
 		}
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)

@@ -155,6 +155,9 @@ var (
 </ul>`)
 	expectLoopCount = []byte(`<h2>History</h2><ul><li>Amount: 14.345241<br/>Description: pay for domain<br/>Date: 152354345634</li><li>Amount: -3.0000342543<br/>Description: got refund<br/>Date: 153465345246</li><li>Amount: 2325242534.3532453<br/>Description: maintenance<br/>Date: 156436535640</li></ul>`)
 
+	tplCtxOK    = []byte(`foo{% ctx __testFin999, ok = user.Finance %}bar{%= __testFin999.Balance %}end`)
+	expectCtxOK = []byte(`foobar9000.015end`)
+
 	tplCntr0 = []byte(`{% counter c = 0 %}
 [{% counter c+2 %}{%= c %},
 {% counter c+2 %}{%= c %},
@@ -196,6 +199,7 @@ func pretest() {
 		"tplLoopCountContinue": tplLoopCountContinue,
 		"tplLoopCount":         tplLoopCount,
 		"tplLoopCountCtx":      tplLoopCountCtx,
+		"tplCtxOK":             tplCtxOK,
 		"tplCntr0":             tplCntr0,
 		"tplCntr1":             tplCntr1,
 		"tplExit":              tplExit,
@@ -331,6 +335,10 @@ func TestTplLoopCountCtx(t *testing.T) {
 	testBase(t, "tplLoopCountCtx", expectLoopCount, "loop count ctx tpl mismatch")
 }
 
+func TestCtxOK(t *testing.T) {
+	testBase(t, "tplCtxOK", expectCtxOK, "ctx-ok tpl mismatch")
+}
+
 func TestCntr0Exit(t *testing.T) {
 	testBase(t, "tplCntr0", expectCntr0, "cntr 0 tpl mismatch")
 }
@@ -414,6 +422,10 @@ func BenchmarkTplLoopCount(b *testing.B) {
 
 func BenchmarkTplLoopCountCtx(b *testing.B) {
 	benchBase(b, "tplLoopCountCtx", expectLoopCount, "loop count ctx tpl mismatch")
+}
+
+func BenchmarkTplCtxOK(b *testing.B) {
+	benchBase(b, "tplCtxOK", expectCtxOK, "ctx-ok tpl mismatch")
 }
 
 func BenchmarkTplCntr0(b *testing.B) {
