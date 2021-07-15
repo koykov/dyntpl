@@ -270,7 +270,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 		}
 	case TypeCounter:
 		if node.cntrInitF {
-			ctx.setCntr(fastconv.B2S(node.cntrVar), node.cntrInit)
+			ctx.SetCounter(fastconv.B2S(node.cntrVar), node.cntrInit)
 		} else {
 			raw := ctx.get(node.cntrVar)
 			if ctx.Err != nil {
@@ -286,7 +286,59 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			} else {
 				cntr -= node.cntrOpArg
 			}
-			ctx.setCntr(fastconv.B2S(node.cntrVar), cntr)
+			ctx.SetCounter(fastconv.B2S(node.cntrVar), cntr)
+		}
+	case TypeCondOK:
+		// Condition-OK node evaluates expressions like if-ok with helper.
+		var r bool
+		// Check condition-OK helper (mandatory at all).
+		if len(node.condHlp) > 0 {
+			fn := GetCondOKFn(fastconv.B2S(node.condHlp))
+			if fn == nil {
+				err = ErrCondHlpNotFound
+				return
+			}
+			// Prepare arguments list.
+			ctx.bufA = ctx.bufA[:0]
+			if len(node.condHlpArg) > 0 {
+				for _, arg := range node.condHlpArg {
+					if arg.static {
+						ctx.bufA = append(ctx.bufA, &arg.val)
+					} else {
+						val := ctx.get(arg.val)
+						ctx.bufA = append(ctx.bufA, val)
+					}
+				}
+			}
+			// Call condition-ok helper func.
+			(*fn)(ctx, &ctx.bufX, &ctx.BufB, ctx.bufA)
+			r = ctx.BufB
+			// Set var, ok to context.
+			lv, lr := fastconv.B2S(node.condOKL), fastconv.B2S(node.condOKR)
+			ins, err := GetInspector(lv, fastconv.B2S(node.condIns))
+			if err != nil {
+				return err
+			}
+			raw := ctx.bufX
+			ctx.Set(lv, raw, ins)
+			ctx.SetStatic(lr, ctx.BufB)
+
+			// Check extended condition (eg: !ok).
+			if len(node.condR) > 0 {
+				r, err = t.nodeCmp(&node, ctx)
+			}
+			// Evaluate condition.
+			if r {
+				// True case.
+				if len(node.child) > 0 {
+					err = t.renderNode(w, node.child[0], ctx)
+				}
+			} else {
+				// Else case.
+				if len(node.child) > 1 {
+					err = t.renderNode(w, node.child[1], ctx)
+				}
+			}
 		}
 	case TypeCond:
 		// Condition node evaluates condition expressions.
@@ -313,33 +365,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			// Call condition helper func.
 			r = (*fn)(ctx, ctx.bufA)
 		} else {
-			// Regular comparison.
-			sl := node.condStaticL
-			sr := node.condStaticR
-			if sl && sr {
-				// It's senseless to compare two static values.
-				err = ErrSenselessCond
-				return
-			}
-			if sr {
-				// Right side is static. This is a prefer case
-				r = ctx.cmp(node.condL, node.condOp, node.condR)
-			} else if sl {
-				// Left side is static.
-				// dyntpl can't handle expressions like {% if 10 > item.Weight %}...
-				// therefore it inverts condition to {% if item.Weight < 10 %}...
-				r = ctx.cmp(node.condR, node.condOp.Swap(), node.condL)
-			} else {
-				// Both sides isn't static. This is a bad case, since need to inspect variables twice.
-				ctx.get(node.condR)
-				if ctx.Err == nil {
-					ctx.Buf, err = x2bytes.ToBytesWR(ctx.Buf, ctx.bufX)
-					if err != nil {
-						return
-					}
-					r = ctx.cmp(node.condL, node.condOp, ctx.Buf)
-				}
-			}
+			r, err = t.nodeCmp(&node, ctx)
 		}
 		if ctx.Err != nil {
 			err = ctx.Err
@@ -520,6 +546,38 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 	default:
 		// Unknown node type caught.
 		err = ErrUnknownCtl
+	}
+	return
+}
+
+// Evaluate condition expressions.
+func (t *Tpl) nodeCmp(node *Node, ctx *Ctx) (r bool, err error) {
+	// Regular comparison.
+	sl := node.condStaticL
+	sr := node.condStaticR
+	if sl && sr {
+		// It's senseless to compare two static values.
+		err = ErrSenselessCond
+		return
+	}
+	if sr {
+		// Right side is static. This is a prefer case
+		r = ctx.cmp(node.condL, node.condOp, node.condR)
+	} else if sl {
+		// Left side is static.
+		// dyntpl can't handle expressions like {% if 10 > item.Weight %}...
+		// therefore it inverts condition to {% if item.Weight < 10 %}...
+		r = ctx.cmp(node.condR, node.condOp.Swap(), node.condL)
+	} else {
+		// Both sides isn't static. This is a bad case, since need to inspect variables twice.
+		ctx.get(node.condR)
+		if ctx.Err == nil {
+			ctx.Buf, err = x2bytes.ToBytesWR(ctx.Buf, ctx.bufX)
+			if err != nil {
+				return
+			}
+			r = ctx.cmp(node.condL, node.condOp, ctx.Buf)
+		}
 	}
 	return
 }

@@ -41,6 +41,9 @@ func init() {
 	// Register test modifiers.
 	RegisterModFn("testNameOf", "", modTestNameOf)
 
+	// Register test condition-ok helpers.
+	RegisterCondOKFn("__testUserNextHistory999", testCondOK)
+
 	// Register test variable-inspector pairs.
 	RegisterVarInsPair("__testFin999", &testobj_ins.TestFinanceInspector{})
 }

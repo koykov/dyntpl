@@ -154,7 +154,7 @@ func (c *Ctx) SetBytes(key string, val []byte) {
 //
 // See Ctx.Set().
 // This is a special case to support counters.
-func (c *Ctx) setCntr(key string, val int) {
+func (c *Ctx) SetCounter(key string, val int) {
 	ins, err := inspector.GetInspector("static")
 	if err != nil {
 		c.Err = err
@@ -198,6 +198,18 @@ func (c *Ctx) setCntr(key string, val int) {
 // * staticVar
 func (c *Ctx) Get(path string) interface{} {
 	return c.get(fastconv.S2B(path))
+}
+
+// Get int counter value.
+func (c *Ctx) GetCounter(key string) int {
+	rawC := c.Get(key)
+	if rawC == nil {
+		return 0
+	}
+	if i, ok := rawC.(*int); ok {
+		return *i
+	}
+	return 0
 }
 
 // Reset the context.
