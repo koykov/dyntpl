@@ -53,7 +53,8 @@ var (
 	condEnd    = []byte("endif")
 	loopEnd    = []byte("endfor")
 	loopBrk    = []byte("break")
-	loopCnt    = []byte("continue")
+	loopLBrk   = []byte("lazybreak")
+	loopCont   = []byte("continue")
 	swDefault  = []byte("default")
 	swEnd      = []byte("endswitch")
 	jq         = []byte("jsonquote")
@@ -63,7 +64,6 @@ var (
 	ue         = []byte("urlencode")
 	ueEnd      = []byte("endurlencode")
 	bTrue      = []byte("true")
-	bFalse     = []byte("false")
 
 	// Print prefixes and replacements.
 	outmJ = []byte("j")          // json quote
@@ -131,6 +131,8 @@ var (
 	reLoop      = regexp.MustCompile(`for .*`)
 	reLoopRange = regexp.MustCompile(`for ([^:]+)\s*:*=\s*range\s*([^\s]*)\s*(?:separator|sep)*\s*(.*)`)
 	reLoopCount = regexp.MustCompile(`for (\w*)\s*:*=\s*(\w+)\s*;\s*\w+\s*(<|<=|>|>=|!=)+\s*([^;]+)\s*;\s*\w*(--|\+\+)+\s*(?:separator|sep)*\s*(.*)`)
+	reLoopBrk   = regexp.MustCompile(`break (\d+)`)
+	reLoopLBrk  = regexp.MustCompile(`lazybreak (\d+)`)
 
 	// Regexp to parse switch instruction.
 	reSwitch           = regexp.MustCompile(`^switch\s*(.*)`)
@@ -512,15 +514,38 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 		up = true
 		return nodes, offset, up, err
 	}
-	// Check loop break.
-	if bytes.Equal(t, loopBrk) {
+	// Check loop lazy break (including lazybreak N).
+	if m := reLoopLBrk.FindSubmatch(t); m != nil {
+		root.typ = TypeLBreak
+		if i, _ := strconv.ParseInt(fastconv.B2S(m[1]), 10, 64); i > 0 {
+			root.loopBrkD = int(i)
+		}
+		nodes = addNode(nodes, *root)
+		offset = pos + len(ctl)
+		return nodes, offset, up, err
+	} else if bytes.Equal(t, loopLBrk) {
+		root.typ = TypeLBreak
+		nodes = addNode(nodes, *root)
+		offset = pos + len(ctl)
+		return nodes, offset, up, err
+	}
+	// Check loop break (including break N).
+	if m := reLoopBrk.FindSubmatch(t); m != nil {
+		root.typ = TypeBreak
+		if i, _ := strconv.ParseInt(fastconv.B2S(m[1]), 10, 64); i > 0 {
+			root.loopBrkD = int(i)
+		}
+		nodes = addNode(nodes, *root)
+		offset = pos + len(ctl)
+		return nodes, offset, up, err
+	} else if bytes.Equal(t, loopBrk) {
 		root.typ = TypeBreak
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
 		return nodes, offset, up, err
 	}
 	// Check loop continue.
-	if bytes.Equal(t, loopCnt) {
+	if bytes.Equal(t, loopCont) {
 		root.typ = TypeContinue
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)

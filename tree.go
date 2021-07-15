@@ -31,7 +31,7 @@ func (t *Tree) hrHelper(buf *bytes.Buffer, nodes []Node, indent []byte, depth in
 	for _, node := range nodes {
 		buf.Write(bytes.Repeat(indent, depth))
 		buf.WriteString(node.typ.String())
-		if node.typ != TypeExit && node.typ != TypeBreak && node.typ != TypeContinue {
+		if node.typ != TypeExit && node.typ != TypeBreak && node.typ != TypeLBreak && node.typ != TypeContinue {
 			buf.WriteByte(':')
 			buf.WriteByte(' ')
 			buf.Write(node.raw)
@@ -183,6 +183,10 @@ func (t *Tree) hrHelper(buf *bytes.Buffer, nodes []Node, indent []byte, depth in
 		if len(node.loopSep) > 0 {
 			buf.WriteString(" sep ")
 			buf.Write(node.loopSep)
+		}
+		if node.loopBrkD > 0 {
+			buf.WriteByte(' ')
+			buf.WriteString(strconv.Itoa(node.loopBrkD))
 		}
 
 		if len(node.switchArg) > 0 {

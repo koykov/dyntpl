@@ -228,6 +228,57 @@ rloop: val rule src config.Rules sep ,
 	raw: }
 raw: ]}
 `)
+	loopBrkOrigin = []byte(`
+{
+	{% for i:=0; i<10; i++ %}
+		foo
+		{% if i == 8 %}{% break %}{% endif %}
+		{% if i == 7 %}{% lazybreak %}{% endif %}
+		{%= i %}
+	{% endfor %}
+}
+`)
+	loopBrkExpect = []byte(`raw: {
+cloop: cnt i cond < lim 10 op ++
+	raw: foo
+	cond: left i op == right 8
+		true: 
+			break
+	cond: left i op == right 7
+		true: 
+			lazybreak
+	tpl: i
+raw: }
+`)
+	loopBrkNestedOrigin = []byte(`
+{
+	{% for i:=0; i<10; i++ %}
+		bar
+		{% for j:=0; i<10; i++ %}
+			foo
+			{% if j == 8 %}{% break 2 %}{% endif %}
+			{% if j == 7 %}{% lazybreak 2 %}{% endif %}
+			{%= j %}
+		{% endfor %}
+		{%= i %}
+	{% endfor %}
+}
+`)
+	loopBrkNestedExpect = []byte(`raw: {
+cloop: cnt i cond < lim 10 op ++
+	raw: bar
+	cloop: cnt j cond < lim 10 op ++
+		raw: foo
+		cond: left j op == right 8
+			true: 
+				break 2
+		cond: left j op == right 7
+			true: 
+				lazybreak 2
+		tpl: j
+	tpl: i
+raw: }
+`)
 
 	switchOrigin = []byte(`<Tracking event="
 	{% switch track.Event %}
@@ -447,17 +498,17 @@ func TestParseConditionNotOK(t *testing.T) {
 }
 
 func TestParseLoop(t *testing.T) {
-	tree, _ := Parse(loopOrigin, false)
-	r := tree.HumanReadable()
-	if !bytes.Equal(r, loopExpect) {
-		t.Errorf("loop test failed\nexp: %s\ngot: %s", string(loopExpect), string(r))
+	tst := func(t *testing.T, key string, tpl, expect []byte) {
+		tree, _ := Parse(tpl, false)
+		r := tree.HumanReadable()
+		if !bytes.Equal(r, expect) {
+			t.Errorf("%s test failed\nexp: %s\ngot: %s", key, string(expect), string(r))
+		}
 	}
-
-	treeSep, _ := Parse(loopSepOrigin, false)
-	rSep := treeSep.HumanReadable()
-	if !bytes.Equal(rSep, loopSepExpect) {
-		t.Errorf("loop with sep test failed\nexp: %s\ngot: %s", string(loopSepExpect), string(rSep))
-	}
+	tst(t, "loopOrigin", loopOrigin, loopExpect)
+	tst(t, "loopSepOrigin", loopSepOrigin, loopSepExpect)
+	tst(t, "loopBrkOrigin", loopBrkOrigin, loopBrkExpect)
+	tst(t, "loopBrkNestedOrigin", loopBrkNestedOrigin, loopBrkNestedExpect)
 }
 
 func TestParseSwitch(t *testing.T) {

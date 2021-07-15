@@ -17,21 +17,22 @@ const (
 	TypeLoopRange Type = 6
 	TypeLoopCount Type = 7
 	TypeBreak     Type = 8
-	TypeContinue  Type = 9
-	TypeCtx       Type = 10
-	TypeCounter   Type = 11
-	TypeSwitch    Type = 12
-	TypeCase      Type = 13
-	TypeDefault   Type = 14
-	TypeDiv       Type = 15
-	TypeJsonQ     Type = 16
-	TypeEndJsonQ  Type = 17
-	TypeHtmlE     Type = 18
-	TypeEndHtmlE  Type = 19
-	TypeUrlEnc    Type = 20
-	TypeEndUrlEnc Type = 21
-	TypeInclude   Type = 22
-	TypeExit      Type = 93
+	TypeLBreak    Type = 9
+	TypeContinue  Type = 10
+	TypeCtx       Type = 11
+	TypeCounter   Type = 12
+	TypeSwitch    Type = 13
+	TypeCase      Type = 14
+	TypeDefault   Type = 15
+	TypeDiv       Type = 16
+	TypeJsonQ     Type = 17
+	TypeEndJsonQ  Type = 18
+	TypeHtmlE     Type = 19
+	TypeEndHtmlE  Type = 20
+	TypeUrlEnc    Type = 21
+	TypeEndUrlEnc Type = 22
+	TypeInclude   Type = 23
+	TypeExit      Type = 99
 
 	// Must be in sync with inspector.Op type.
 	OpUnk Op = 0
@@ -66,6 +67,8 @@ func (typ Type) String() string {
 		return "cloop"
 	case TypeBreak:
 		return "break"
+	case TypeLBreak:
+		return "lazybreak"
 	case TypeContinue:
 		return "cont"
 	case TypeCtx:

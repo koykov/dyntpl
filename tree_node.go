@@ -41,6 +41,7 @@ type Node struct {
 	loopLim       []byte
 	loopLimStatic bool
 	loopSep       []byte
+	loopBrkD      int
 
 	switchArg []byte
 
