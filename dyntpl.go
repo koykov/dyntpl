@@ -394,6 +394,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 	case TypeLoopCount:
 		// Evaluate counter loops.
 		// See Ctx.cloop().
+		ctx.brkD = 0
 		ctx.cloop(node, t, w)
 		if ctx.Err != nil {
 			err = ctx.Err
@@ -402,6 +403,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 	case TypeLoopRange:
 		// Evaluate range loops.
 		// See Ctx.rloop().
+		ctx.brkD = 0
 		ctx.rloop(node.loopSrc, node, t, w)
 		if ctx.Err != nil {
 			err = ctx.Err
