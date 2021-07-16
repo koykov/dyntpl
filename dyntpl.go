@@ -409,7 +409,12 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 		}
 	case TypeBreak:
 		// Break the loop.
+		ctx.brkD = node.loopBrkD
 		err = ErrBreakLoop
+	case TypeLBreak:
+		// Lazy break the loop.
+		ctx.brkD = node.loopBrkD
+		err = ErrLBreakLoop
 	case TypeContinue:
 		// Go to next iteration of loop.
 		err = ErrContLoop

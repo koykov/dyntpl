@@ -21,5 +21,6 @@ var (
 	ErrWrongLoopCond = errors.New("wrong loop condition operation")
 	ErrWrongLoopOp   = errors.New("wrong loop operation")
 	ErrBreakLoop     = errors.New("break loop")
+	ErrLBreakLoop    = errors.New("lazybreak loop")
 	ErrContLoop      = errors.New("continue loop")
 )

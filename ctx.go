@@ -22,13 +22,17 @@ type Ctx struct {
 	// Check json quote/escape/encode flags.
 	chJQ, chHE, chUE bool
 	// Internal buffers.
-	buf  []byte
-	bufS []string
-	bufI int
-	bufX interface{}
-	bufA []interface{}
+	buf   []byte
+	bufS  []string
+	bufI  int
+	bufX  interface{}
+	bufA  []interface{}
+	bufLC []int64
 	// Range loop helper.
 	rl *RangeLoop
+
+	// Break depth.
+	brkD int
 
 	// List of internal byte writers to process include expressions.
 	w  []bytes.Buffer
@@ -237,6 +241,8 @@ func (c *Ctx) Reset() {
 	c.Buf2.Reset()
 	c.buf = c.buf[:0]
 	c.bufA = c.bufA[:0]
+	c.bufLC = c.bufLC[:0]
+	c.brkD = 0
 	if c.rl != nil {
 		c.rl.Reset()
 	}
@@ -400,35 +406,41 @@ func (c *Ctx) cloop(node Node, tpl *Tpl, w io.Writer) {
 	if c.Err != nil {
 		return
 	}
+	// Prepare counters.
+	c.bufLC = append(c.bufLC, cnt)
+	idxLC := len(c.bufLC) - 1
+	valLC := cnt
 	// Start the loop.
-	c.BufI = cnt
 	allowIter = false
 	cntr = 0
 	for {
 		// Check iteration allowance.
 		switch node.loopCondOp {
 		case OpLt:
-			allowIter = c.BufI < lim
+			allowIter = valLC < lim
 		case OpLtq:
-			allowIter = c.BufI <= lim
+			allowIter = valLC <= lim
 		case OpGt:
-			allowIter = c.BufI > lim
+			allowIter = valLC > lim
 		case OpGtq:
-			allowIter = c.BufI >= lim
+			allowIter = valLC >= lim
 		case OpEq:
-			allowIter = c.BufI == lim
+			allowIter = valLC == lim
 		case OpNq:
-			allowIter = c.BufI != lim
+			allowIter = valLC != lim
 		default:
 			c.Err = ErrWrongLoopCond
 			break
 		}
+		// Check breakN signal from child loop.
+		allowIter = allowIter && c.brkD == 0
+
 		if !allowIter {
 			break
 		}
 
 		// Set/update counter var.
-		c.SetStatic(fastconv.B2S(node.loopCnt), &c.BufI)
+		c.SetStatic(fastconv.B2S(node.loopCnt), &c.bufLC[idxLC])
 
 		// Write separator.
 		if cntr > 0 && len(node.loopSep) > 0 {
@@ -437,9 +449,12 @@ func (c *Ctx) cloop(node Node, tpl *Tpl, w io.Writer) {
 		cntr++
 		// Loop over child nodes with square brackets check in paths.
 		c.chQB = true
-		var err error
+		var err, lerr error
 		for _, ch := range node.child {
 			err = tpl.renderNode(w, ch, c)
+			if err == ErrLBreakLoop {
+				lerr = err
+			}
 			if err == ErrBreakLoop || err == ErrContLoop {
 				break
 			}
@@ -449,16 +464,21 @@ func (c *Ctx) cloop(node Node, tpl *Tpl, w io.Writer) {
 		// Modify counter var.
 		switch node.loopCntOp {
 		case OpInc:
-			c.BufI++
+			valLC++
+			c.bufLC[idxLC]++
 		case OpDec:
-			c.BufI--
+			valLC--
+			c.bufLC[idxLC]--
 		default:
 			c.Err = ErrWrongLoopOp
 			break
 		}
 
 		// Handle break/continue cases.
-		if err == ErrBreakLoop {
+		if err == ErrBreakLoop || lerr == ErrLBreakLoop {
+			if c.brkD > 0 {
+				c.brkD--
+			}
 			break
 		}
 		if err == ErrContLoop {
