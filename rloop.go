@@ -52,19 +52,35 @@ func (rl *RangeLoop) SetVal(val interface{}, ins inspector.Inspector) {
 
 // Perform the iteration.
 func (rl *RangeLoop) Iterate() inspector.LoopCtl {
+	if rl.ctx.brkD > 0 {
+		return inspector.LoopCtlBrk
+	}
+
 	if rl.cntr > 0 && len(rl.node.loopSep) > 0 {
 		_, _ = rl.w.Write(rl.node.loopSep)
 	}
 	rl.cntr++
-	var err error
+	var err, lerr error
 	for _, ch := range rl.node.child {
 		err = rl.tpl.renderNode(rl.w, ch, rl.ctx)
+		if err == ErrLBreakLoop {
+			lerr = err
+		}
 		if err == ErrBreakLoop {
+			if rl.ctx.brkD > 0 {
+				rl.ctx.brkD--
+			}
 			return inspector.LoopCtlBrk
 		}
 		if err == ErrContLoop {
 			return inspector.LoopCtlCnt
 		}
+	}
+	if err == ErrBreakLoop || lerr == ErrLBreakLoop {
+		if rl.ctx.brkD > 0 {
+			rl.ctx.brkD--
+		}
+		return inspector.LoopCtlBrk
 	}
 	return inspector.LoopCtlNone
 }

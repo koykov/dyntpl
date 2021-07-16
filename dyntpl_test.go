@@ -109,6 +109,22 @@ var (
 		{% endfor %}
 	]
 }`)
+	tplLoopRangeLBreakN = []byte(`{
+	"id":"{%= user.Id %}",
+	"name":"{%= user.Name %}",
+	"fin_history":[
+		{% for _, x := range user.Finance.History %}
+			{% for k, item := range user.Finance.History sep , %}
+			{%= k %}:{
+				"utime":{%= item.DateUnix %},
+				"cost":{%= item.Cost %},
+				"desc":"{%= item.Comment %}"
+				{% if k == 2 %}{% lazybreak 2 %}{% endif %}
+			}
+			{% endfor %}
+		{% endfor %}
+	]
+}`)
 	expectLoopRange = []byte(`{"id":"115","name":"John","fin_history":[0:{"utime":152354345634,"cost":14.345241,"desc":"pay for domain"},1:{"utime":153465345246,"cost":-3.0000342543,"desc":"got refund"},2:{"utime":156436535640,"cost":2325242534.3532453,"desc":"maintenance"}]}`)
 
 	tplLoopCountStatic = []byte(`<h2>History</h2>
@@ -235,6 +251,7 @@ func pretest() {
 		"tplSwitch":            tplSwitch,
 		"tplSwitchNoCond":      tplSwitchNoCond,
 		"tplLoopRange":         tplLoopRange,
+		"tplLoopRangeLBreakN":  tplLoopRangeLBreakN,
 		"tplLoopCountStatic":   tplLoopCountStatic,
 		"tplLoopCountBreak":    tplLoopCountBreak,
 		"tplLoopCountBreakN":   tplLoopCountBreakN,
@@ -352,6 +369,10 @@ func TestTplLoopRange(t *testing.T) {
 	testBase(t, "tplLoopRange", expectLoopRange, "loop range tpl mismatch")
 }
 
+func TestTplLoopRangeLBreakN(t *testing.T) {
+	testBase(t, "tplLoopRangeLBreakN", expectLoopRange, "loop range lazybreakN tpl mismatch")
+}
+
 func TestTplLoopCountStatic(t *testing.T) {
 	testBase(t, "tplLoopCountStatic", expectLoopCount, "loop count static tpl mismatch")
 }
@@ -450,6 +471,10 @@ func BenchmarkTplSwitchNoCond(b *testing.B) {
 
 func BenchmarkTplLoopRange(b *testing.B) {
 	benchBase(b, "tplLoopRange", expectLoopRange, "loop range tpl mismatch")
+}
+
+func BenchmarkTplLoopRangeLBreakN(b *testing.B) {
+	benchBase(b, "tplLoopRangeLBreakN", expectLoopRange, "loop range lazybreakN tpl mismatch")
 }
 
 func BenchmarkTplLoopCountStatic(b *testing.B) {
