@@ -9,6 +9,10 @@ import (
 	"github.com/koykov/fastconv"
 )
 
+type intConverter interface {
+	Int() (int64, error)
+}
+
 // Try to convert value to integer.
 func ConvInt(val interface{}) (i int64, ok bool) {
 	ok = true
@@ -224,6 +228,10 @@ func if2int(raw interface{}) (r int64, ok bool) {
 	case *bytealg.ChainBuf:
 		if (*raw.(*bytealg.ChainBuf)).Len() > 0 {
 			r, _ = strconv.ParseInt((*raw.(*bytealg.ChainBuf)).String(), 0, 0)
+		}
+	case intConverter:
+		if i, err := raw.(intConverter).Int(); err == nil {
+			return i, true
 		}
 	default:
 		ok = false
