@@ -32,6 +32,8 @@ func modLinkEscape(ctx *Ctx, buf *interface{}, val interface{}, args []interface
 		for i := 0; i < l; i++ {
 			if ctx.buf[i] == '"' {
 				ctx.Buf.WriteStr(`\"`)
+			} else if ctx.buf[i] == ' ' {
+				ctx.Buf.WriteByte('+')
 			} else {
 				ctx.Buf.WriteByte(ctx.buf[i])
 			}
