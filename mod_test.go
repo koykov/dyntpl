@@ -32,7 +32,7 @@ var (
 	expectModHtml         = []byte(`<a href="https://golang.org/" title="&lt;h1&gt;Go is an open source programming language that makes it easy to build &lt;strong&gt;simple&lt;strong&gt;, &lt;strong&gt;reliable&lt;/strong&gt;, and &lt;strong&gt;efficient&lt;/strong&gt; software.&lt;/h1&gt;">Visit &gt;</a>`)
 
 	tplModLinkEscape    = []byte(`<a href="{%l= link %}">`)
-	expectModLinkEscape = []byte(`<a href="http://x.com/link-with-\"-symbol">`)
+	expectModLinkEscape = []byte(`<a href="http://x.com/link-with-\"-and+space-symbol">`)
 
 	tplModIfThen        = []byte(`{%= allow|ifThen("You're allow to buy!") %}`)
 	expectModIfThen     = []byte(`You're allow to buy!`)
@@ -128,7 +128,7 @@ func TestTplModLinkEscape(t *testing.T) {
 	pretest()
 
 	ctx := NewCtx()
-	ctx.SetStatic("link", `http://x.com/link-with-"-symbol`)
+	ctx.SetStatic("link", `http://x.com/link-with-"-and space-symbol`)
 	result, err := Render("tplModLinkEscape", ctx)
 	if err != nil {
 		t.Error(err)
@@ -312,7 +312,7 @@ func BenchmarkTplModLinkEscape(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		ctx := AcquireCtx()
 		buf.Reset()
-		ctx.SetStatic("link", `http://x.com/link-with-"-symbol`)
+		ctx.SetStatic("link", `http://x.com/link-with-"-and space-symbol`)
 		err := RenderTo(&buf, "tplModLinkEscape", ctx)
 		if err != nil {
 			b.Error(err)
