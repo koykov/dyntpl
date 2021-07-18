@@ -147,7 +147,7 @@ Conditions in dyntpl is pretty simple and supports only two types of record:
 First type is for the simplest case, like:
 ```html
 {% if user.Id == 0 %}
-You shoult <a href="#">log in</a>.
+You should <a href="#">log in</a>.
 {% endif %}
 ```
 Left side or right side or both may be a variable. But you can't specify a condition with static values on both sides, since it's senseless.
