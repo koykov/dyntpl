@@ -188,7 +188,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			return
 		}
 		if raw == nil || raw == "" {
-			err = ErrEmptyArg
+			// Variable doesn't exists or empty. Do nothing.
 			return
 		}
 		// Convert modified data to bytes array.
@@ -253,12 +253,13 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 				return err
 			}
 			empty := raw == nil || raw == ""
-			if len(node.ctxOK) == 0 && empty {
-				err = ErrEmptyArg
-				return err
-			}
 			if len(node.ctxOK) > 0 {
 				ctx.SetStatic(fastconv.B2S(node.ctxOK), !empty)
+			}
+
+			if empty {
+				// Empty value, nothing to set. Do nothing and exit.
+				return err
 			}
 
 			if b, ok := ConvBytes(raw); ok && len(b) > 0 {

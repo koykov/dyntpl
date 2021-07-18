@@ -11,7 +11,6 @@ var (
 
 	ErrTplNotFound = errors.New("template not found")
 	ErrInterrupt   = errors.New("tpl processing interrupted")
-	ErrEmptyArg    = errors.New("empty input param")
 	ErrModNoArgs   = errors.New("empty arguments list")
 	ErrModPoorArgs = errors.New("arguments list is too small")
 	ErrModNoStr    = errors.New("argument is not string or bytes")
