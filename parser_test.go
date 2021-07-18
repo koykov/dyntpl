@@ -366,8 +366,9 @@ switch:
 		raw: "no_data": true
 raw: }]
 `)
-	incOrigin = []byte(`foo {% include sidebar/right %} bar`)
-	incExpect = []byte(`raw: foo 
+	incOrigin    = []byte(`foo {% include sidebar/right %} bar`)
+	incOriginDot = []byte(`foo {% . sidebar/right %} bar`)
+	incExpect    = []byte(`raw: foo 
 inc: sidebar/right 
 raw:  bar
 `)
@@ -536,5 +537,11 @@ func TestParseInclude(t *testing.T) {
 	r := tree.HumanReadable()
 	if !bytes.Equal(r, incExpect) {
 		t.Errorf("include test failed\nexp: %s\ngot: %s", string(incExpect), string(r))
+	}
+
+	tree, _ = Parse(incOriginDot, false)
+	r = tree.HumanReadable()
+	if !bytes.Equal(r, incExpect) {
+		t.Errorf("dot-include test failed\nexp: %s\ngot: %s", string(incExpect), string(r))
 	}
 }

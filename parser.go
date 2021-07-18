@@ -140,7 +140,7 @@ var (
 	reSwitchCaseHelper = regexp.MustCompile(`case ([^(]+)\(*([^)]*)\)`)
 
 	// Regexp to parse include instruction.
-	reInc = regexp.MustCompile(`include (.*)`)
+	reInc = regexp.MustCompile(`(?:include|\.) (.*)`)
 
 	// Suppress go vet warning.
 	_ = ParseFile
