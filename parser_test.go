@@ -138,6 +138,13 @@ cond: left user.Id op == right 0
 raw: Copyright 
 tpl: brand
 `)
+	condStrOrigin = []byte(`{% if val == "foo" %}foo{% else %}bar{% endif %}`)
+	condStrExpect = []byte(`cond: left val op == right foo
+	true: 
+		raw: foo
+	false: 
+		raw: bar
+`)
 	condNestedOrigin = []byte(`
 {% if request.Secure == 1 %}
 	{% if user.AllowBuy %}
@@ -473,6 +480,12 @@ func TestParseCondition(t *testing.T) {
 	r := tree.HumanReadable()
 	if !bytes.Equal(r, condExpect) {
 		t.Errorf("condition test failed\nexp: %s\ngot: %s", string(condExpect), string(r))
+	}
+
+	treeStr, _ := Parse(condStrOrigin, false)
+	rStr := treeStr.HumanReadable()
+	if !bytes.Equal(rStr, condStrExpect) {
+		t.Errorf("str condition test failed\nexp: %s\ngot: %s", string(condStrExpect), string(rStr))
 	}
 
 	treeNested, _ := Parse(condNestedOrigin, false)

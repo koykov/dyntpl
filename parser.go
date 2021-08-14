@@ -676,6 +676,7 @@ func (p *Parser) parseCondExpr(re *regexp.Regexp, expr []byte) (l, r []byte, sl,
 			op = OpNq
 		} else {
 			r = bytealg.Trim(m[3], space)
+			r = bytealg.Trim(r, quotes)
 			sl = isStatic(l)
 			sr = isStatic(r)
 			op = p.parseOp(m[2])
