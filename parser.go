@@ -668,6 +668,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 func (p *Parser) parseCondExpr(re *regexp.Regexp, expr []byte) (l, r []byte, sl, sr bool, op Op) {
 	if m := re.FindSubmatch(expr); m != nil {
 		l = bytealg.Trim(m[1], space)
+		l = bytealg.Trim(l, quotes)
 		if len(l) > 0 && l[0] == '!' {
 			l = l[1:]
 			r = bTrue
