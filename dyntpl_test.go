@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"testing"
 
+	"github.com/koykov/hash/fnv"
+	"github.com/koykov/i18n"
 	"github.com/koykov/inspector/testobj"
 	"github.com/koykov/inspector/testobj_ins"
 )
@@ -240,6 +242,13 @@ var (
 	tplIncHostJS   = []byte(`{"a":"{% include sub1 subjs %}"}`)
 	tplIncSubJS    = []byte(`welcome {%j= user.Id|default('anon') %}!`)
 	expectTplIncJS = []byte(`{"a":"welcome 115!"}`)
+
+	tplI18n             = []byte(`<h1>{%h= t("messages.welcome", "", "!user:anonymous") %}</h1>`)
+	expectI18n          = []byte(`<h1>Welcome, anonymous!</h1>`)
+	tplI18nPlural       = []byte(`<div>Multithreading support: {%h= tp("pc.cpu", "N/D", cores) %}</div>`)
+	expectI18nPlural    = []byte(`<div>Multithreading support: yes</div>`)
+	tplI18nPluralExt    = []byte(`<div>Age: {%h= tp("me.age", "unknown", years) %}</div>`)
+	expectI18nPluralExt = []byte(`<div>Age: you&#39;re dead</div>`)
 )
 
 func pretest() {
@@ -289,6 +298,10 @@ func pretest() {
 		"sub":          tplIncSub,
 		"tplIncHostJS": tplIncHostJS,
 		"subjs":        tplIncSubJS,
+
+		"tplI18n":          tplI18n,
+		"tplI18nPlural":    tplI18nPlural,
+		"tplI18nPluralExt": tplI18nPluralExt,
 	}
 	for name, body := range tpl {
 		tree, _ := Parse(body, false)
@@ -448,6 +461,33 @@ func TestTplIncludeJS(t *testing.T) {
 	testBase(t, "tplIncHostJS", expectTplIncJS, "include tpl (js) mismatch")
 }
 
+func TestI18n(t *testing.T) {
+	pretest()
+	fn := func(t *testing.T, tplName string, expect []byte, errMsg string) {
+		db, _ := i18n.New(fnv.Hasher{})
+		db.Set("en.messages.welcome", "Welcome, !user!")
+		db.Set("en.pc.cpu", "no|yes")
+		db.Set("en.me.age", "{0} you just born|[1,10] you're a child|[10,18] you're teenager|[18,40] you're adult|[40,80] you're old|[80,*] you're dead")
+
+		ctx := NewCtx()
+		ctx.I18n("en", db)
+		ctx.Set("user", user, &ins)
+		ctx.SetStatic("cores", 4)
+		ctx.SetStatic("years", 90)
+		result, err := Render(tplName, ctx)
+		if err != nil {
+			t.Error(err)
+		}
+		if !bytes.Equal(result, expect) {
+			t.Error(errMsg)
+		}
+	}
+
+	t.Run("tplI18n", func(t *testing.T) { fn(t, "tplI18n", expectI18n, "tplI18n mismatch") })
+	t.Run("tplI18nPlural", func(t *testing.T) { fn(t, "tplI18nPlural", expectI18nPlural, "tplI18nPlural mismatch") })
+	t.Run("tplI18nPluralExt", func(t *testing.T) { fn(t, "tplI18nPluralExt", expectI18nPluralExt, "tplI18nPluralExt mismatch") })
+}
+
 func BenchmarkTplSimple(b *testing.B) {
 	benchBase(b, "tplSimple", expectSimple, "simple tpl mismatch")
 }
@@ -559,4 +599,38 @@ func BenchmarkTplInclude(b *testing.B) {
 
 func BenchmarkTplIncludeJS(b *testing.B) {
 	benchBase(b, "tplIncHostJS", expectTplIncJS, "include tpl (js) mismatch")
+}
+
+func BenchmarkI18n(b *testing.B) {
+	pretest()
+	fn := func(b *testing.B, tplName string, expect []byte, errMsg string) {
+		db, _ := i18n.New(fnv.Hasher{})
+		db.Set("en.messages.welcome", "Welcome, !user!")
+		db.Set("en.pc.cpu", "no|yes")
+		db.Set("en.me.age", "{0} you just born|[1,10] you're a child|[10,18] you're teenager|[18,40] you're adult|[40,80] you're old|[80,*] you're dead")
+
+		b.ResetTimer()
+		b.ReportAllocs()
+
+		for i := 0; i < b.N; i++ {
+			ctx := AcquireCtx()
+			ctx.I18n("en", db)
+			ctx.Set("user", user, &ins)
+			ctx.SetStatic("cores", 4)
+			ctx.SetStatic("years", 90)
+			buf.Reset()
+			err := RenderTo(&buf, tplName, ctx)
+			if err != nil {
+				b.Error(err)
+			}
+			if !bytes.Equal(buf.Bytes(), expect) {
+				b.Error(errMsg)
+			}
+			ReleaseCtx(ctx)
+		}
+	}
+
+	b.Run("tplI18n", func(b *testing.B) { fn(b, "tplI18n", expectI18n, "tplI18n mismatch") })
+	b.Run("tplI18nPlural", func(b *testing.B) { fn(b, "tplI18nPlural", expectI18nPlural, "tplI18nPlural mismatch") })
+	b.Run("tplI18nPluralExt", func(b *testing.B) { fn(b, "tplI18nPluralExt", expectI18nPluralExt, "tplI18nPluralExt mismatch") })
 }

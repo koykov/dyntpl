@@ -8,6 +8,10 @@ func init() {
 	RegisterModFn("ifThen", "if", modIfThen)
 	RegisterModFn("ifThenElse", "ifel", modIfThenElse)
 
+	// Register i18n modifiers.
+	RegisterModFn("translate", "t", modTranslate)
+	RegisterModFn("translatePlural", "tp", modTranslatePlural)
+
 	// Register builtin escape/quote modifiers.
 	RegisterModFn("jsonEscape", "je", modJsonEscape)
 	RegisterModFn("jsonQuote", "jq", modJsonQuote)

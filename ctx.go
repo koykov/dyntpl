@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"io"
 	"strconv"
+	"unsafe"
 
 	"github.com/koykov/bytealg"
 	"github.com/koykov/fastconv"
+	"github.com/koykov/i18n"
 	"github.com/koykov/inspector"
 	"github.com/koykov/x2bytes"
 )
@@ -37,6 +39,11 @@ type Ctx struct {
 	// List of internal byte writers to process include expressions.
 	w  []bytes.Buffer
 	wl int
+
+	// i18n support.
+	loc  string
+	i18n unsafe.Pointer
+	repl i18n.PlaceholderReplacer
 
 	// External buffers to use in modifier and condition helpers.
 	Buf, Buf1, Buf2 bytealg.ChainBuf
@@ -216,6 +223,14 @@ func (c *Ctx) GetCounter(key string) int {
 	return 0
 }
 
+// Config i18n locale and database.
+func (c *Ctx) I18n(locale string, db *i18n.DB) {
+	c.loc = locale
+	if db != nil {
+		c.i18n = unsafe.Pointer(db)
+	}
+}
+
 // Reset the context.
 //
 // Made to use together with pools.
@@ -231,6 +246,10 @@ func (c *Ctx) Reset() {
 		c.w[i].Reset()
 	}
 	c.wl = 0
+
+	c.loc = ""
+	c.i18n = nil
+	c.repl.Reset()
 
 	c.Err = nil
 	c.bufX = nil
