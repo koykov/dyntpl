@@ -243,12 +243,12 @@ var (
 	tplIncSubJS    = []byte(`welcome {%j= user.Id|default('anon') %}!`)
 	expectTplIncJS = []byte(`{"a":"welcome 115!"}`)
 
-	tplI18n             = []byte(`<h1>{%h= t("messages.welcome", "", "!user:anonymous") %}</h1>`)
-	expectI18n          = []byte(`<h1>Welcome, anonymous!</h1>`)
-	tplI18nPlural       = []byte(`<div>Multithreading support: {%h= tp("pc.cpu", "N/D", cores) %}</div>`)
+	tplI18n             = []byte(`<h1>{%= t("messages.welcome", "", {"!user": user.Name}) %}</h1>`)
+	expectI18n          = []byte(`<h1>Welcome, John!</h1>`)
+	tplI18nPlural       = []byte(`<div>Multithreading support: {%= tp("pc.cpu", "N/D", cores) %}</div>`)
 	expectI18nPlural    = []byte(`<div>Multithreading support: yes</div>`)
-	tplI18nPluralExt    = []byte(`<div>Age: {%h= tp("me.age", "unknown", years) %}</div>`)
-	expectI18nPluralExt = []byte(`<div>Age: you&#39;re dead</div>`)
+	tplI18nPluralExt    = []byte(`<div>Age: {%= tp("me.age", "unknown", years) %}</div>`)
+	expectI18nPluralExt = []byte(`<div>Age: you're dead</div>`)
 )
 
 func pretest() {

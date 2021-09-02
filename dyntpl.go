@@ -167,11 +167,22 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 				ctx.bufA = ctx.bufA[:0]
 				if len(mod.arg) > 0 {
 					for _, arg := range mod.arg {
-						if arg.static {
-							ctx.bufA = append(ctx.bufA, &arg.val)
+						if len(arg.name) > 0 {
+							kv := ctx.getKV()
+							kv.k = arg.name
+							if arg.static {
+								kv.v = &arg.val
+							} else {
+								kv.v = ctx.get(arg.val)
+							}
+							ctx.bufA = append(ctx.bufA, kv)
 						} else {
-							val := ctx.get(arg.val)
-							ctx.bufA = append(ctx.bufA, val)
+							if arg.static {
+								ctx.bufA = append(ctx.bufA, &arg.val)
+							} else {
+								val := ctx.get(arg.val)
+								ctx.bufA = append(ctx.bufA, val)
+							}
 						}
 					}
 				}
@@ -231,11 +242,22 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 					ctx.bufA = ctx.bufA[:0]
 					if len(mod.arg) > 0 {
 						for _, arg := range mod.arg {
-							if arg.static {
-								ctx.bufA = append(ctx.bufA, &arg.val)
+							if len(arg.name) > 0 {
+								kv := ctx.getKV()
+								kv.k = arg.name
+								if arg.static {
+									kv.v = &arg.val
+								} else {
+									kv.v = ctx.get(arg.val)
+								}
+								ctx.bufA = append(ctx.bufA, kv)
 							} else {
-								val := ctx.get(arg.val)
-								ctx.bufA = append(ctx.bufA, val)
+								if arg.static {
+									ctx.bufA = append(ctx.bufA, &arg.val)
+								} else {
+									val := ctx.get(arg.val)
+									ctx.bufA = append(ctx.bufA, val)
+								}
 							}
 						}
 					}

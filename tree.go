@@ -12,6 +12,7 @@ type Tree struct {
 
 // Representation argument of modifier or helper.
 type arg struct {
+	name   []byte
 	val    []byte
 	static bool
 }
@@ -246,6 +247,11 @@ func (t *Tree) hrHelper(buf *bytes.Buffer, nodes []Node, indent []byte, depth in
 						if j > 0 {
 							buf.WriteByte(',')
 							buf.WriteByte(' ')
+						}
+						if len(a.name) > 0 {
+							buf.WriteByte('"')
+							buf.Write(a.name)
+							buf.WriteString(`":`)
 						}
 						if a.static {
 							buf.WriteByte('"')

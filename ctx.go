@@ -40,6 +40,14 @@ type Ctx struct {
 	w  []bytes.Buffer
 	wl int
 
+	// List of internal KV pairs.
+	kv  []ctxKV
+	kvl int
+
+	// List of external byte buffers to use in modifiers, ...
+	bb  []bytealg.ChainBuf
+	bbl int
+
 	// i18n support.
 	loc  string
 	i18n unsafe.Pointer
@@ -67,6 +75,12 @@ type ctxVar struct {
 	cntr  int
 
 	ins inspector.Inspector
+}
+
+// Context key-value pair.
+type ctxKV struct {
+	k []byte
+	v interface{}
 }
 
 var (
@@ -246,6 +260,13 @@ func (c *Ctx) Reset() {
 		c.w[i].Reset()
 	}
 	c.wl = 0
+
+	c.kvl = 0
+
+	for i := 0; i < c.bbl; i++ {
+		c.bb[i].Reset()
+	}
+	c.bbl = 0
 
 	c.loc = ""
 	c.i18n = nil
@@ -565,9 +586,37 @@ func (c *Ctx) getW() *bytes.Buffer {
 		c.wl++
 		return b
 	} else {
-		b := bytes.Buffer{}
 		c.w = append(c.w, bytes.Buffer{})
+		b := &c.w[len(c.w)-1]
 		c.wl++
-		return &b
+		return b
+	}
+}
+
+// Get new or existing KV pair.
+func (c *Ctx) getKV() *ctxKV {
+	if c.kvl < len(c.w) {
+		kv := &c.kv[c.kvl]
+		c.kvl++
+		return kv
+	} else {
+		c.kv = append(c.kv, ctxKV{})
+		kv := &c.kv[len(c.kv)-1]
+		c.kvl++
+		return kv
+	}
+}
+
+// Get byte buffer.
+func (c *Ctx) GetByteBuf() *bytealg.ChainBuf {
+	if c.bbl < len(c.bb) {
+		b := &c.bb[c.bbl]
+		c.bbl++
+		return b
+	} else {
+		c.bb = append(c.bb, bytealg.ChainBuf{})
+		b := &c.bb[len(c.bb)-1]
+		c.bbl++
+		return b
 	}
 }

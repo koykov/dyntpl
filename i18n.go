@@ -5,6 +5,7 @@ import (
 
 	"github.com/koykov/fastconv"
 	"github.com/koykov/i18n"
+	"github.com/koykov/x2bytes"
 )
 
 var (
@@ -62,10 +63,16 @@ func trans(ctx *Ctx, buf *interface{}, args []interface{}, plural bool) error {
 	// Collect placeholder replacements.
 	ctx.repl.Reset()
 	if len(args) > 0 {
+		var err error
+		bufArgs := ctx.GetByteBuf()
+		bufArgs.Reset()
 		_ = args[len(args)-1]
 		for i := 0; i < len(args); i++ {
-			if raw, ok := args[i].(*[]byte); ok && len(*raw) > 0 {
-				ctx.repl.AddSolidKV(fastconv.B2S(*raw))
+			if kv, ok := args[i].(*ctxKV); ok {
+				off := bufArgs.Len()
+				if *bufArgs, err = x2bytes.ToBytes(*bufArgs, kv.v); err == nil {
+					ctx.repl.AddKV(fastconv.B2S(kv.k), fastconv.B2S((*bufArgs)[off:bufArgs.Len()]))
+				}
 			}
 		}
 	}
@@ -74,19 +81,16 @@ func trans(ctx *Ctx, buf *interface{}, args []interface{}, plural bool) error {
 	if len(key) == 0 {
 		return nil
 	}
-	ctx.Buf.Reset().
-		WriteStr(ctx.loc).
-		WriteByte('.').
-		WriteStr(key)
+	bufKey := ctx.GetByteBuf().Reset().WriteStr(ctx.loc).WriteByte('.').WriteStr(key)
 
 	// Get translation from DB.
 	if plural {
-		t = db.GetPluralWR(ctx.Buf.String(), def, count, &ctx.repl)
+		t = db.GetPluralWR(bufKey.String(), def, count, &ctx.repl)
 	} else {
-		t = db.GetWR(ctx.Buf.String(), def, &ctx.repl)
+		t = db.GetWR(bufKey.String(), def, &ctx.repl)
 	}
-	ctx.Buf1.Reset().WriteStr(t)
-	*buf = &ctx.Buf1
+	bufResult := ctx.GetByteBuf().Reset().WriteStr(t)
+	*buf = bufResult
 
 	return nil
 }
