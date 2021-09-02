@@ -62,6 +62,10 @@ raw: !
 tpl:  mod testNameOf(user, "anonymous")
 raw: !
 `)
+	tplModNestedArgOrigin = []byte(`Welcome, {%= testNameOf(user, {"foo": "bar", "id": user.Id}, "qwe") %}`)
+	tplModNestedArgExpect = []byte(`raw: Welcome, 
+tpl:  mod testNameOf(user, "foo":"bar", "id":user.Id, "qwe")
+`)
 
 	tplExitOrigin = []byte(`{% if user.Status == 0 %}
 	{% exit %}
@@ -448,6 +452,14 @@ func TestParseModNoVar(t *testing.T) {
 	r := tree.HumanReadable()
 	if !bytes.Equal(r, tplModNoVarExpect) {
 		t.Errorf("mod (no var) test failed\nexp: %s\ngot: %s", string(tplModNoVarExpect), string(r))
+	}
+}
+
+func TestParseModNestedArgOrigin(t *testing.T) {
+	tree, _ := Parse(tplModNestedArgOrigin, false)
+	r := tree.HumanReadable()
+	if !bytes.Equal(r, tplModNestedArgExpect) {
+		t.Errorf("mod (nested arg) test failed\nexp: %s\ngot: %s", string(tplModNestedArgExpect), string(r))
 	}
 }
 

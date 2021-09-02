@@ -38,9 +38,11 @@ var (
 	empty      []byte
 	one        = []byte("1")
 	space      = []byte(" ")
+	spaceCBE   = []byte("} ")
 	comma      = []byte(",")
 	uscore     = []byte("_")
 	vline      = []byte("|")
+	colon      = []byte(":")
 	quotes     = []byte("\"'`")
 	noFmt      = []byte(" \t\n")
 	ctlExit    = []byte("exit")
@@ -822,7 +824,7 @@ func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
 				mods = append(mods, mod{
 					id:  idf,
 					fn:  fn,
-					arg: []*arg{{m[2], true}},
+					arg: []*arg{{nil, m[2], true}},
 				})
 			case byte(outmF):
 				// - {%F.<prec>= ... %} - Ceil rounded to precision float.
@@ -830,7 +832,7 @@ func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
 				mods = append(mods, mod{
 					id:  idF,
 					fn:  fn,
-					arg: []*arg{{m[2], true}},
+					arg: []*arg{{nil, m[2], true}},
 				})
 			}
 		}
@@ -849,18 +851,52 @@ func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
 //                  ^             ^
 // {% if condHelper(arg0, ..., argN) %}...{% endif %}
 //                  ^             ^
-func (p *Parser) extractArgs(l []byte) []*arg {
+func (p *Parser) extractArgs(raw []byte) []*arg {
 	r := make([]*arg, 0)
-	if len(l) == 0 {
+	if len(raw) == 0 {
 		return r
 	}
-	args := bytes.Split(l, comma)
-	for _, a := range args {
-		a = bytealg.Trim(a, space)
-		r = append(r, &arg{
-			val:    bytealg.Trim(a, quotes),
-			static: isStatic(a),
-		})
+	var (
+		off, pos int
+		nested   bool
+	)
+	for {
+		if pos = bytes.IndexByte(raw[off:], ','); pos == -1 {
+			pos = len(raw) - off
+		}
+		a := raw[off : off+pos]
+		if a = bytealg.Trim(a, space); len(a) > 0 {
+			if a[0] == '{' {
+				a = a[1:]
+				nested = true
+			}
+			if nested {
+				kv := bytes.Split(a, colon)
+				if len(kv) == 2 {
+					kv[0] = bytealg.Trim(kv[0], space)
+					kv[1] = bytealg.Trim(kv[1], spaceCBE)
+					r = append(r, &arg{
+						name:   bytealg.Trim(kv[0], quotes),
+						val:    bytealg.Trim(kv[1], quotes),
+						static: isStatic(kv[1]),
+					})
+				}
+			} else {
+				a = bytealg.Trim(a, space)
+				r = append(r, &arg{
+					val:    bytealg.Trim(a, quotes),
+					static: isStatic(a),
+				})
+			}
+			if a[len(a)-1] == '}' {
+				nested = false
+			}
+		}
+
+		if off+pos >= len(raw) {
+			break
+		}
+		off += pos + 1
 	}
 	return r
 }
