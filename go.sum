@@ -9,8 +9,8 @@ github.com/koykov/fastconv v0.0.0-20210824195058-3dc579589f15 h1:KJm8IHb1fzR/hgM
 github.com/koykov/fastconv v0.0.0-20210824195058-3dc579589f15/go.mod h1:JXdtdh0aCcSmxLsVUoYP61lmxpL6dWOXEKxCIR+MlGg=
 github.com/koykov/hash v0.0.0-20210824200435-8eb1b95341ae h1:ZzQQgWhPGrY76LgOniZ6XWt9y0HXsK7FQDR+Fue09OU=
 github.com/koykov/hash v0.0.0-20210824200435-8eb1b95341ae/go.mod h1:+utwpI8WtsRQsCwtxNZKTCobJuJ8j3RNjTYLb270u+U=
-github.com/koykov/i18n v0.0.0-20210901220127-6a2e4b9c477e h1:wC3TOcDpwkXCXB08E8Q+KcrqCE9DPtV/7uoeGoVeBUU=
-github.com/koykov/i18n v0.0.0-20210901220127-6a2e4b9c477e/go.mod h1:muZWPyvht0FB2RoHgpXYhrwPpDCa23kq3jOyMAAP4c4=
+github.com/koykov/i18n v0.0.0-20210903195424-d26e21027b7f h1:v1s3+aOP8ZuKXaCfs7HABNqLqKosQdXbEa1eJ4JXFLs=
+github.com/koykov/i18n v0.0.0-20210903195424-d26e21027b7f/go.mod h1:muZWPyvht0FB2RoHgpXYhrwPpDCa23kq3jOyMAAP4c4=
 github.com/koykov/inspector v0.0.0-20210709074729-5d3152550e8a h1:P1oO+Zy9KP0jujda+NHjCzJrYgO3ZYT5GXj2gHXEAOI=
 github.com/koykov/inspector v0.0.0-20210709074729-5d3152550e8a/go.mod h1:6QAZFyU1Ezq/OP+m5YLCt4OlMioSy4FUI6wRmNlBWzE=
 github.com/koykov/policy v0.0.0-20201212213550-1b5a0bfb7590 h1:v349mTziKohKSGykodaOr+T2gXLuYtlm6D7isucUjts=
