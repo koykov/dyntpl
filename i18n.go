@@ -5,7 +5,6 @@ import (
 
 	"github.com/koykov/fastconv"
 	"github.com/koykov/i18n"
-	"github.com/koykov/x2bytes"
 )
 
 var (
@@ -13,12 +12,12 @@ var (
 )
 
 // Translate label.
-func modTranslate(ctx *Ctx, buf *interface{}, _ interface{}, args []interface{}) (err error) {
+func modTranslate(ctx *Ctx, buf *interface{}, _ interface{}, args []interface{}) error {
 	return trans(ctx, buf, args, false)
 }
 
 // Translate label with plural formula.
-func modTranslatePlural(ctx *Ctx, buf *interface{}, _ interface{}, args []interface{}) (err error) {
+func modTranslatePlural(ctx *Ctx, buf *interface{}, _ interface{}, args []interface{}) error {
 	return trans(ctx, buf, args, true)
 }
 
@@ -63,16 +62,11 @@ func trans(ctx *Ctx, buf *interface{}, args []interface{}, plural bool) error {
 	// Collect placeholder replacements.
 	ctx.repl.Reset()
 	if len(args) > 0 {
-		var err error
-		bufArgs := ctx.GetByteBuf()
-		bufArgs.Reset()
 		_ = args[len(args)-1]
 		for i := 0; i < len(args); i++ {
 			if kv, ok := args[i].(*ctxKV); ok {
-				off := bufArgs.Len()
-				if *bufArgs, err = x2bytes.ToBytes(*bufArgs, kv.v); err == nil {
-					ctx.repl.AddKV(fastconv.B2S(kv.k), fastconv.B2S((*bufArgs)[off:bufArgs.Len()]))
-				}
+				ctx.AccBuf.StakeOut().WriteX(kv.v)
+				ctx.repl.AddKV(fastconv.B2S(kv.k), ctx.AccBuf.StakedString())
 			}
 		}
 	}
@@ -81,16 +75,16 @@ func trans(ctx *Ctx, buf *interface{}, args []interface{}, plural bool) error {
 	if len(key) == 0 {
 		return nil
 	}
-	bufKey := ctx.GetByteBuf().Reset().WriteStr(ctx.loc).WriteByte('.').WriteStr(key)
+	lkey := ctx.AccBuf.StakeOut().WriteStr(ctx.loc).WriteByte('.').WriteStr(key).StakedString()
 
 	// Get translation from DB.
 	if plural {
-		t = db.GetPluralWR(bufKey.String(), def, count, &ctx.repl)
+		t = db.GetPluralWR(lkey, def, count, &ctx.repl)
 	} else {
-		t = db.GetWR(bufKey.String(), def, &ctx.repl)
+		t = db.GetWR(lkey, def, &ctx.repl)
 	}
-	bufResult := ctx.GetByteBuf().Reset().WriteStr(t)
-	*buf = bufResult
+	ctx.AccBuf.StakeOut().WriteStr(t)
+	*buf = ctx.OutBuf.Reset().Write(ctx.AccBuf.StakedBytes())
 
 	return nil
 }

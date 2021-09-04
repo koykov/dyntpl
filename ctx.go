@@ -44,16 +44,15 @@ type Ctx struct {
 	kv  []ctxKV
 	kvl int
 
-	// List of external byte buffers to use in modifiers, ...
-	bb  []bytealg.ChainBuf
-	bbl int
-
 	// i18n support.
 	loc  string
 	i18n unsafe.Pointer
 	repl i18n.PlaceholderReplacer
 
 	// External buffers to use in modifier and condition helpers.
+	AccBuf bytealg.AccumulativeBuffer
+	OutBuf bytealg.ChainBuf
+
 	Buf, Buf1, Buf2 bytealg.ChainBuf
 
 	BufB bool
@@ -263,11 +262,6 @@ func (c *Ctx) Reset() {
 
 	c.kvl = 0
 
-	for i := 0; i < c.bbl; i++ {
-		c.bb[i].Reset()
-	}
-	c.bbl = 0
-
 	c.loc = ""
 	c.i18n = nil
 	c.repl.Reset()
@@ -276,6 +270,8 @@ func (c *Ctx) Reset() {
 	c.bufX = nil
 	c.chQB, c.chJQ, c.chHE, c.chUE = false, false, false, false
 	c.bufS = c.bufS[:0]
+	c.AccBuf.Reset()
+	c.OutBuf.Reset()
 	c.Buf.Reset()
 	c.Buf1.Reset()
 	c.Buf2.Reset()
@@ -604,19 +600,5 @@ func (c *Ctx) getKV() *ctxKV {
 		kv := &c.kv[len(c.kv)-1]
 		c.kvl++
 		return kv
-	}
-}
-
-// Get byte buffer.
-func (c *Ctx) GetByteBuf() *bytealg.ChainBuf {
-	if c.bbl < len(c.bb) {
-		b := &c.bb[c.bbl]
-		c.bbl++
-		return b
-	} else {
-		c.bb = append(c.bb, bytealg.ChainBuf{})
-		b := &c.bb[len(c.bb)-1]
-		c.bbl++
-		return b
 	}
 }
