@@ -383,6 +383,10 @@ raw: }]
 inc: sidebar/right 
 raw:  bar
 `)
+	locOrigin = []byte(`{% locale "ru-RU" %}{%= t("messages.welcome", "") %}`)
+	locExpect = []byte(`locale: ru-RU
+tpl:  mod t("messages.welcome", "")
+`)
 )
 
 func TestParseCutComments(t *testing.T) {
@@ -568,5 +572,13 @@ func TestParseInclude(t *testing.T) {
 	r = tree.HumanReadable()
 	if !bytes.Equal(r, incExpect) {
 		t.Errorf("dot-include test failed\nexp: %s\ngot: %s", string(incExpect), string(r))
+	}
+}
+
+func TestParseLocale(t *testing.T) {
+	tree, _ := Parse(locOrigin, false)
+	r := tree.HumanReadable()
+	if !bytes.Equal(r, locExpect) {
+		t.Errorf("locale test failed\nexp: %s\ngot: %s", string(locExpect), string(r))
 	}
 }

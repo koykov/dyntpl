@@ -44,6 +44,7 @@ var (
 	vline      = []byte("|")
 	colon      = []byte(":")
 	quotes     = []byte("\"'`")
+	ddquote    = []byte(`""`)
 	noFmt      = []byte(" \t\n")
 	ctlExit    = []byte("exit")
 	ctlOpen    = []byte("{%")
@@ -143,6 +144,9 @@ var (
 
 	// Regexp to parse include instruction.
 	reInc = regexp.MustCompile(`(?:include|\.) (.*)`)
+
+	// Regexp to parse locale instruction.
+	reLoc = regexp.MustCompile(`(?:locale|loc) "([\w\-]+)"`)
 
 	// Suppress go vet warning.
 	_ = ParseFile
@@ -663,6 +667,15 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 		return nodes, offset, up, err
 	}
 
+	// Check locale.
+	if m := reLoc.FindSubmatch(t); m != nil {
+		root.typ = TypeLocale
+		root.loc = m[1]
+		nodes = addNode(nodes, *root)
+		offset = pos + len(ctl)
+		return nodes, offset, up, err
+	}
+
 	return nodes, 0, up, fmt.Errorf("unknown control structure '%s' at offset %d", t, pos)
 }
 
@@ -883,10 +896,14 @@ func (p *Parser) extractArgs(raw []byte) []*arg {
 				}
 			} else {
 				a = bytealg.Trim(a, space)
-				r = append(r, &arg{
+				arg := arg{
 					val:    bytealg.Trim(a, quotes),
 					static: isStatic(a),
-				})
+				}
+				if bytes.Equal(arg.val, ddquote) {
+					arg.val = arg.val[:0]
+				}
+				r = append(r, &arg)
 			}
 			if a[len(a)-1] == '}' {
 				nested = false

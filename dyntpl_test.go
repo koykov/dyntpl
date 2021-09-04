@@ -249,6 +249,8 @@ var (
 	expectI18nPlural    = []byte(`<div>Multithreading support: yes</div>`)
 	tplI18nPluralExt    = []byte(`<div>Age: {%= tp("me.age", "unknown", years) %}</div>`)
 	expectI18nPluralExt = []byte(`<div>Age: you're dead</div>`)
+	tplI18nSetLocale    = []byte(`{% locale "ru" %}<h1>{%= t("messages.welcome", "", {"!user": user.Name}) %}</h1>`)
+	expectI18nSetLocale = []byte(`<h1>Привет, John!</h1>`)
 )
 
 func pretest() {
@@ -302,6 +304,7 @@ func pretest() {
 		"tplI18n":          tplI18n,
 		"tplI18nPlural":    tplI18nPlural,
 		"tplI18nPluralExt": tplI18nPluralExt,
+		"tplI18nSetLocale": tplI18nSetLocale,
 	}
 	for name, body := range tpl {
 		tree, _ := Parse(body, false)
@@ -466,6 +469,7 @@ func TestI18n(t *testing.T) {
 	fn := func(t *testing.T, tplName string, expect []byte, errMsg string) {
 		db, _ := i18n.New(fnv.Hasher{})
 		db.Set("en.messages.welcome", "Welcome, !user!")
+		db.Set("ru.messages.welcome", "Привет, !user!")
 		db.Set("en.pc.cpu", "no|yes")
 		db.Set("en.me.age", "{0} you just born|[1,10] you're a child|[10,18] you're teenager|[18,40] you're adult|[40,80] you're old|[80,*] you're dead")
 
@@ -486,6 +490,7 @@ func TestI18n(t *testing.T) {
 	t.Run("tplI18n", func(t *testing.T) { fn(t, "tplI18n", expectI18n, "tplI18n mismatch") })
 	t.Run("tplI18nPlural", func(t *testing.T) { fn(t, "tplI18nPlural", expectI18nPlural, "tplI18nPlural mismatch") })
 	t.Run("tplI18nPluralExt", func(t *testing.T) { fn(t, "tplI18nPluralExt", expectI18nPluralExt, "tplI18nPluralExt mismatch") })
+	t.Run("tplI18nSetLocale", func(t *testing.T) { fn(t, "tplI18nSetLocale", expectI18nSetLocale, "tplI18nSetLocale mismatch") })
 }
 
 func BenchmarkTplSimple(b *testing.B) {
@@ -606,6 +611,7 @@ func BenchmarkI18n(b *testing.B) {
 	fn := func(b *testing.B, tplName string, expect []byte, errMsg string) {
 		db, _ := i18n.New(fnv.Hasher{})
 		db.Set("en.messages.welcome", "Welcome, !user!")
+		db.Set("ru.messages.welcome", "Привет, !user!")
 		db.Set("en.pc.cpu", "no|yes")
 		db.Set("en.me.age", "{0} you just born|[1,10] you're a child|[10,18] you're teenager|[18,40] you're adult|[40,80] you're old|[80,*] you're dead")
 
@@ -633,4 +639,5 @@ func BenchmarkI18n(b *testing.B) {
 	b.Run("tplI18n", func(b *testing.B) { fn(b, "tplI18n", expectI18n, "tplI18n mismatch") })
 	b.Run("tplI18nPlural", func(b *testing.B) { fn(b, "tplI18nPlural", expectI18nPlural, "tplI18nPlural mismatch") })
 	b.Run("tplI18nPluralExt", func(b *testing.B) { fn(b, "tplI18nPluralExt", expectI18nPluralExt, "tplI18nPluralExt mismatch") })
+	b.Run("tplI18nSetLocale", func(b *testing.B) { fn(b, "tplI18nSetLocale", expectI18nSetLocale, "tplI18nSetLocale mismatch") })
 }

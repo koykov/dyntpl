@@ -55,6 +55,8 @@ type Node struct {
 
 	tpl [][]byte
 
+	loc []byte
+
 	mod []mod
 
 	child []Node

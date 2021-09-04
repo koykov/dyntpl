@@ -233,6 +233,10 @@ func (t *Tree) hrHelper(buf *bytes.Buffer, nodes []Node, indent []byte, depth in
 			}
 		}
 
+		if len(node.loc) > 0 {
+			buf.Write(node.loc)
+		}
+
 		if len(node.mod) > 0 {
 			buf.WriteString(" mod")
 			for i, mod := range node.mod {

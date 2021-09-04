@@ -558,6 +558,10 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 		} else {
 			err = ErrTplNotFound
 		}
+	case TypeLocale:
+		if len(node.loc) > 0 {
+			ctx.loc = fastconv.B2S(node.loc)
+		}
 	case TypeExit:
 		// Interrupt template evaluation.
 		err = ErrInterrupt
