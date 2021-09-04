@@ -595,7 +595,7 @@ func (c *Ctx) getW() *bytes.Buffer {
 
 // Get new or existing KV pair.
 func (c *Ctx) getKV() *ctxKV {
-	if c.kvl < len(c.w) {
+	if c.kvl < len(c.kv) {
 		kv := &c.kv[c.kvl]
 		c.kvl++
 		return kv
