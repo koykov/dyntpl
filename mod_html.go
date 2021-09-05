@@ -60,8 +60,7 @@ func modHtmlEscape(ctx *Ctx, buf *interface{}, val interface{}, args []interface
 		b = ctx.AccBuf.StakedBytes()
 		l = len(b)
 	}
-	ctx.OutBuf.Reset().Write(b)
-	*buf = &ctx.OutBuf
+	*buf = ctx.OutBuf.Reset().Write(b)
 
 	return nil
 }

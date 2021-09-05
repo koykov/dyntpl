@@ -83,8 +83,7 @@ func trans(ctx *Ctx, buf *interface{}, args []interface{}, plural bool) error {
 	} else {
 		t = db.GetWR(lkey, def, &ctx.repl)
 	}
-	ctx.AccBuf.StakeOut().WriteStr(t)
-	*buf = ctx.OutBuf.Reset().Write(ctx.AccBuf.StakedBytes())
+	*buf = ctx.OutBuf.Reset().WriteStr(t)
 
 	return nil
 }

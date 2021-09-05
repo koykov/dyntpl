@@ -1,7 +1,5 @@
 package dyntpl
 
-import "github.com/koykov/x2bytes"
-
 const (
 	// Hex digits in upper case.
 	hexUp = "0123456789ABCDEF"
@@ -36,8 +34,7 @@ func modLinkEscape(ctx *Ctx, buf *interface{}, val interface{}, args []interface
 		b = ctx.AccBuf.StakedBytes()
 		l = len(b)
 	}
-	ctx.OutBuf.Reset().Write(b)
-	*buf = &ctx.OutBuf
+	*buf = ctx.OutBuf.Reset().Write(b)
 
 	return
 }
@@ -50,35 +47,28 @@ func modUrlEncode(ctx *Ctx, buf *interface{}, val interface{}, args []interface{
 	itr := printIterations(args)
 
 	// Get the source.
-	if p, ok := ConvBytes(val); ok {
-		ctx.buf = append(ctx.buf[:0], p...)
-	} else if s, ok := ConvStr(val); ok {
-		ctx.buf = append(ctx.buf[:0], s...)
-	} else if ctx.Buf2, err = x2bytes.ToBytesWR(ctx.Buf2, val); err == nil {
-		ctx.buf = append(ctx.buf[:0], ctx.Buf2...)
-	} else {
+	if ctx.AccBuf.StakeOut().WriteX(val).Error() != nil {
 		return ErrModNoStr
 	}
-	l := len(ctx.buf)
-	if l == 0 {
-		return ErrModEmptyStr
-	}
+	b := ctx.AccBuf.StakedBytes()
+	l := len(b)
 	for c := 0; c < itr; c++ {
-		ctx.Buf.Reset()
-		_ = ctx.buf[l-1]
+		ctx.AccBuf.StakeOut()
+		_ = b[l-1]
 		for i := 0; i < l; i++ {
-			if ctx.buf[i] >= 'a' && ctx.buf[i] <= 'z' || ctx.buf[i] >= 'A' && ctx.buf[i] <= 'Z' ||
-				ctx.buf[i] >= '0' && ctx.buf[i] <= '9' || ctx.buf[i] == '-' || ctx.buf[i] == '.' || ctx.buf[i] == '_' {
-				ctx.Buf.WriteByte(ctx.buf[i])
-			} else if ctx.buf[i] == ' ' {
-				ctx.Buf.WriteByte('+')
+			if b[i] >= 'a' && b[i] <= 'z' || b[i] >= 'A' && b[i] <= 'Z' ||
+				b[i] >= '0' && b[i] <= '9' || b[i] == '-' || b[i] == '.' || b[i] == '_' {
+				ctx.AccBuf.WriteByte(b[i])
+			} else if b[i] == ' ' {
+				ctx.AccBuf.WriteByte('+')
 			} else {
-				ctx.Buf.WriteByte('%').WriteByte(hexUp[ctx.buf[i]>>4]).WriteByte(hexUp[ctx.buf[i]&15])
+				ctx.AccBuf.WriteByte('%').WriteByte(hexUp[b[i]>>4]).WriteByte(hexUp[b[i]&15])
 			}
 		}
-		ctx.buf = append(ctx.buf[:0], ctx.Buf...)
-		l = ctx.Buf.Len()
+		b = ctx.AccBuf.StakedBytes()
+		l = len(b)
 	}
-	*buf = &ctx.Buf
+	*buf = ctx.OutBuf.Reset().Write(b)
+
 	return
 }
