@@ -11,30 +11,30 @@ func modLinkEscape(ctx *Ctx, buf *interface{}, val interface{}, args []interface
 	itr := printIterations(args)
 
 	// Get the source.
-	if ctx.AccBuf.StakeOut().WriteX(val).Error() != nil {
+	if ctx.BufAcc.StakeOut().WriteX(val).Error() != nil {
 		return ErrModNoStr
 	}
-	b := ctx.AccBuf.StakedBytes()
+	b := ctx.BufAcc.StakedBytes()
 	l := len(b)
 	if l == 0 {
 		return
 	}
 	for c := 0; c < itr; c++ {
-		ctx.AccBuf.StakeOut()
+		ctx.BufAcc.StakeOut()
 		_ = b[l-1]
 		for i := 0; i < l; i++ {
 			if b[i] == '"' {
-				ctx.AccBuf.WriteStr(`\"`)
+				ctx.BufAcc.WriteStr(`\"`)
 			} else if b[i] == ' ' {
-				ctx.AccBuf.WriteByte('+')
+				ctx.BufAcc.WriteByte('+')
 			} else {
-				ctx.AccBuf.WriteByte(b[i])
+				ctx.BufAcc.WriteByte(b[i])
 			}
 		}
-		b = ctx.AccBuf.StakedBytes()
+		b = ctx.BufAcc.StakedBytes()
 		l = len(b)
 	}
-	*buf = ctx.OutBuf.Reset().Write(b)
+	ctx.BufModOut(buf, b)
 
 	return
 }
@@ -47,31 +47,31 @@ func modUrlEncode(ctx *Ctx, buf *interface{}, val interface{}, args []interface{
 	itr := printIterations(args)
 
 	// Get the source.
-	if ctx.AccBuf.StakeOut().WriteX(val).Error() != nil {
+	if ctx.BufAcc.StakeOut().WriteX(val).Error() != nil {
 		return ErrModNoStr
 	}
-	b := ctx.AccBuf.StakedBytes()
+	b := ctx.BufAcc.StakedBytes()
 	l := len(b)
 	if l == 0 {
 		return
 	}
 	for c := 0; c < itr; c++ {
-		ctx.AccBuf.StakeOut()
+		ctx.BufAcc.StakeOut()
 		_ = b[l-1]
 		for i := 0; i < l; i++ {
 			if b[i] >= 'a' && b[i] <= 'z' || b[i] >= 'A' && b[i] <= 'Z' ||
 				b[i] >= '0' && b[i] <= '9' || b[i] == '-' || b[i] == '.' || b[i] == '_' {
-				ctx.AccBuf.WriteByte(b[i])
+				ctx.BufAcc.WriteByte(b[i])
 			} else if b[i] == ' ' {
-				ctx.AccBuf.WriteByte('+')
+				ctx.BufAcc.WriteByte('+')
 			} else {
-				ctx.AccBuf.WriteByte('%').WriteByte(hexUp[b[i]>>4]).WriteByte(hexUp[b[i]&15])
+				ctx.BufAcc.WriteByte('%').WriteByte(hexUp[b[i]>>4]).WriteByte(hexUp[b[i]&15])
 			}
 		}
-		b = ctx.AccBuf.StakedBytes()
+		b = ctx.BufAcc.StakedBytes()
 		l = len(b)
 	}
-	*buf = ctx.OutBuf.Reset().Write(b)
+	ctx.BufModOut(buf, b)
 
 	return
 }

@@ -65,8 +65,8 @@ func trans(ctx *Ctx, buf *interface{}, args []interface{}, plural bool) error {
 		_ = args[len(args)-1]
 		for i := 0; i < len(args); i++ {
 			if kv, ok := args[i].(*ctxKV); ok {
-				ctx.AccBuf.StakeOut().WriteX(kv.v)
-				ctx.repl.AddKV(fastconv.B2S(kv.k), ctx.AccBuf.StakedString())
+				ctx.BufAcc.StakeOut().WriteX(kv.v)
+				ctx.repl.AddKV(fastconv.B2S(kv.k), ctx.BufAcc.StakedString())
 			}
 		}
 	}
@@ -75,7 +75,7 @@ func trans(ctx *Ctx, buf *interface{}, args []interface{}, plural bool) error {
 	if len(key) == 0 {
 		return nil
 	}
-	lkey := ctx.AccBuf.StakeOut().WriteStr(ctx.loc).WriteByte('.').WriteStr(key).StakedString()
+	lkey := ctx.BufAcc.StakeOut().WriteStr(ctx.loc).WriteByte('.').WriteStr(key).StakedString()
 
 	// Get translation from DB.
 	if plural {
@@ -83,7 +83,7 @@ func trans(ctx *Ctx, buf *interface{}, args []interface{}, plural bool) error {
 	} else {
 		t = db.GetWR(lkey, def, &ctx.repl)
 	}
-	*buf = ctx.OutBuf.Reset().WriteStr(t)
+	ctx.BufModStrOut(buf, t)
 
 	return nil
 }

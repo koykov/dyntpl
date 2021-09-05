@@ -128,9 +128,9 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 	case TypeRaw:
 		if ctx.chJQ {
 			// JSON quote mode.
-			ctx.AccBuf.StakeOut()
-			jsonEscape(node.raw, &ctx.AccBuf)
-			_, err = w.Write(ctx.AccBuf.StakedBytes())
+			ctx.BufAcc.StakeOut()
+			jsonEscape(node.raw, &ctx.BufAcc)
+			_, err = w.Write(ctx.BufAcc.StakedBytes())
 		} else if ctx.chHE {
 			// HTML escape mode.
 			ctx.Buf.Reset().Write(node.raw)

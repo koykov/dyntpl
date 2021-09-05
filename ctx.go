@@ -30,6 +30,7 @@ type Ctx struct {
 	bufX  interface{}
 	bufA  []interface{}
 	bufLC []int64
+	bufMO bytebuf.ChainBuf
 	// Range loop helper.
 	rl *RangeLoop
 
@@ -50,8 +51,7 @@ type Ctx struct {
 	repl i18n.PlaceholderReplacer
 
 	// External buffers to use in modifier and condition helpers.
-	AccBuf bytebuf.AccumulativeBuf
-	OutBuf bytebuf.ChainBuf
+	BufAcc bytebuf.AccumulativeBuf
 
 	Buf, Buf1, Buf2 bytebuf.ChainBuf
 
@@ -244,6 +244,18 @@ func (c *Ctx) I18n(locale string, db *i18n.DB) {
 	}
 }
 
+// Bufferize mod output bytes.
+func (c *Ctx) BufModOut(buf *interface{}, p []byte) {
+	c.bufMO.Reset().Write(p)
+	*buf = &c.bufMO
+}
+
+// Bufferize mod output string.
+func (c *Ctx) BufModStrOut(buf *interface{}, s string) {
+	c.bufMO.Reset().WriteStr(s)
+	*buf = &c.bufMO
+}
+
 // Reset the context.
 //
 // Made to use together with pools.
@@ -270,8 +282,8 @@ func (c *Ctx) Reset() {
 	c.bufX = nil
 	c.chQB, c.chJQ, c.chHE, c.chUE = false, false, false, false
 	c.bufS = c.bufS[:0]
-	c.AccBuf.Reset()
-	c.OutBuf.Reset()
+	c.BufAcc.Reset()
+	c.bufMO.Reset()
 	c.Buf.Reset()
 	c.Buf1.Reset()
 	c.Buf2.Reset()
@@ -555,20 +567,20 @@ func (c *Ctx) replaceQB(path []byte) []byte {
 	qbLi := bytes.Index(path, qbL)
 	qbRi := bytes.Index(path, qbR)
 	if qbLi != -1 && qbRi != -1 && qbLi < qbRi && qbRi < len(path) {
-		c.AccBuf.StakeOut()
-		c.AccBuf.Write(path[0:qbLi]).Write(dot)
+		c.BufAcc.StakeOut()
+		c.BufAcc.Write(path[0:qbLi]).Write(dot)
 		c.chQB = false
 		c.bufX = c.get(path[qbLi+1 : qbRi])
 		if c.bufX != nil {
-			if err := c.AccBuf.WriteX(c.bufX).Error(); err != nil {
+			if err := c.BufAcc.WriteX(c.bufX).Error(); err != nil {
 				c.Err = err
 				c.chQB = true
 				return nil
 			}
 		}
 		c.chQB = true
-		c.AccBuf.Write(path[qbRi+1:])
-		path = c.AccBuf.StakedBytes()
+		c.BufAcc.Write(path[qbRi+1:])
+		path = c.BufAcc.StakedBytes()
 	}
 	return path
 }

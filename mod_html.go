@@ -22,45 +22,45 @@ func modHtmlEscape(ctx *Ctx, buf *interface{}, val interface{}, args []interface
 	// Get count of encode iterations (cases: hh=, hhh=, ...).
 	itr := printIterations(args)
 
-	if ctx.AccBuf.StakeOut().WriteX(val).Error() != nil {
+	if ctx.BufAcc.StakeOut().WriteX(val).Error() != nil {
 		return ErrModNoStr
 	}
-	b := ctx.AccBuf.StakedBytes()
+	b := ctx.BufAcc.StakedBytes()
 	if l = len(b); l == 0 {
 		return nil
 	}
 	for c := 0; c < itr; c++ {
-		ctx.AccBuf.StakeOut()
+		ctx.BufAcc.StakeOut()
 		_ = b[l-1]
 		for i := 0; i < l; i++ {
 			c := b[i]
 			if c == heLt {
-				ctx.AccBuf.Write(b[o:i]).Write(heLtR)
+				ctx.BufAcc.Write(b[o:i]).Write(heLtR)
 				o = i + 1
 			}
 			if c == heGt {
-				ctx.AccBuf.Write(b[o:i]).Write(heGtR)
+				ctx.BufAcc.Write(b[o:i]).Write(heGtR)
 				o = i + 1
 			}
 			if c == heQd {
-				ctx.AccBuf.Write(b[o:i]).Write(heQdR)
+				ctx.BufAcc.Write(b[o:i]).Write(heQdR)
 				o = i + 1
 			}
 			if c == heQs {
-				ctx.AccBuf.Write(b[o:i]).Write(heQsR)
+				ctx.BufAcc.Write(b[o:i]).Write(heQsR)
 				o = i + 1
 			}
 			if c == heAmp {
-				ctx.AccBuf.Write(b[o:i]).Write(heAmpR)
+				ctx.BufAcc.Write(b[o:i]).Write(heAmpR)
 				o = i + 1
 			}
 		}
-		ctx.AccBuf.Write(b[o:])
+		ctx.BufAcc.Write(b[o:])
 
-		b = ctx.AccBuf.StakedBytes()
+		b = ctx.BufAcc.StakedBytes()
 		l = len(b)
 	}
-	*buf = ctx.OutBuf.Reset().Write(b)
+	ctx.BufModOut(buf, b)
 
 	return nil
 }

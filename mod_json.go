@@ -34,12 +34,12 @@ var (
 func modJsonQuote(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{}) error {
 	var b []byte
 	if err := modJsonEscape(ctx, buf, val, nil); err == nil {
-		b = ctx.AccBuf.StakeOut().
+		b = ctx.BufAcc.StakeOut().
 			WriteByte(jqQd).
-			Write(ctx.OutBuf.Bytes()).
+			Write(ctx.bufMO.Bytes()).
 			WriteByte(jqQd).StakedBytes()
 	}
-	*buf = ctx.OutBuf.Reset().Write(b)
+	ctx.BufModOut(buf, b)
 
 	return nil
 }
@@ -49,25 +49,25 @@ func modJsonEscape(ctx *Ctx, buf *interface{}, val interface{}, args []interface
 	// Get count of encode iterations (cases: jj=, jjj=, ...).
 	itr := printIterations(args)
 
-	if ctx.AccBuf.StakeOut().WriteX(val).Error() != nil {
+	if ctx.BufAcc.StakeOut().WriteX(val).Error() != nil {
 		return ErrModNoStr
 	}
-	b := ctx.AccBuf.StakedBytes()
+	b := ctx.BufAcc.StakedBytes()
 	if l := len(b); l == 0 {
 		return nil
 	}
 	for c := 0; c < itr; c++ {
-		ctx.AccBuf.StakeOut()
-		jsonEscape(b, &ctx.AccBuf)
-		b = ctx.AccBuf.StakedBytes()
+		ctx.BufAcc.StakeOut()
+		jsonEscape(b, &ctx.BufAcc)
+		b = ctx.BufAcc.StakedBytes()
 	}
 	if ctx.chJQ {
 		// Double escape when "jsonquote" bonds found.
-		ctx.AccBuf.StakeOut()
-		jsonEscape(b, &ctx.AccBuf)
-		b = ctx.AccBuf.StakedBytes()
+		ctx.BufAcc.StakeOut()
+		jsonEscape(b, &ctx.BufAcc)
+		b = ctx.BufAcc.StakedBytes()
 	}
-	*buf = ctx.OutBuf.Reset().Write(b)
+	ctx.BufModOut(buf, b)
 
 	return nil
 }
