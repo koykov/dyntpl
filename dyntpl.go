@@ -5,7 +5,7 @@ import (
 	"io"
 	"sync"
 
-	"github.com/koykov/bytealg"
+	"github.com/koykov/bytebuf"
 	"github.com/koykov/fastconv"
 	"github.com/koykov/x2bytes"
 )
@@ -128,9 +128,9 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 	case TypeRaw:
 		if ctx.chJQ {
 			// JSON quote mode.
-			ctx.Buf.Reset().Write(node.raw)
-			ctx.Buf1 = jsonEscape(node.raw, ctx.Buf1)
-			_, err = w.Write(ctx.Buf1.Bytes())
+			ctx.AccBuf.StakeOut()
+			jsonEscape(node.raw, &ctx.AccBuf)
+			_, err = w.Write(ctx.AccBuf.StakedBytes())
 		} else if ctx.chHE {
 			// HTML escape mode.
 			ctx.Buf.Reset().Write(node.raw)
@@ -138,7 +138,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			if err != nil {
 				_, err = w.Write(node.raw)
 			} else {
-				_, err = w.Write(ctx.bufX.(*bytealg.ChainBuf).Bytes())
+				_, err = w.Write(ctx.bufX.(*bytebuf.ChainBuf).Bytes())
 			}
 		} else if ctx.chUE {
 			// URL encode mode.
@@ -147,7 +147,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			if err != nil {
 				_, err = w.Write(node.raw)
 			} else {
-				_, err = w.Write(ctx.bufX.(*bytealg.ChainBuf).Bytes())
+				_, err = w.Write(ctx.bufX.(*bytebuf.ChainBuf).Bytes())
 			}
 		} else {
 			// Raw node writes as is.

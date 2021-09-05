@@ -17,7 +17,7 @@ func modLinkEscape(ctx *Ctx, buf *interface{}, val interface{}, args []interface
 	b := ctx.AccBuf.StakedBytes()
 	l := len(b)
 	if l == 0 {
-		return nil
+		return
 	}
 	for c := 0; c < itr; c++ {
 		ctx.AccBuf.StakeOut()
@@ -52,6 +52,9 @@ func modUrlEncode(ctx *Ctx, buf *interface{}, val interface{}, args []interface{
 	}
 	b := ctx.AccBuf.StakedBytes()
 	l := len(b)
+	if l == 0 {
+		return
+	}
 	for c := 0; c < itr; c++ {
 		ctx.AccBuf.StakeOut()
 		_ = b[l-1]

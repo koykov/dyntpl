@@ -5,7 +5,7 @@ package dyntpl
 import (
 	"strconv"
 
-	"github.com/koykov/bytealg"
+	"github.com/koykov/bytebuf"
 	"github.com/koykov/fastconv"
 )
 
@@ -99,10 +99,10 @@ func ConvBytes(val interface{}) (b []byte, ok bool) {
 		b = val.([]byte)
 	case *[]byte:
 		b = *val.(*[]byte)
-	case bytealg.ChainBuf:
-		b = val.(bytealg.ChainBuf)
-	case *bytealg.ChainBuf:
-		b = *val.(*bytealg.ChainBuf)
+	case bytebuf.ChainBuf:
+		b = val.(bytebuf.ChainBuf)
+	case *bytebuf.ChainBuf:
+		b = *val.(*bytebuf.ChainBuf)
 	default:
 		ok = false
 	}
@@ -225,9 +225,9 @@ func if2int(raw interface{}) (r int64, ok bool) {
 		if len(*raw.(*string)) > 0 {
 			r, _ = strconv.ParseInt(*raw.(*string), 0, 0)
 		}
-	case *bytealg.ChainBuf:
-		if (*raw.(*bytealg.ChainBuf)).Len() > 0 {
-			r, _ = strconv.ParseInt((*raw.(*bytealg.ChainBuf)).String(), 0, 0)
+	case *bytebuf.ChainBuf:
+		if (*raw.(*bytebuf.ChainBuf)).Len() > 0 {
+			r, _ = strconv.ParseInt((*raw.(*bytebuf.ChainBuf)).String(), 0, 0)
 		}
 	case intConverter:
 		if i, err := raw.(intConverter).Int(); err == nil {

@@ -1,8 +1,7 @@
 package dyntpl
 
 import (
-	"github.com/koykov/bytealg"
-	"github.com/koykov/x2bytes"
+	"github.com/koykov/bytebuf"
 )
 
 var (
@@ -33,61 +32,54 @@ var (
 
 // JSON quote of string value - '"' + JSON escape + '"'.
 func modJsonQuote(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{}) error {
-	ctx.Buf.Reset().WriteByte(jqQd)
-	err := modJsonEscape(ctx, buf, val, nil)
-	if err == nil {
-		ctx.Buf.Write(ctx.Buf1)
+	var b []byte
+	if err := modJsonEscape(ctx, buf, val, nil); err == nil {
+		b = ctx.AccBuf.StakeOut().
+			WriteByte(jqQd).
+			Write(ctx.OutBuf.Bytes()).
+			WriteByte(jqQd).StakedBytes()
 	}
-	ctx.Buf.WriteByte(jqQd)
-	*buf = &ctx.Buf
+	*buf = ctx.OutBuf.Reset().Write(b)
+
 	return nil
 }
 
 // JSON escape of string value.
 func modJsonEscape(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) error {
-	var (
-		err error
-	)
-
 	// Get count of encode iterations (cases: jj=, jjj=, ...).
 	itr := printIterations(args)
 
-	ctx.Buf2.Reset()
-	if p, ok := ConvBytes(val); ok {
-		ctx.buf = append(ctx.buf[:0], p...)
-	} else if s, ok := ConvStr(val); ok {
-		ctx.buf = append(ctx.buf[:0], s...)
-	} else if ctx.Buf2, err = x2bytes.ToBytesWR(ctx.Buf2, val); err == nil {
-		ctx.buf = append(ctx.buf[:0], ctx.Buf2...)
-	} else {
+	if ctx.AccBuf.StakeOut().WriteX(val).Error() != nil {
 		return ErrModNoStr
 	}
+	b := ctx.AccBuf.StakedBytes()
+	if l := len(b); l == 0 {
+		return nil
+	}
 	for c := 0; c < itr; c++ {
-		ctx.Buf1.Reset()
-		ctx.Buf1 = jsonEscape(ctx.buf, ctx.Buf1)
-
-		ctx.buf = append(ctx.buf[:0], ctx.Buf1...)
+		ctx.AccBuf.StakeOut()
+		jsonEscape(b, &ctx.AccBuf)
+		b = ctx.AccBuf.StakedBytes()
 	}
 	if ctx.chJQ {
 		// Double escape when "jsonquote" bonds found.
-		ctx.Buf2.Reset()
-		ctx.Buf2 = jsonEscape(ctx.Buf1.Bytes(), ctx.Buf2)
-		*buf = &ctx.Buf2
-	} else {
-		*buf = &ctx.Buf1
+		ctx.AccBuf.StakeOut()
+		jsonEscape(b, &ctx.AccBuf)
+		b = ctx.AccBuf.StakedBytes()
 	}
+	*buf = ctx.OutBuf.Reset().Write(b)
 
 	return nil
 }
 
 // Internal JSON escape helper.
-func jsonEscape(b []byte, buf bytealg.ChainBuf) bytealg.ChainBuf {
+func jsonEscape(b []byte, buf *bytebuf.AccumulativeBuf) *bytebuf.AccumulativeBuf {
 	var o int
 	l := len(b)
 	if l == 0 {
 		return buf
 	}
-	buf.Reset()
+	// buf.Reset()
 	_ = b[l-1]
 	for i := 0; i < l; i++ {
 		c := b[i]
