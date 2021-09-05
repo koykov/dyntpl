@@ -5,9 +5,7 @@ import (
 	"io"
 	"sync"
 
-	"github.com/koykov/bytebuf"
 	"github.com/koykov/fastconv"
-	"github.com/koykov/x2bytes"
 )
 
 // Main template object.
@@ -133,21 +131,21 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			_, err = w.Write(ctx.BufAcc.StakedBytes())
 		} else if ctx.chHE {
 			// HTML escape mode.
-			ctx.Buf.Reset().Write(node.raw)
-			err = modHtmlEscape(ctx, &ctx.bufX, &ctx.Buf, nil)
+			ctx.bufCB.Reset().Write(node.raw)
+			err = modHtmlEscape(ctx, &ctx.bufX, &ctx.bufCB, nil)
 			if err != nil {
 				_, err = w.Write(node.raw)
 			} else {
-				_, err = w.Write(ctx.bufX.(*bytebuf.ChainBuf).Bytes())
+				_, err = w.Write(ctx.bufMO.Bytes())
 			}
 		} else if ctx.chUE {
 			// URL encode mode.
-			ctx.Buf.Reset().Write(node.raw)
-			err = modUrlEncode(ctx, &ctx.bufX, &ctx.Buf, nil)
+			ctx.bufCB.Reset().Write(node.raw)
+			err = modUrlEncode(ctx, &ctx.bufX, &ctx.bufCB, nil)
 			if err != nil {
 				_, err = w.Write(node.raw)
 			} else {
-				_, err = w.Write(ctx.bufX.(*bytebuf.ChainBuf).Bytes())
+				_, err = w.Write(ctx.bufMO.Bytes())
 			}
 		} else {
 			// Raw node writes as is.
@@ -203,14 +201,13 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			return
 		}
 		// Convert modified data to bytes array.
-		ctx.Buf, err = x2bytes.ToBytesWR(ctx.Buf, raw)
-		if err == nil {
+		if err = ctx.BufAcc.StakeOut().WriteX(raw).Error(); err == nil {
 			if len(node.prefix) > 0 {
 				// Write prefix.
 				_, _ = w.Write(node.prefix)
 			}
 			// Write bytes data.
-			_, err = w.Write(ctx.Buf)
+			_, err = w.Write(ctx.BufAcc.StakedBytes())
 			// Write suffix.
 			if len(node.suffix) > 0 {
 				_, _ = w.Write(node.suffix)
@@ -455,11 +452,10 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 					} else {
 						ctx.get(ch.caseL)
 						if ctx.Err == nil {
-							ctx.Buf, err = x2bytes.ToBytesWR(ctx.Buf, ctx.bufX)
-							if err != nil {
+							if err = ctx.BufAcc.StakeOut().WriteX(ctx.bufX).Error(); err != nil {
 								return
 							}
-							r = ctx.cmp(node.switchArg, OpEq, ctx.Buf)
+							r = ctx.cmp(node.switchArg, OpEq, ctx.BufAcc.StakedBytes())
 						}
 					}
 				}
@@ -510,11 +506,10 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 							// Both sides isn't static.
 							ctx.get(ch.caseR)
 							if ctx.Err == nil {
-								ctx.Buf, err = x2bytes.ToBytesWR(ctx.Buf, ctx.bufX)
-								if err != nil {
+								if err = ctx.BufAcc.StakeOut().WriteX(ctx.bufX).Error(); err != nil {
 									return
 								}
-								r = ctx.cmp(ch.caseL, ch.caseOp, ctx.Buf)
+								r = ctx.cmp(ch.caseL, ch.caseOp, ctx.BufAcc.StakedBytes())
 							}
 						}
 					}
@@ -606,11 +601,10 @@ func (t *Tpl) nodeCmp(node *Node, ctx *Ctx) (r bool, err error) {
 		// Both sides isn't static. This is a bad case, since need to inspect variables twice.
 		ctx.get(node.condR)
 		if ctx.Err == nil {
-			ctx.Buf, err = x2bytes.ToBytesWR(ctx.Buf, ctx.bufX)
-			if err != nil {
+			if err = ctx.BufAcc.StakeOut().WriteX(ctx.bufX).Error(); err != nil {
 				return
 			}
-			r = ctx.cmp(node.condL, node.condOp, ctx.Buf)
+			r = ctx.cmp(node.condL, node.condOp, ctx.BufAcc.StakedBytes())
 		}
 	}
 	return

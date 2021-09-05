@@ -31,6 +31,7 @@ type Ctx struct {
 	bufA  []interface{}
 	bufLC []int64
 	bufMO bytebuf.ChainBuf
+	bufCB bytebuf.ChainBuf
 	// Range loop helper.
 	rl *RangeLoop
 
@@ -52,7 +53,7 @@ type Ctx struct {
 
 	// External buffers to use in modifier and condition helpers.
 	BufAcc bytebuf.AccumulativeBuf
-
+	// todo remove as unused later
 	Buf, Buf1, Buf2 bytebuf.ChainBuf
 
 	BufB bool
@@ -282,6 +283,7 @@ func (c *Ctx) Reset() {
 	c.bufX = nil
 	c.chQB, c.chJQ, c.chHE, c.chUE = false, false, false, false
 	c.bufS = c.bufS[:0]
+	c.bufCB.Reset()
 	c.BufAcc.Reset()
 	c.bufMO.Reset()
 	c.Buf.Reset()
@@ -327,8 +329,8 @@ func (c *Ctx) get(path []byte) interface{} {
 			// Var found.
 			if v.val == nil && len(v.buf) > 0 {
 				// Special case: var is a byte slice.
-				c.Buf.Reset().Write(v.buf)
-				c.bufX = &c.Buf
+				c.bufCB.Reset().Write(v.buf)
+				c.bufX = &c.bufCB
 				return c.bufX
 			}
 			if v.val == nil && v.cntrF {
