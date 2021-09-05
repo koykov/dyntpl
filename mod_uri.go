@@ -13,35 +13,32 @@ func modLinkEscape(ctx *Ctx, buf *interface{}, val interface{}, args []interface
 	itr := printIterations(args)
 
 	// Get the source.
-	if p, ok := ConvBytes(val); ok {
-		ctx.buf = append(ctx.buf[:0], p...)
-	} else if s, ok := ConvStr(val); ok {
-		ctx.buf = append(ctx.buf[:0], s...)
-	} else if ctx.Buf2, err = x2bytes.ToBytesWR(ctx.Buf2, val); err == nil {
-		ctx.buf = append(ctx.buf[:0], ctx.Buf2...)
-	} else {
+	if ctx.AccBuf.StakeOut().WriteX(val).Error() != nil {
 		return ErrModNoStr
 	}
-	l := len(ctx.buf)
+	b := ctx.AccBuf.StakedBytes()
+	l := len(b)
 	if l == 0 {
-		return ErrModEmptyStr
+		return nil
 	}
 	for c := 0; c < itr; c++ {
-		ctx.Buf.Reset()
-		_ = ctx.buf[l-1]
+		ctx.AccBuf.StakeOut()
+		_ = b[l-1]
 		for i := 0; i < l; i++ {
-			if ctx.buf[i] == '"' {
-				ctx.Buf.WriteStr(`\"`)
-			} else if ctx.buf[i] == ' ' {
-				ctx.Buf.WriteByte('+')
+			if b[i] == '"' {
+				ctx.AccBuf.WriteStr(`\"`)
+			} else if b[i] == ' ' {
+				ctx.AccBuf.WriteByte('+')
 			} else {
-				ctx.Buf.WriteByte(ctx.buf[i])
+				ctx.AccBuf.WriteByte(b[i])
 			}
 		}
-		ctx.buf = append(ctx.buf[:0], ctx.Buf...)
-		l = ctx.Buf.Len()
+		b = ctx.AccBuf.StakedBytes()
+		l = len(b)
 	}
-	*buf = &ctx.Buf
+	ctx.OutBuf.Reset().Write(b)
+	*buf = &ctx.OutBuf
+
 	return
 }
 
