@@ -7,6 +7,7 @@ import (
 	"unsafe"
 
 	"github.com/koykov/bytealg"
+	"github.com/koykov/bytebuf"
 	"github.com/koykov/fastconv"
 	"github.com/koykov/i18n"
 	"github.com/koykov/inspector"
@@ -50,7 +51,7 @@ type Ctx struct {
 	repl i18n.PlaceholderReplacer
 
 	// External buffers to use in modifier and condition helpers.
-	AccBuf bytealg.AccumulativeBuffer
+	AccBuf bytebuf.AccumulativeBuffer
 	OutBuf bytealg.ChainBuf
 
 	Buf, Buf1, Buf2 bytealg.ChainBuf
