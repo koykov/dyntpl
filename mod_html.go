@@ -1,9 +1,5 @@
 package dyntpl
 
-import (
-	"github.com/koykov/x2bytes"
-)
-
 var (
 	// Symbols to replace.
 	heLt  = byte('<')
@@ -21,60 +17,51 @@ var (
 )
 
 func modHtmlEscape(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) error {
-	var (
-		l, o int
-		err  error
-	)
+	var l, o int
 
 	// Get count of encode iterations (cases: hh=, hhh=, ...).
 	itr := printIterations(args)
 
-	ctx.Buf2.Reset()
-	if p, ok := ConvBytes(val); ok {
-		ctx.buf = append(ctx.buf[:0], p...)
-	} else if s, ok := ConvStr(val); ok {
-		ctx.buf = append(ctx.buf[:0], s...)
-	} else if ctx.Buf2, err = x2bytes.ToBytesWR(ctx.Buf2, val); err == nil {
-		ctx.buf = append(ctx.buf[:0], ctx.Buf2...)
-	} else {
+	b := ctx.AccBuf.StakeOut().WriteX(val).StakedBytes()
+	if ctx.AccBuf.Error() != nil {
 		return ErrModNoStr
 	}
-	l = len(ctx.buf)
-	if l == 0 {
+	if l = len(b); l == 0 {
 		return nil
 	}
-	ctx.Buf.Reset()
 	for c := 0; c < itr; c++ {
-		_ = ctx.buf[l-1]
+		ctx.AccBuf.StakeOut()
+		_ = b[l-1]
 		for i := 0; i < l; i++ {
-			c := ctx.buf[i]
+			c := b[i]
 			if c == heLt {
-				ctx.Buf.Write(ctx.buf[o:i]).Write(heLtR)
+				ctx.AccBuf.Write(b[o:i]).Write(heLtR)
 				o = i + 1
 			}
 			if c == heGt {
-				ctx.Buf.Write(ctx.buf[o:i]).Write(heGtR)
+				ctx.AccBuf.Write(b[o:i]).Write(heGtR)
 				o = i + 1
 			}
 			if c == heQd {
-				ctx.Buf.Write(ctx.buf[o:i]).Write(heQdR)
+				ctx.AccBuf.Write(b[o:i]).Write(heQdR)
 				o = i + 1
 			}
 			if c == heQs {
-				ctx.Buf.Write(ctx.buf[o:i]).Write(heQsR)
+				ctx.AccBuf.Write(b[o:i]).Write(heQsR)
 				o = i + 1
 			}
 			if c == heAmp {
-				ctx.Buf.Write(ctx.buf[o:i]).Write(heAmpR)
+				ctx.AccBuf.Write(b[o:i]).Write(heAmpR)
 				o = i + 1
 			}
 		}
-		ctx.Buf.Write(ctx.buf[o:])
+		ctx.AccBuf.Write(b[o:])
 
-		ctx.buf = append(ctx.buf[:0], ctx.Buf...)
-		l = ctx.Buf.Len()
+		b = ctx.AccBuf.StakedBytes()
+		l = len(b)
 	}
-	*buf = &ctx.Buf
+	ctx.OutBuf.Reset().Write(b)
+	*buf = &ctx.OutBuf
 
 	return nil
 }

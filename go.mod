@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/koykov/batch_replace v0.0.0-20210829210916-974d1149f09c // indirect
 	github.com/koykov/bytealg v0.0.0-20210905185531-18d2d5549a55
-	github.com/koykov/bytebuf v0.0.0-20210905185754-2237ea10e621 // indirect
+	github.com/koykov/bytebuf v0.0.0-20210905195150-534f07c3a300
 	github.com/koykov/byteptr v0.0.0-20210620190848-e0b56dd286d9 // indirect
 	github.com/koykov/fastconv v0.0.0-20210824195058-3dc579589f15
 	github.com/koykov/hash v0.0.0-20210824200435-8eb1b95341ae
