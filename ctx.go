@@ -11,7 +11,6 @@ import (
 	"github.com/koykov/fastconv"
 	"github.com/koykov/i18n"
 	"github.com/koykov/inspector"
-	"github.com/koykov/x2bytes"
 )
 
 // Context object. Contains list of variables available to inspect.
@@ -51,10 +50,10 @@ type Ctx struct {
 	repl i18n.PlaceholderReplacer
 
 	// External buffers to use in modifier and condition helpers.
-	AccBuf bytebuf.AccumulativeBuffer
-	OutBuf bytealg.ChainBuf
+	AccBuf bytebuf.AccumulativeBuf
+	OutBuf bytebuf.ChainBuf
 
-	Buf, Buf1, Buf2 bytealg.ChainBuf
+	Buf, Buf1, Buf2 bytebuf.ChainBuf
 
 	BufB bool
 	BufI int64
@@ -95,9 +94,9 @@ func NewCtx() *Ctx {
 	ctx := Ctx{
 		vars: make([]ctxVar, 0),
 		bufS: make([]string, 0),
-		Buf:  make(bytealg.ChainBuf, 0),
-		Buf1: make(bytealg.ChainBuf, 0),
-		Buf2: make(bytealg.ChainBuf, 0),
+		Buf:  make(bytebuf.ChainBuf, 0),
+		Buf1: make(bytebuf.ChainBuf, 0),
+		Buf2: make(bytebuf.ChainBuf, 0),
 		buf:  make([]byte, 0),
 		bufA: make([]interface{}, 0),
 	}
@@ -556,20 +555,20 @@ func (c *Ctx) replaceQB(path []byte) []byte {
 	qbLi := bytes.Index(path, qbL)
 	qbRi := bytes.Index(path, qbR)
 	if qbLi != -1 && qbRi != -1 && qbLi < qbRi && qbRi < len(path) {
-		c.Buf.Reset().Write(path[0:qbLi]).Write(dot)
+		c.AccBuf.StakeOut()
+		c.AccBuf.Write(path[0:qbLi]).Write(dot)
 		c.chQB = false
 		c.bufX = c.get(path[qbLi+1 : qbRi])
 		if c.bufX != nil {
-			c.Buf1, c.Err = x2bytes.ToBytesWR(c.Buf1, c.bufX)
-			if c.Err != nil {
+			if err := c.AccBuf.WriteX(c.bufX).Error(); err != nil {
+				c.Err = err
 				c.chQB = true
 				return nil
 			}
-			c.Buf.Write(c.Buf1)
 		}
 		c.chQB = true
-		c.Buf.Write(path[qbRi+1:])
-		path = c.Buf
+		c.AccBuf.Write(path[qbRi+1:])
+		path = c.AccBuf.StakedBytes()
 	}
 	return path
 }
