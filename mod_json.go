@@ -33,6 +33,7 @@ var (
 // JSON quote of string value - '"' + JSON escape + '"'.
 func modJsonQuote(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{}) error {
 	var b []byte
+	ctx.bufMO.Reset()
 	if err := modJsonEscape(ctx, buf, val, nil); err == nil {
 		b = ctx.BufAcc.StakeOut().
 			WriteByte(jqQd).
