@@ -308,7 +308,7 @@ func pretest() {
 	}
 	for name, body := range tpl {
 		tree, _ := Parse(body, false)
-		RegisterTpl(name, tree)
+		RegisterTplKey(name, tree)
 	}
 }
 

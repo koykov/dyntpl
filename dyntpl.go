@@ -3,7 +3,6 @@ package dyntpl
 import (
 	"bytes"
 	"io"
-	"sync"
 
 	"github.com/koykov/fastconv"
 )
@@ -12,43 +11,52 @@ import (
 // Template contains only parsed template and evaluation logic.
 // All temporary and intermediate data should be store in context object to make using of templates thread-safe.
 type Tpl struct {
-	Id   string
+	Id   int
+	Key  string
 	tree *Tree
 }
 
 var (
-	// Templates registry.
-	mux         sync.Mutex
-	tplRegistry = map[string]*Tpl{}
+	// Templates DB.
+	tplDB = initDB()
 
 	// Suppress go vet warning.
-	_ = RenderFb
+	_, _, _ = RegisterTplID, RenderFb, RenderID
 )
 
-// Register template in the registry.
+// Register template by ID and key in the registry.
 //
+// You may use to access to the template both ID or key.
 // This function can be used in any time to register new templates or overwrite existing to provide dynamics.
-func RegisterTpl(id string, tree *Tree) {
-	tpl := Tpl{
-		Id:   id,
-		tree: tree,
-	}
-	mux.Lock()
-	tplRegistry[id] = &tpl
-	mux.Unlock()
+func RegisterTpl(id int, key string, tree *Tree) {
+	tplDB.set(id, key, tree)
 }
 
-// Render template with id according given context.
+// Register template using only ID.
+//
+// See RegisterTpl().
+func RegisterTplID(id int, tree *Tree) {
+	tplDB.set(id, "-1", tree)
+}
+
+// Register template using only key.
+//
+// See RegisterTpl().
+func RegisterTplKey(key string, tree *Tree) {
+	tplDB.set(-1, key, tree)
+}
+
+// Render template with given key according given context.
 //
 // See RenderTo().
 // Recommend to use RenderTo() together with byte buffer pool to avoid redundant allocations.
-func Render(id string, ctx *Ctx) ([]byte, error) {
+func Render(key string, ctx *Ctx) ([]byte, error) {
 	buf := bytes.Buffer{}
-	err := RenderTo(&buf, id, ctx)
+	err := RenderTo(&buf, key, ctx)
 	return buf.Bytes(), err
 }
 
-// Render template using fallback id.
+// Render template using one of keys: key or fallback key.
 //
 // See RenderFbTo().
 // Using this func you can handle cases when some objects has custom templates and all other should use default templates.
@@ -61,42 +69,53 @@ func Render(id string, ctx *Ctx) ([]byte, error) {
 // In other case, for user #4:
 // call of dyntpl.RenderFbTo("tplUser-4", "tplUser", ctx) will take default template tplUser from registry.
 // Recommend to user RenderFbTo().
-func RenderFb(id, fbId string, ctx *Ctx) ([]byte, error) {
+func RenderFb(key, fbKey string, ctx *Ctx) ([]byte, error) {
 	buf := bytes.Buffer{}
-	err := RenderFbTo(&buf, id, fbId, ctx)
+	err := RenderFbTo(&buf, key, fbKey, ctx)
 	return buf.Bytes(), err
 }
 
-// Render template to given writer object.
+// Render template with given key to given writer object.
 //
 // Using this function together with byte buffer pool reduces allocations.
-func RenderTo(w io.Writer, id string, ctx *Ctx) (err error) {
-	mux.Lock()
-	tpl, ok := tplRegistry[id]
-	mux.Unlock()
-	if !ok {
+func RenderTo(w io.Writer, key string, ctx *Ctx) (err error) {
+	tpl := tplDB.getKey(key)
+	if tpl == nil {
 		err = ErrTplNotFound
 		return
 	}
 	return render(w, tpl, ctx)
 }
 
-// Render template using fallback ID logic and write result to writer object.
+// Render template using fallback key logic and write result to writer object.
 //
 // See RenderFb().
 // Use this function together with byte buffer pool to reduce allocations.
-func RenderFbTo(w io.Writer, id, fbId string, ctx *Ctx) (err error) {
-	var (
-		tpl *Tpl
-		ok  bool
-	)
-	mux.Lock()
-	tpl, ok = tplRegistry[id]
-	if !ok {
-		tpl, ok = tplRegistry[fbId]
+func RenderFbTo(w io.Writer, key, fbKey string, ctx *Ctx) (err error) {
+	tpl := tplDB.getKey1(key, fbKey)
+	if tpl == nil {
+		err = ErrTplNotFound
+		return
 	}
-	mux.Unlock()
-	if !ok {
+	return render(w, tpl, ctx)
+}
+
+// Render template with given ID according given context.
+//
+// See RenderIDTo().
+// Recommend to use RenderIDTo() together with byte buffer pool to avoid redundant allocations.
+func RenderID(id int, ctx *Ctx) ([]byte, error) {
+	buf := bytes.Buffer{}
+	err := RenderIDTo(&buf, id, ctx)
+	return buf.Bytes(), err
+}
+
+// Render template with given ID to given writer object.
+//
+// Using this function together with byte buffer pool reduces allocations.
+func RenderIDTo(w io.Writer, id int, ctx *Ctx) (err error) {
+	tpl := tplDB.getID(id)
+	if tpl == nil {
 		err = ErrTplNotFound
 		return
 	}
@@ -534,15 +553,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 		}
 	case TypeInclude:
 		// Include sub-template expression.
-		var tpl *Tpl
-		mux.Lock()
-		for i := 0; i < len(node.tpl); i++ {
-			if t, ok := tplRegistry[fastconv.B2S(node.tpl[i])]; ok {
-				tpl = t
-				break
-			}
-		}
-		mux.Unlock()
+		tpl := tplDB.getBKeys(node.tpl)
 		if tpl != nil {
 			w1 := ctx.getW()
 			if err = render(w1, tpl, ctx); err != nil {
