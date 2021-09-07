@@ -43,7 +43,7 @@ func (db *db) get(id int, key string) (tpl *Tpl) {
 	} else if idx1, ok := db.idxID[id]; ok && idx1 != -1 {
 		idx = idx1
 	}
-	if idx > 0 && idx < len(db.tpl) {
+	if idx >= 0 && idx < len(db.tpl) {
 		tpl = db.tpl[idx]
 	}
 	return
@@ -68,7 +68,7 @@ func (db *db) getKey1(key, key1 string) (tpl *Tpl) {
 	if ok {
 		idx = idx1
 	}
-	if idx > 0 && idx < len(db.tpl) {
+	if idx >= 0 && idx < len(db.tpl) {
 		tpl = db.tpl[idx]
 	}
 	return
@@ -83,7 +83,7 @@ func (db *db) getBKeys(bkeys [][]byte) (tpl *Tpl) {
 	defer db.mux.RUnlock()
 	_ = bkeys[l-1]
 	for i := 0; i < l; i++ {
-		if idx, ok := db.idxKey[fastconv.B2S(bkeys[i])]; ok && idx > 0 && idx < len(db.tpl) {
+		if idx, ok := db.idxKey[fastconv.B2S(bkeys[i])]; ok && idx >= 0 && idx < len(db.tpl) {
 			tpl = db.tpl[idx]
 			return
 		}
