@@ -175,6 +175,11 @@ func (c *Ctx) SetBytes(key string, val []byte) {
 	c.ln++
 }
 
+// Set string as static variable.
+func (c *Ctx) SetString(key, val string) {
+	c.SetBytes(key, fastconv.S2B(val))
+}
+
 // Set int counter as static variable.
 //
 // See Ctx.Set().
