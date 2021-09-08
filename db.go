@@ -28,33 +28,45 @@ func (db *db) set(id int, key string, tree *Tree) {
 		tree: tree,
 	}
 	db.mux.Lock()
-	db.tpl = append(db.tpl, &tpl)
-	db.idxID[id] = len(db.tpl) - 1
-	db.idxKey[key] = len(db.tpl) - 1
+	if idx := db.getIdxLF(id, key); idx >= 0 && idx < len(db.tpl) {
+		db.tpl[idx] = &tpl
+	} else {
+		db.tpl = append(db.tpl, &tpl)
+		if id >= 0 {
+			db.idxID[id] = len(db.tpl) - 1
+		}
+		if key != "-1" {
+			db.idxKey[key] = len(db.tpl) - 1
+		}
+	}
 	db.mux.Unlock()
 }
 
 func (db *db) get(id int, key string) (tpl *Tpl) {
-	idx := -1
 	db.mux.RLock()
 	defer db.mux.RUnlock()
-	if idx1, ok := db.idxKey[key]; ok && idx1 != -1 {
-		idx = idx1
-	} else if idx1, ok := db.idxID[id]; ok && idx1 != -1 {
-		idx = idx1
-	}
-	if idx >= 0 && idx < len(db.tpl) {
+	if idx := db.getIdxLF(id, key); idx >= 0 && idx < len(db.tpl) {
 		tpl = db.tpl[idx]
 	}
 	return
 }
 
+func (db *db) getIdxLF(id int, key string) (idx int) {
+	idx = -1
+	if idx1, ok := db.idxKey[key]; ok && idx1 != -1 {
+		idx = idx1
+	} else if idx1, ok := db.idxID[id]; ok && idx1 != -1 {
+		idx = idx1
+	}
+	return
+}
+
 func (db *db) getID(id int) *Tpl {
-	return db.get(id, "-2")
+	return db.get(id, "-1")
 }
 
 func (db *db) getKey(key string) *Tpl {
-	return db.get(-2, key)
+	return db.get(-1, key)
 }
 
 func (db *db) getKey1(key, key1 string) (tpl *Tpl) {
