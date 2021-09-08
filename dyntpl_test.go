@@ -338,7 +338,7 @@ func benchBase(b *testing.B, tplName string, expectResult []byte, errMsg string)
 		ctx := AcquireCtx()
 		ctx.Set("user", user, &ins)
 		buf.Reset()
-		err := RenderTo(&buf, tplName, ctx)
+		err := Write(&buf, tplName, ctx)
 		if err != nil {
 			b.Error(err)
 		}
@@ -567,7 +567,7 @@ func BenchmarkTplLoopCount(b *testing.B) {
 		ctx.Set("user", user, &ins)
 		ctx.SetStatic("begin", 0)
 		ctx.SetStatic("end", 3)
-		err := RenderTo(&buf, "tplLoopCount", ctx)
+		err := Write(&buf, "tplLoopCount", ctx)
 		if err != nil {
 			b.Error(err)
 		}
@@ -625,7 +625,7 @@ func BenchmarkI18n(b *testing.B) {
 			ctx.SetStatic("cores", 4)
 			ctx.SetStatic("years", 90)
 			buf.Reset()
-			err := RenderTo(&buf, tplName, ctx)
+			err := Write(&buf, tplName, ctx)
 			if err != nil {
 				b.Error(err)
 			}

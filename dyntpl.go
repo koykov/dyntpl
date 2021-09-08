@@ -21,7 +21,7 @@ var (
 	tplDB = initDB()
 
 	// Suppress go vet warning.
-	_, _, _ = RegisterTplID, RenderFb, RenderID
+	_, _, _ = RegisterTplID, RenderFallback, RenderByID
 )
 
 // Register template by ID and key in the registry.
@@ -48,37 +48,37 @@ func RegisterTplKey(key string, tree *Tree) {
 
 // Render template with given key according given context.
 //
-// See RenderTo().
-// Recommend to use RenderTo() together with byte buffer pool to avoid redundant allocations.
+// See Write().
+// Recommend to use Write() together with byte buffer pool to avoid redundant allocations.
 func Render(key string, ctx *Ctx) ([]byte, error) {
 	buf := bytes.Buffer{}
-	err := RenderTo(&buf, key, ctx)
+	err := Write(&buf, key, ctx)
 	return buf.Bytes(), err
 }
 
 // Render template using one of keys: key or fallback key.
 //
-// See RenderFbTo().
+// See WriteFallback().
 // Using this func you can handle cases when some objects has custom templates and all other should use default templates.
 // Example:
 // template registry:
 // * tplUser
 // * tplUser-15
 // user object with id 15
-// Call of dyntpl.RenderFb("tplUser-15", "tplUser", ctx) will take template tplUser-15 from registry.
+// Call of dyntpl.RenderFallback("tplUser-15", "tplUser", ctx) will take template tplUser-15 from registry.
 // In other case, for user #4:
-// call of dyntpl.RenderFbTo("tplUser-4", "tplUser", ctx) will take default template tplUser from registry.
-// Recommend to user RenderFbTo().
-func RenderFb(key, fbKey string, ctx *Ctx) ([]byte, error) {
+// call of dyntpl.WriteFallback("tplUser-4", "tplUser", ctx) will take default template tplUser from registry.
+// Recommend to user WriteFallback().
+func RenderFallback(key, fbKey string, ctx *Ctx) ([]byte, error) {
 	buf := bytes.Buffer{}
-	err := RenderFbTo(&buf, key, fbKey, ctx)
+	err := WriteFallback(&buf, key, fbKey, ctx)
 	return buf.Bytes(), err
 }
 
-// Render template with given key to given writer object.
+// Write template with given key to given writer object.
 //
 // Using this function together with byte buffer pool reduces allocations.
-func RenderTo(w io.Writer, key string, ctx *Ctx) (err error) {
+func Write(w io.Writer, key string, ctx *Ctx) (err error) {
 	tpl := tplDB.getKey(key)
 	if tpl == nil {
 		err = ErrTplNotFound
@@ -87,11 +87,11 @@ func RenderTo(w io.Writer, key string, ctx *Ctx) (err error) {
 	return render(w, tpl, ctx)
 }
 
-// Render template using fallback key logic and write result to writer object.
+// Write template using fallback key logic and write result to writer object.
 //
-// See RenderFb().
+// See RenderFallback().
 // Use this function together with byte buffer pool to reduce allocations.
-func RenderFbTo(w io.Writer, key, fbKey string, ctx *Ctx) (err error) {
+func WriteFallback(w io.Writer, key, fbKey string, ctx *Ctx) (err error) {
 	tpl := tplDB.getKey1(key, fbKey)
 	if tpl == nil {
 		err = ErrTplNotFound
@@ -102,18 +102,18 @@ func RenderFbTo(w io.Writer, key, fbKey string, ctx *Ctx) (err error) {
 
 // Render template with given ID according given context.
 //
-// See RenderIDTo().
-// Recommend to use RenderIDTo() together with byte buffer pool to avoid redundant allocations.
-func RenderID(id int, ctx *Ctx) ([]byte, error) {
+// See WriteByID().
+// Recommend to use WriteByID() together with byte buffer pool to avoid redundant allocations.
+func RenderByID(id int, ctx *Ctx) ([]byte, error) {
 	buf := bytes.Buffer{}
-	err := RenderIDTo(&buf, id, ctx)
+	err := WriteByID(&buf, id, ctx)
 	return buf.Bytes(), err
 }
 
-// Render template with given ID to given writer object.
+// Write template with given ID to given writer object.
 //
 // Using this function together with byte buffer pool reduces allocations.
-func RenderIDTo(w io.Writer, id int, ctx *Ctx) (err error) {
+func WriteByID(w io.Writer, id int, ctx *Ctx) (err error) {
 	tpl := tplDB.getID(id)
 	if tpl == nil {
 		err = ErrTplNotFound

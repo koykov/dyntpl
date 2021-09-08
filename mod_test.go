@@ -236,7 +236,7 @@ func BenchmarkTplModJsonQuote(b *testing.B) {
 		ctx := AcquireCtx()
 		buf.Reset()
 		ctx.SetStatic("userName", `Foo"bar`)
-		err := RenderTo(&buf, "tplModJsonQuoteShort", ctx)
+		err := Write(&buf, "tplModJsonQuoteShort", ctx)
 		if err != nil {
 			b.Error(err)
 		}
@@ -255,7 +255,7 @@ func BenchmarkTplModJsonEscape(b *testing.B) {
 		ctx := AcquireCtx()
 		buf.Reset()
 		ctx.SetStatic("userName", `Foo"bar`)
-		err := RenderTo(&buf, "tplModJsonEscapeShort", ctx)
+		err := Write(&buf, "tplModJsonEscapeShort", ctx)
 		if err != nil {
 			b.Error(err)
 		}
@@ -274,7 +274,7 @@ func BenchmarkTplModJsonEscapeDbl(b *testing.B) {
 		ctx := AcquireCtx()
 		buf.Reset()
 		ctx.SetStatic("valueWithQuotes", `He said: "welcome friend"`)
-		err := RenderTo(&buf, "tplModJsonEscapeDbl", ctx)
+		err := Write(&buf, "tplModJsonEscapeDbl", ctx)
 		if err != nil {
 			b.Error(err)
 		}
@@ -294,7 +294,7 @@ func BenchmarkTplModHtmlEscape(b *testing.B) {
 		buf.Reset()
 		ctx.SetStatic("title", `<h1>Go is an open source programming language that makes it easy to build <strong>simple<strong>, <strong>reliable</strong>, and <strong>efficient</strong> software.</h1>`)
 		ctx.SetStatic("text", `Visit >`)
-		err := RenderTo(&buf, "tplModHtmlEscapeShort", ctx)
+		err := Write(&buf, "tplModHtmlEscapeShort", ctx)
 		if err != nil {
 			b.Error(err)
 		}
@@ -313,7 +313,7 @@ func BenchmarkTplModLinkEscape(b *testing.B) {
 		ctx := AcquireCtx()
 		buf.Reset()
 		ctx.SetStatic("link", `http://x.com/link-with-"-and space-symbol`)
-		err := RenderTo(&buf, "tplModLinkEscape", ctx)
+		err := Write(&buf, "tplModLinkEscape", ctx)
 		if err != nil {
 			b.Error(err)
 		}
@@ -332,7 +332,7 @@ func benchModUrlEncode(b *testing.B, tplID string, expect []byte, failMsg string
 		ctx := AcquireCtx()
 		buf.Reset()
 		ctx.SetStatic("url", `https://golang.org/src/net/url/url.go#L100`)
-		err := RenderTo(&buf, tplID, ctx)
+		err := Write(&buf, tplID, ctx)
 		if err != nil {
 			b.Error(err)
 		}
@@ -363,7 +363,7 @@ func BenchmarkTplModIfThen(b *testing.B) {
 		ctx := AcquireCtx()
 		buf.Reset()
 		ctx.SetStatic("allow", true)
-		err := RenderTo(&buf, "tplModIfThen", ctx)
+		err := Write(&buf, "tplModIfThen", ctx)
 		if err != nil {
 			b.Error(err)
 		}
@@ -383,7 +383,7 @@ func BenchmarkTplModIfThenElse(b *testing.B) {
 		buf.Reset()
 		ctx.SetStatic("logged", true)
 		ctx.SetStatic("userName", "foobar")
-		err := RenderTo(&buf, "tplModIfThenElse", ctx)
+		err := Write(&buf, "tplModIfThenElse", ctx)
 		if err != nil {
 			b.Error(err)
 		}
@@ -407,7 +407,7 @@ func BenchmarkTplModRound(b *testing.B) {
 		ctx.SetStatic("f3", 56.68734)
 		ctx.SetStatic("f4", 67.999)
 		ctx.SetStatic("f5", 20.214999)
-		err := RenderTo(&buf, "tplModRound", ctx)
+		err := Write(&buf, "tplModRound", ctx)
 		if err != nil {
 			b.Error(err)
 		}
