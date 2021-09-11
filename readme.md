@@ -265,3 +265,21 @@ Note, these tags escapes only text data inside. All variables should be escaped 
 Here, `{% end/jsonquote %}` applies only for text data `Lorem ipsum "dolor sit amet",`, whereas `var0` prints using JSON-escape printing prefix.
 
 `{% end/htmlescape %}` and `{% end/urlencode %}` works the same.
+
+## I18n
+
+Internationalization support provides by [i18n](https://github.com/koykov/i18n) package.
+
+I18n must be enabled on context level using methid `ctx.I18n()` before start templating.
+
+For simple translate use function `template` or shorthand `t`:
+```
+{%= t("key", "default value", {"!placeholder0": "replacement", "!placeholder1": object.Label, ...}) %}
+```
+You may omit default value and replacements, only first argument is required.
+
+For plural translation use function `translatePlural` or shorthand `tp`:
+```
+{%= tp("key", "default value", 15, {...}) %}
+```
+Third argument is a count for a plural formula. It's required as a `key` argument.
