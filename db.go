@@ -6,11 +6,16 @@ import (
 	"github.com/koykov/fastconv"
 )
 
+// Template database.
+// Contains two indexes describes two types of pairs between templates and keys/IDs.
 type db struct {
-	mux    sync.RWMutex
-	idxID  map[int]int
+	mux sync.RWMutex
+	// ID index. Value is a offset in the tpl array.
+	idxID map[int]int
+	// Key index. Value is a offset in the tpl array as well.
 	idxKey map[string]int
-	tpl    []*Tpl
+	// Templates storage.
+	tpl []*Tpl
 }
 
 func initDB() *db {
@@ -21,6 +26,7 @@ func initDB() *db {
 	return db
 }
 
+// Save template tree in the storage and make two pairs (ID-tpl and key-tpl).
 func (db *db) set(id int, key string, tree *Tree) {
 	tpl := Tpl{
 		Id:   id,
@@ -42,6 +48,7 @@ func (db *db) set(id int, key string, tree *Tree) {
 	db.mux.Unlock()
 }
 
+// Get first template found by key or ID.
 func (db *db) get(id int, key string) (tpl *Tpl) {
 	db.mux.RLock()
 	defer db.mux.RUnlock()
@@ -51,6 +58,9 @@ func (db *db) get(id int, key string) (tpl *Tpl) {
 	return
 }
 
+// Lock-free index getter.
+//
+// Returns first available index by key or ID.
 func (db *db) getIdxLF(id int, key string) (idx int) {
 	idx = -1
 	if idx1, ok := db.idxKey[key]; ok && idx1 != -1 {
@@ -61,14 +71,17 @@ func (db *db) getIdxLF(id int, key string) (idx int) {
 	return
 }
 
+// Get template by ID.
 func (db *db) getID(id int) *Tpl {
 	return db.get(id, "-1")
 }
 
+// Get template by key.
 func (db *db) getKey(key string) *Tpl {
 	return db.get(-1, key)
 }
 
+// Get template by key and fallback key.
 func (db *db) getKey1(key, key1 string) (tpl *Tpl) {
 	idx := -1
 	db.mux.RLock()
@@ -86,6 +99,7 @@ func (db *db) getKey1(key, key1 string) (tpl *Tpl) {
 	return
 }
 
+// Get template by list of keys describes as bytes arrays.
 func (db *db) getBKeys(bkeys [][]byte) (tpl *Tpl) {
 	l := len(bkeys)
 	if l == 0 {
