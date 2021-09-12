@@ -6,7 +6,13 @@ import (
 )
 
 var (
-	cutFmtOrigin = []byte(`
+	cutCommentOrigin = []byte(`{# this is a test template #}
+		Payload line #0
+		{# some comment #}
+		Payload line #1
+		{# EOT #}`)
+	cutCommentExpect = []byte(`Payload line #0Payload line #1`)
+	cutFmtOrigin     = []byte(`
 [
 	{
 		{%= val0 %},
@@ -18,9 +24,8 @@ var (
     }
 ]
 `)
-	cutFmtExpect = []byte(`[{{%= val0 %},{%= val1 %}},{{%= val2 %},{%= val3 %}}]`)
-
-	primHrExpect = []byte(`raw: [{
+	cutFmtExpect   = []byte(`[{{%= val0 %},{%= val1 %}},{{%= val2 %},{%= val3 %}}]`)
+	cutFmtHrExpect = []byte(`raw: [{
 tpl: val0
 raw: ,
 tpl: val1
@@ -389,85 +394,7 @@ tpl:  mod t("messages.welcome", "")
 `)
 )
 
-func TestParseCutComments(t *testing.T) {
-	tpl := []byte(`{# this is a test template #}
-		Payload line #0
-		{# some comment #}
-		Payload line #1
-		{# EOT #}`)
-	exp := []byte(`Payload line #0Payload line #1`)
-	p := &Parser{tpl: tpl}
-	p.cutComments()
-	p.cutFmt()
-	if !bytes.Equal(exp, p.tpl) {
-		t.Errorf("comment cut test failed\nexp: %s\ngot: %s", string(exp), string(p.tpl))
-	}
-}
-
-func TestParseCutFmt(t *testing.T) {
-	p := &Parser{tpl: cutFmtOrigin}
-	p.cutFmt()
-	if !bytes.Equal(cutFmtExpect, p.tpl) {
-		t.Errorf("fmt cut test failed\nexp: %s\ngot: %s", string(cutFmtExpect), string(p.tpl))
-	}
-}
-
-func TestParsePrimitive(t *testing.T) {
-	tree, _ := Parse(cutFmtOrigin, false)
-	r := tree.HumanReadable()
-	if !bytes.Equal(r, primHrExpect) {
-		t.Errorf("prim test failed\nexp: %s\ngot: %s", string(primHrExpect), string(r))
-	}
-}
-
-func TestParseuEOT(t *testing.T) {
-	_, err := Parse(uEOTOrigin, false)
-	if err != ErrUnexpectedEOF {
-		t.Errorf("unexpected EOT fail\nexp: %s\ngot: %s", ErrUnexpectedEOF, err)
-	}
-}
-
-func TestParsePrefixSuffix(t *testing.T) {
-	tree, _ := Parse(tplPS, false)
-	r := tree.HumanReadable()
-	if !bytes.Equal(r, tplPSExpect) {
-		t.Errorf("prefix/suffix test failed\nexp: %s\ngot: %s", string(tplPSExpect), string(r))
-	}
-}
-
-func TestParseExit(t *testing.T) {
-	tree, _ := Parse(tplExitOrigin, false)
-	r := tree.HumanReadable()
-	if !bytes.Equal(r, tplExitExpect) {
-		t.Errorf("exit test failed\nexp: %s\ngot: %s", string(tplExitExpect), string(r))
-	}
-}
-
-func TestParseMod(t *testing.T) {
-	tree, _ := Parse(tplModOrigin, false)
-	r := tree.HumanReadable()
-	if !bytes.Equal(r, tplModExpect) {
-		t.Errorf("mod test failed\nexp: %s\ngot: %s", string(tplModExpect), string(r))
-	}
-}
-
-func TestParseModNoVar(t *testing.T) {
-	tree, _ := Parse(tplModNoVarOrigin, false)
-	r := tree.HumanReadable()
-	if !bytes.Equal(r, tplModNoVarExpect) {
-		t.Errorf("mod (no var) test failed\nexp: %s\ngot: %s", string(tplModNoVarExpect), string(r))
-	}
-}
-
-func TestParseModNestedArgOrigin(t *testing.T) {
-	tree, _ := Parse(tplModNestedArgOrigin, false)
-	r := tree.HumanReadable()
-	if !bytes.Equal(r, tplModNestedArgExpect) {
-		t.Errorf("mod (nested arg) test failed\nexp: %s\ngot: %s", string(tplModNestedArgExpect), string(r))
-	}
-}
-
-func TestParseCtx(t *testing.T) {
+func TestParser(t *testing.T) {
 	tst := func(t *testing.T, key string, tpl, expect []byte) {
 		tree, _ := Parse(tpl, false)
 		r := tree.HumanReadable()
@@ -475,110 +402,63 @@ func TestParseCtx(t *testing.T) {
 			t.Errorf("%s test failed\nexp: %s\ngot: %s", key, string(expect), string(r))
 		}
 	}
-	tst(t, "ctxOriginAs", ctxOriginAs, ctxExpect)
-	tst(t, "ctxDot", ctxOriginDot, ctxExpect)
-	tst(t, "ctxDot1", ctxOriginDot1, ctxExpect1)
-	tst(t, "ctxModDot", ctxOriginModDot, ctxExpectModDot)
-	tst(t, "ctxOriginAsOK", ctxOriginAsOK, ctxExpectAsOK)
-	tst(t, "ctxOriginAsOK1", ctxOriginAsOK1, ctxExpectAsOK1)
-}
-
-func TestParseCntr(t *testing.T) {
-	tree, _ := Parse(cntrOrigin, false)
-	r := tree.HumanReadable()
-	if !bytes.Equal(r, cntrExpect) {
-		t.Errorf("cntr test failed\nexp: %s\ngot: %s", string(ctxExpect), string(r))
-	}
-}
-
-func TestParseCondition(t *testing.T) {
-	tree, _ := Parse(condOrigin, false)
-	r := tree.HumanReadable()
-	if !bytes.Equal(r, condExpect) {
-		t.Errorf("condition test failed\nexp: %s\ngot: %s", string(condExpect), string(r))
-	}
-
-	treeStr, _ := Parse(condStrOrigin, false)
-	rStr := treeStr.HumanReadable()
-	if !bytes.Equal(rStr, condStrExpect) {
-		t.Errorf("str condition test failed\nexp: %s\ngot: %s", string(condStrExpect), string(rStr))
-	}
-
-	treeNested, _ := Parse(condNestedOrigin, false)
-	rNested := treeNested.HumanReadable()
-	if !bytes.Equal(rNested, condNestedExpect) {
-		t.Errorf("nested condition test failed\nexp: %s\ngot: %s", string(condNestedExpect), string(rNested))
-	}
-}
-
-func TestParseConditionOK(t *testing.T) {
-	tree, _ := Parse(condOriginOK, false)
-	r := tree.HumanReadable()
-	if !bytes.Equal(r, condExpectOK) {
-		t.Errorf("condition-ok test failed\nexp: %s\ngot: %s", string(condExpectOK), string(r))
-	}
-}
-
-func TestParseConditionNotOK(t *testing.T) {
-	tree, _ := Parse(condOriginNotOK, false)
-	r := tree.HumanReadable()
-	if !bytes.Equal(r, condExpectNotOK) {
-		t.Errorf("condition-!ok test failed\nexp: %s\ngot: %s", string(condExpectNotOK), string(r))
-	}
-}
-
-func TestParseLoop(t *testing.T) {
-	tst := func(t *testing.T, key string, tpl, expect []byte) {
-		tree, _ := Parse(tpl, false)
-		r := tree.HumanReadable()
-		if !bytes.Equal(r, expect) {
-			t.Errorf("%s test failed\nexp: %s\ngot: %s", key, string(expect), string(r))
+	tstErr := func(t *testing.T, key string, tpl []byte, errExp error) {
+		_, err := Parse(tpl, false)
+		if err != errExp {
+			t.Errorf("%s failed\nexp err: %s\ngot: %s", key, errExp, err)
 		}
 	}
-	tst(t, "loopOrigin", loopOrigin, loopExpect)
-	tst(t, "loopSepOrigin", loopSepOrigin, loopSepExpect)
-	tst(t, "loopBrkOrigin", loopBrkOrigin, loopBrkExpect)
-	tst(t, "loopBrkNestedOrigin", loopBrkNestedOrigin, loopBrkNestedExpect)
-}
 
-func TestParseSwitch(t *testing.T) {
-	tree, _ := Parse(switchOrigin, false)
-	r := tree.HumanReadable()
-	if !bytes.Equal(r, switchExpect) {
-		t.Errorf("switch test failed\nexp: %s\ngot: %s", string(switchExpect), string(r))
-	}
+	t.Run("cutComments", func(t *testing.T) {
+		p := &Parser{tpl: cutCommentOrigin}
+		p.cutComments()
+		p.cutFmt()
+		if !bytes.Equal(cutCommentExpect, p.tpl) {
+			t.Errorf("comment cut test failed\nexp: %s\ngot: %s", string(cutCommentExpect), string(p.tpl))
+		}
+	})
+	t.Run("cutFmt", func(t *testing.T) {
+		p := &Parser{tpl: cutFmtOrigin}
+		p.cutFmt()
+		if !bytes.Equal(cutFmtExpect, p.tpl) {
+			t.Errorf("fmt cut test failed\nexp: %s\ngot: %s", string(cutFmtExpect), string(p.tpl))
+		}
+	})
+	t.Run("printVar", func(t *testing.T) { tst(t, "printVar", cutFmtOrigin, cutFmtHrExpect) })
+	t.Run("unexpectedEOF", func(t *testing.T) { tstErr(t, "unexpectedEOF", uEOTOrigin, ErrUnexpectedEOF) })
+	t.Run("prefixSuffix", func(t *testing.T) { tst(t, "prefixSuffix", tplPS, tplPSExpect) })
+	t.Run("exit", func(t *testing.T) { tst(t, "exit", tplExitOrigin, tplExitExpect) })
+	t.Run("mod", func(t *testing.T) { tst(t, "mod", tplModOrigin, tplModExpect) })
+	t.Run("modNoVar", func(t *testing.T) { tst(t, "modNoVar", tplModNoVarOrigin, tplModNoVarExpect) })
+	t.Run("modNestedArg", func(t *testing.T) { tst(t, "modNestedArg", tplModNestedArgOrigin, tplModNestedArgExpect) })
 
-	treeNC, _ := Parse(switchNoCondOrigin, false)
-	rNC := treeNC.HumanReadable()
-	if !bytes.Equal(rNC, switchNoCondExpect) {
-		t.Errorf("switch no cond test failed\nexp: %s\ngot: %s", string(switchNoCondExpect), string(rNC))
-	}
+	t.Run("ctxOriginAs", func(t *testing.T) { tst(t, "ctxOriginAs", ctxOriginAs, ctxExpect) })
+	t.Run("ctxDot", func(t *testing.T) { tst(t, "ctxDot", ctxOriginDot, ctxExpect) })
+	t.Run("ctxDot1", func(t *testing.T) { tst(t, "ctxDot1", ctxOriginDot1, ctxExpect1) })
+	t.Run("ctxModDot", func(t *testing.T) { tst(t, "ctxModDot", ctxOriginModDot, ctxExpectModDot) })
+	t.Run("ctxOriginAsOK", func(t *testing.T) { tst(t, "ctxOriginAsOK", ctxOriginAsOK, ctxExpectAsOK) })
+	t.Run("ctxOriginAsOK1", func(t *testing.T) { tst(t, "ctxOriginAsOK1", ctxOriginAsOK1, ctxExpectAsOK1) })
 
-	treeNCH, _ := Parse(switchNoCondHelperOrigin, false)
-	rNCH := treeNCH.HumanReadable()
-	if !bytes.Equal(rNCH, switchNoCondHelperExpect) {
-		t.Errorf("switch no cond with helper condition test failed\nexp: %s\ngot: %s", string(switchNoCondHelperExpect), string(rNCH))
-	}
-}
+	t.Run("counter", func(t *testing.T) { tst(t, "counter", cntrOrigin, cntrExpect) })
+	t.Run("condition", func(t *testing.T) { tst(t, "condition", condOrigin, condExpect) })
+	t.Run("conditionStr", func(t *testing.T) { tst(t, "conditionStr", condStrOrigin, condStrExpect) })
+	t.Run("conditionNested", func(t *testing.T) { tst(t, "conditionNested", condNestedOrigin, condNestedExpect) })
+	t.Run("conditionOK", func(t *testing.T) { tst(t, "conditionOK", condOriginOK, condExpectOK) })
+	t.Run("conditionNotOK", func(t *testing.T) { tst(t, "conditionNotOK", condOriginNotOK, condExpectNotOK) })
 
-func TestParseInclude(t *testing.T) {
-	tree, _ := Parse(incOrigin, false)
-	r := tree.HumanReadable()
-	if !bytes.Equal(r, incExpect) {
-		t.Errorf("include test failed\nexp: %s\ngot: %s", string(incExpect), string(r))
-	}
+	t.Run("loop", func(t *testing.T) { tst(t, "loop", loopOrigin, loopExpect) })
+	t.Run("loopSep", func(t *testing.T) { tst(t, "loopSep", loopSepOrigin, loopSepExpect) })
+	t.Run("loopBrk", func(t *testing.T) { tst(t, "loopBrk", loopBrkOrigin, loopBrkExpect) })
+	t.Run("loopBrkNested", func(t *testing.T) { tst(t, "loopBrkNested", loopBrkNestedOrigin, loopBrkNestedExpect) })
 
-	tree, _ = Parse(incOriginDot, false)
-	r = tree.HumanReadable()
-	if !bytes.Equal(r, incExpect) {
-		t.Errorf("dot-include test failed\nexp: %s\ngot: %s", string(incExpect), string(r))
-	}
-}
+	t.Run("switch", func(t *testing.T) { tst(t, "switch", switchOrigin, switchExpect) })
+	t.Run("switchNoCondition", func(t *testing.T) { tst(t, "switchNoCondition", switchNoCondOrigin, switchNoCondExpect) })
+	t.Run("switchNoConditionHelper", func(t *testing.T) {
+		tst(t, "switchNoConditionHelper", switchNoCondHelperOrigin, switchNoCondHelperExpect)
+	})
 
-func TestParseLocale(t *testing.T) {
-	tree, _ := Parse(locOrigin, false)
-	r := tree.HumanReadable()
-	if !bytes.Equal(r, locExpect) {
-		t.Errorf("locale test failed\nexp: %s\ngot: %s", string(locExpect), string(r))
-	}
+	t.Run("include", func(t *testing.T) { tst(t, "include", incOrigin, incExpect) })
+	t.Run("includeDot", func(t *testing.T) { tst(t, "includeDot", incOriginDot, incExpect) })
+
+	t.Run("locale", func(t *testing.T) { tst(t, "locale", locOrigin, locExpect) })
 }
