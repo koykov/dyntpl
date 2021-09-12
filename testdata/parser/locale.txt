@@ -1,0 +1,2 @@
+locale: ru-RU
+tpl:  mod t("messages.welcome", "")

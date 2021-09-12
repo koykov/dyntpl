@@ -1,0 +1,2 @@
+ctx: var mask, ok src user.Flags[mask] ins static
+tpl: mask

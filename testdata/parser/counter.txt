@@ -1,0 +1,6 @@
+cntr: cntr i = 0
+cntr: cntr j = 5
+raw: foo
+cntr: cntr i op ++ arg 1
+raw: bar
+cntr: cntr j op ++ arg 3

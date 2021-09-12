@@ -1,0 +1,2 @@
+ctx: var fin src obj.Finance ins TestFinance
+tpl: fin

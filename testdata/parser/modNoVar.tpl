@@ -1,0 +1,1 @@
+Welcome, {%= testNameOf(user, "anonymous") %}!

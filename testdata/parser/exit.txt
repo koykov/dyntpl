@@ -1,0 +1,4 @@
+cond: left user.Status op == right 0
+	true: 
+		exit
+raw: Allowed items: ...

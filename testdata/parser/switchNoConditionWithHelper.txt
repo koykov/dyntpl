@@ -1,0 +1,11 @@
+raw: [{
+switch: 
+	case: firstItem(item)
+		raw: "name": 
+		tpl: item.Name
+		raw: ,
+	case: secondItem(item, "false")
+		tpl: item.Slug pfx "slug": sfx ,
+	case: anonItem(item, "1")
+		raw: "no_data": true
+raw: }]
