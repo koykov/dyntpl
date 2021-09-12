@@ -3,6 +3,27 @@ package dyntpl
 import (
 	"bytes"
 	"testing"
+
+	"github.com/koykov/bytealg"
+)
+
+type parserStage struct {
+	key            string
+	origin, expect []byte
+}
+
+var (
+	parserStages = []parserStage{
+		{
+			"cutComments",
+			[]byte(`{# this is a test template #}
+Payload line #0
+{# some comment #}
+Payload line #1
+{# EOT #}`),
+			[]byte(`raw: Payload line #0Payload line #1`),
+		},
+	}
 )
 
 var (
@@ -461,4 +482,20 @@ func TestParser(t *testing.T) {
 	t.Run("includeDot", func(t *testing.T) { tst(t, "includeDot", incOriginDot, incExpect) })
 
 	t.Run("locale", func(t *testing.T) { tst(t, "locale", locOrigin, locExpect) })
+}
+
+func TestParser1(t *testing.T) {
+	tst := func(t *testing.T, stage *parserStage) {
+		tree, _ := Parse(stage.origin, false)
+		r := tree.HumanReadable()
+		r = bytealg.Trim(r, []byte("\n"))
+		if !bytes.Equal(r, stage.expect) {
+			t.Errorf("%s test failed\nexp: %s\ngot: %s", stage.key, string(stage.expect), string(r))
+		}
+	}
+
+	for i := 0; i < len(parserStages); i++ {
+		stage := &parserStages[i]
+		t.Run(stage.key, func(t *testing.T) { tst(t, stage) })
+	}
 }
