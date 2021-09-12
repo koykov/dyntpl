@@ -7,33 +7,54 @@ import (
 	"github.com/koykov/bytealg"
 )
 
-type parserStage struct {
-	key            string
-	origin, expect []byte
-}
+func TestParser(t *testing.T) {
+	type stage struct {
+		key string
+		fn  func(*testing.T, *stage)
+		origin,
+		expect []byte
+		err error
+	}
 
-var (
-	parserStages = []parserStage{
-		{
-			"cutComments",
-			[]byte(`{# this is a test template #}
+	tst := func(t *testing.T, stage *stage) {
+		tree, _ := Parse(stage.origin, false)
+		r := tree.HumanReadable()
+		r = bytealg.Trim(r, []byte("\n"))
+		if !bytes.Equal(r, stage.expect) {
+			t.Errorf("%s test failed\nexp: %s\ngot: %s", stage.key, string(stage.expect), string(r))
+		}
+	}
+	tstRaw := func(t *testing.T, stage *stage) {
+		p := &Parser{tpl: stage.origin}
+		p.cutComments()
+		p.cutFmt()
+		if !bytes.Equal(stage.expect, p.tpl) {
+			t.Errorf("%s test raw failed\nexp: %s\ngot: %s", stage.key, string(stage.expect), string(p.tpl))
+		}
+	}
+	tstErr := func(t *testing.T, stage *stage) {
+		_, err := Parse(stage.origin, false)
+		if err != stage.err {
+			t.Errorf("%s test error failed\nexp err: %s\ngot: %s", stage.key, stage.err, err)
+		}
+	}
+
+	var (
+		stages = []stage{
+			{
+				key: "cutComments",
+				fn:  tstRaw,
+				origin: []byte(`{# this is a test template #}
 Payload line #0
 {# some comment #}
 Payload line #1
 {# EOT #}`),
-			[]byte(`raw: Payload line #0Payload line #1`),
-		},
-	}
-)
-
-var (
-	cutCommentOrigin = []byte(`{# this is a test template #}
-		Payload line #0
-		{# some comment #}
-		Payload line #1
-		{# EOT #}`)
-	cutCommentExpect = []byte(`Payload line #0Payload line #1`)
-	cutFmtOrigin     = []byte(`
+				expect: []byte(`Payload line #0Payload line #1`),
+			},
+			{
+				key: "cutFmt",
+				fn:  tstRaw,
+				origin: []byte(`
 [
 	{
 		{%= val0 %},
@@ -44,9 +65,25 @@ var (
         {%= val3 %}
     }
 ]
-`)
-	cutFmtExpect   = []byte(`[{{%= val0 %},{%= val1 %}},{{%= val2 %},{%= val3 %}}]`)
-	cutFmtHrExpect = []byte(`raw: [{
+`),
+				expect: []byte(`[{{%= val0 %},{%= val1 %}},{{%= val2 %},{%= val3 %}}]`),
+			},
+			{
+				key: "printVar",
+				fn:  tst,
+				origin: []byte(`
+[
+	{
+		{%= val0 %},
+		{%= val1 %}
+	},
+    {
+        {%= val2 %},
+        {%= val3 %}
+    }
+]
+`),
+				expect: []byte(`raw: [{
 tpl: val0
 raw: ,
 tpl: val1
@@ -54,12 +91,18 @@ raw: },{
 tpl: val2
 raw: ,
 tpl: val3
-raw: }]
-`)
-
-	uEOTOrigin = []byte(`foo {%= var1 %} bar {%= var1 end`)
-
-	tplPS = []byte(`
+raw: }]`),
+			},
+			{
+				key:    "unexpectedEOF",
+				fn:     tstErr,
+				origin: []byte(`foo {%= var1 %} bar {%= var1 end`),
+				err:    ErrUnexpectedEOF,
+			},
+			{
+				key: "prefixSuffix",
+				fn:  tst,
+				origin: []byte(`
 {
 	"key0": 15,
 	"key1": {%= val0 %},
@@ -68,85 +111,121 @@ raw: }]
 	{%= val3 pfx "key4" sfx , %}
 	"key5": "foo bar"
 }
-`)
-	tplPSExpect = []byte(`raw: {"key0": 15,"key1": 
+`),
+				expect: []byte(`raw: {"key0": 15,"key1": 
 tpl: val0
 raw: ,"key2": 
 tpl: val1 sfx ,
 tpl: val2 pfx "key3"
 raw: ,
 tpl: val3 pfx "key4" sfx ,
-raw: "key5": "foo bar"}
-`)
-	tplModOrigin = []byte(`Welcome, {%= user.Name|default("anonymous") %}!`)
-	tplModExpect = []byte(`raw: Welcome, 
-tpl: user.Name mod default("anonymous")
-raw: !
-`)
-	tplModNoVarOrigin = []byte(`Welcome, {%= testNameOf(user, "anonymous") %}!`)
-	tplModNoVarExpect = []byte(`raw: Welcome, 
-tpl:  mod testNameOf(user, "anonymous")
-raw: !
-`)
-	tplModNestedArgOrigin = []byte(`Welcome, {%= testNameOf(user, {"foo": "bar", "id": user.Id}, "qwe") %}`)
-	tplModNestedArgExpect = []byte(`raw: Welcome, 
-tpl:  mod testNameOf(user, "foo":"bar", "id":user.Id, "qwe")
-`)
-
-	tplExitOrigin = []byte(`{% if user.Status == 0 %}
+raw: "key5": "foo bar"}`),
+			},
+			{
+				key: "exit",
+				fn:  tst,
+				origin: []byte(`{% if user.Status == 0 %}
 	{% exit %}
 {% endif %}
-Allowed items: ...`)
-	tplExitExpect = []byte(`cond: left user.Status op == right 0
+Allowed items: ...`),
+				expect: []byte(`cond: left user.Status op == right 0
 	true: 
 		exit
-raw: Allowed items: ...
-`)
-
-	ctxOriginAs = []byte(`{% ctx var0 = obj.Key as static %}
+raw: Allowed items: ...`),
+			},
+			{
+				key:    "mod",
+				fn:     tst,
+				origin: []byte(`Welcome, {%= user.Name|default("anonymous") %}!`),
+				expect: []byte(`raw: Welcome, 
+tpl: user.Name mod default("anonymous")
+raw: !`),
+			},
+			{
+				key:    "modNoVar",
+				fn:     tst,
+				origin: []byte(`Welcome, {%= testNameOf(user, "anonymous") %}!`),
+				expect: []byte(`raw: Welcome, 
+tpl:  mod testNameOf(user, "anonymous")
+raw: !`),
+			},
+			{
+				key:    "modNestedArg",
+				fn:     tst,
+				origin: []byte(`Welcome, {%= testNameOf(user, {"foo": "bar", "id": user.Id}, "qwe") %}`),
+				expect: []byte(`raw: Welcome, 
+tpl:  mod testNameOf(user, "foo":"bar", "id":user.Id, "qwe")`),
+			},
+			{
+				key: "ctxAs",
+				fn:  tst,
+				origin: []byte(`{% ctx var0 = obj.Key as static %}
 {% ctx var1=user.Id as static %}
-{%= var1 %}`)
-	ctxOriginDot = []byte(`{% ctx var0 = obj.Key.(static) %}
-{% ctx var1=user.Id.(static) %}
-{%= var1 %}`)
-	ctxExpect = []byte(`ctx: var var0 src obj.Key ins static
+{%= var1 %}`),
+				expect: []byte(`ctx: var var0 src obj.Key ins static
 ctx: var var1 src user.Id ins static
-tpl: var1
-`)
-	ctxOriginDot1 = []byte(`{% ctx fin = obj.Finance.(TestFinance) %}
-{%= fin %}`)
-	ctxExpect1 = []byte(`ctx: var fin src obj.Finance ins TestFinance
-tpl: fin
-`)
-	ctxOriginModDot = []byte(`{% ctx history = user.History|default("date").(TestHistory) %}`)
-	ctxExpectModDot = []byte(`ctx: var history src user.History ins TestHistory mod default("date")
-`)
-	ctxOriginAsOK = []byte(`{% ctx mask, ok = user.Flags[mask] %}
-{%= mask %}`)
-	ctxExpectAsOK = []byte(`ctx: var mask, ok src user.Flags[mask] ins static
-tpl: mask
-`)
-	ctxOriginAsOK1 = []byte(`{% ctx list, ok = user.History.(TestHistory) %}
-{%= list %}`)
-	ctxExpectAsOK1 = []byte(`ctx: var list, ok src user.History ins TestHistory
-tpl: list
-`)
-
-	cntrOrigin = []byte(`{% counter i = 0 %}
+tpl: var1`),
+			},
+			{
+				key: "ctxDot",
+				fn:  tst,
+				origin: []byte(`{% ctx var0 = obj.Key.(static) %}
+{% ctx var1=user.Id.(static) %}
+{%= var1 %}`),
+				expect: []byte(`ctx: var var0 src obj.Key ins static
+ctx: var var1 src user.Id ins static
+tpl: var1`),
+			},
+			{
+				key: "ctxDot1",
+				fn:  tst,
+				origin: []byte(`{% ctx fin = obj.Finance.(TestFinance) %}
+{%= fin %}`),
+				expect: []byte(`ctx: var fin src obj.Finance ins TestFinance
+tpl: fin`),
+			},
+			{
+				key:    "ctxModDot",
+				fn:     tst,
+				origin: []byte(`{% ctx history = user.History|default("date").(TestHistory) %}`),
+				expect: []byte(`ctx: var history src user.History ins TestHistory mod default("date")`),
+			},
+			{
+				key: "ctxAsOK",
+				fn:  tst,
+				origin: []byte(`{% ctx mask, ok = user.Flags[mask] %}
+{%= mask %}`),
+				expect: []byte(`ctx: var mask, ok src user.Flags[mask] ins static
+tpl: mask`),
+			},
+			{
+				key: "ctx",
+				fn:  tst,
+				origin: []byte(`{% ctx list, ok = user.History.(TestHistory) %}
+{%= list %}`),
+				expect: []byte(`ctx: var list, ok src user.History ins TestHistory
+tpl: list`),
+			},
+			{
+				key: "counter",
+				fn:  tst,
+				origin: []byte(`{% counter i = 0 %}
 {% cntr j=5 %}
 foo
 {% counter i++ %}
 bar
-{% counter j+3 %}`)
-	cntrExpect = []byte(`cntr: cntr i = 0
+{% counter j+3 %}`),
+				expect: []byte(`cntr: cntr i = 0
 cntr: cntr j = 5
 raw: foo
 cntr: cntr i op ++ arg 1
 raw: bar
-cntr: cntr j op ++ arg 3
-`)
-
-	condOrigin = []byte(`
+cntr: cntr j op ++ arg 3`),
+			},
+			{
+				key: "condition",
+				fn:  tst,
+				origin: []byte(`
 <h1>Profile</h1>
 {% if user.Id == 0 %}
 You should <a href="{%= loginUrl %}">log in</a>.
@@ -154,8 +233,8 @@ You should <a href="{%= loginUrl %}">log in</a>.
 Welcome, {%= user.Name %}.
 {% endif %}
 Copyright {%= brand %}
-`)
-	condExpect = []byte(`raw: <h1>Profile</h1>
+`),
+				expect: []byte(`raw: <h1>Profile</h1>
 cond: left user.Id op == right 0
 	true: 
 		raw: You should <a href="
@@ -166,25 +245,30 @@ cond: left user.Id op == right 0
 		tpl: user.Name
 		raw: .
 raw: Copyright 
-tpl: brand
-`)
-	condStrOrigin = []byte(`{% if val == "foo" %}foo{% else %}bar{% endif %}`)
-	condStrExpect = []byte(`cond: left val op == right foo
+tpl: brand`),
+			},
+			{
+				key:    "conditionStr",
+				fn:     tst,
+				origin: []byte(`{% if val == "foo" %}foo{% else %}bar{% endif %}`),
+				expect: []byte(`cond: left val op == right foo
 	true: 
 		raw: foo
 	false: 
-		raw: bar
-`)
-	condNestedOrigin = []byte(`
+		raw: bar`),
+			},
+			{
+				key: "conditionNested",
+				fn:  tst,
+				origin: []byte(`
 {% if request.Secure == 1 %}
 	{% if user.AllowBuy %}
 		{%= user.Name %}, you may buy our items safely.
 	{% else %}
 		{%= user.Name %}, you should confirm your account first.
 	{% endif %}
-{% endif %}
-`)
-	condNestedExpect = []byte(`cond: left request.Secure op == right 1
+{% endif %}`),
+				expect: []byte(`cond: left request.Secure op == right 1
 	true: 
 		cond: 
 			true: 
@@ -192,28 +276,36 @@ tpl: brand
 				raw: , you may buy our items safely.
 			false: 
 				tpl: user.Name
-				raw: , you should confirm your account first.
-`)
-	condOriginOK = []byte(`{%= x %}{% if v, ok := filterVar(vars); ok %}{%= v %}{% else %}N/D{%endif%}foo`)
-	condExpectOK = []byte(`tpl: x
+				raw: , you should confirm your account first.`),
+			},
+			{
+				key:    "conditionOK",
+				fn:     tst,
+				origin: []byte(`{%= x %}{% if v, ok := filterVar(vars); ok %}{%= v %}{% else %}N/D{%endif%}foo`),
+				expect: []byte(`tpl: x
 condOK: v, ok hlp filterVar(vars); left ok
 	true: 
 		tpl: v
 	false: 
 		raw: N/D
-raw: foo
-`)
-	condOriginNotOK = []byte(`{%= x %}{% if v, ok := filterVar(vars); !ok %}{%= v %}{% else %}N/D{%endif%}foo`)
-	condExpectNotOK = []byte(`tpl: x
+raw: foo`),
+			},
+			{
+				key:    "conditionNotOK",
+				fn:     tst,
+				origin: []byte(`{%= x %}{% if v, ok := filterVar(vars); !ok %}{%= v %}{% else %}N/D{%endif%}foo`),
+				expect: []byte(`tpl: x
 condOK: v, ok hlp filterVar(vars); left ok op != right true
 	true: 
 		tpl: v
 	false: 
 		raw: N/D
-raw: foo
-`)
-
-	loopOrigin = []byte(`
+raw: foo`),
+			},
+			{
+				key: "loop",
+				fn:  tst,
+				origin: []byte(`
 <h2>Export history</h2>
 <label>Type</label>
 <select name="type">
@@ -226,9 +318,8 @@ raw: foo
 	{% for i:=0; i<4; i++ %}
 	<option value="{%= i %}">{%= allowFmt[i] %}</option>
 	{% endfor %}
-</select>
-`)
-	loopExpect = []byte(`raw: <h2>Export history</h2><label>Type</label><select name="type">
+</select>`),
+				expect: []byte(`raw: <h2>Export history</h2><label>Type</label><select name="type">
 rloop: key k val v src user.historyTags
 	raw: <option value="
 	tpl: k
@@ -242,9 +333,12 @@ cloop: cnt i cond < lim 4 op ++
 	raw: ">
 	tpl: allowFmt[i]
 	raw: </option>
-raw: </select>
-`)
-	loopSepOrigin = []byte(`
+raw: </select>`),
+			},
+			{
+				key: "loopSeparator",
+				fn:  tst,
+				origin: []byte(`
 {
 	"rules": [
 		{% for _, rule := range config.Rules sep , %}
@@ -254,18 +348,20 @@ raw: </select>
 		}
 		{% endfor %}
 	]
-}
-`)
-	loopSepExpect = []byte(`raw: {"rules": [
+}`),
+				expect: []byte(`raw: {"rules": [
 rloop: val rule src config.Rules sep ,
 	raw: {"key": 
 	tpl: rule.Id
 	raw: ,"val": 
 	tpl: rule.Slug
 	raw: }
-raw: ]}
-`)
-	loopBrkOrigin = []byte(`
+raw: ]}`),
+			},
+			{
+				key: "loopBreak",
+				fn:  tst,
+				origin: []byte(`
 {
 	{% for i:=0; i<10; i++ %}
 		foo
@@ -273,9 +369,8 @@ raw: ]}
 		{% if i == 7 %}{% lazybreak %}{% endif %}
 		{%= i %}
 	{% endfor %}
-}
-`)
-	loopBrkExpect = []byte(`raw: {
+}`),
+				expect: []byte(`raw: {
 cloop: cnt i cond < lim 10 op ++
 	raw: foo
 	cond: left i op == right 8
@@ -285,9 +380,12 @@ cloop: cnt i cond < lim 10 op ++
 		true: 
 			lazybreak
 	tpl: i
-raw: }
-`)
-	loopBrkNestedOrigin = []byte(`
+raw: }`),
+			},
+			{
+				key: "loopBreakNested",
+				fn:  tst,
+				origin: []byte(`
 {
 	{% for i:=0; i<10; i++ %}
 		bar
@@ -299,9 +397,8 @@ raw: }
 		{% endfor %}
 		{%= i %}
 	{% endfor %}
-}
-`)
-	loopBrkNestedExpect = []byte(`raw: {
+}`),
+				expect: []byte(`raw: {
 cloop: cnt i cond < lim 10 op ++
 	raw: bar
 	cloop: cnt j cond < lim 10 op ++
@@ -314,10 +411,12 @@ cloop: cnt i cond < lim 10 op ++
 				lazybreak 2
 		tpl: j
 	tpl: i
-raw: }
-`)
-
-	switchOrigin = []byte(`<Tracking event="
+raw: }`),
+			},
+			{
+				key: "switch",
+				fn:  tst,
+				origin: []byte(`<Tracking event="
 	{% switch track.Event %}
 	{% case param.Start %}
 		start
@@ -334,8 +433,8 @@ raw: }
 	{% endswitch %}
 ">
 	<![CDATA[{%= track.Value %}]]>
-</Tracking>`)
-	switchExpect = []byte(`raw: <Tracking event="
+</Tracking>`),
+				expect: []byte(`raw: <Tracking event="
 switch: arg track.Event
 	case: val param.Start
 		raw: start
@@ -351,9 +450,12 @@ switch: arg track.Event
 		raw: unknown
 raw: "><![CDATA[
 tpl: track.Value
-raw: ]]></Tracking>
-`)
-	switchNoCondOrigin = []byte(`
+raw: ]]></Tracking>`),
+			},
+			{
+				key: "switchNoCondition",
+				fn:  tst,
+				origin: []byte(`
 [
 	{
 		{% switch %}
@@ -365,8 +467,8 @@ raw: ]]></Tracking>
 			"no_data": true
 		{% endswitch %}
 	}
-]`)
-	switchNoCondExpect = []byte(`raw: [{
+]`),
+				expect: []byte(`raw: [{
 switch: 
 	case: left item.Index op == right 0
 		raw: "name": 
@@ -376,9 +478,12 @@ switch:
 		tpl: item.Slug pfx "slug": sfx ,
 	case: left item.Uid op == right -1
 		raw: "no_data": true
-raw: }]
-`)
-	switchNoCondHelperOrigin = []byte(`
+raw: }]`),
+			},
+			{
+				key: "switchNoConditionWithHelper",
+				fn:  tst,
+				origin: []byte(`
 [
 	{
 		{% switch %}
@@ -390,8 +495,8 @@ raw: }]
 			"no_data": true
 		{% endswitch %}
 	}
-]`)
-	switchNoCondHelperExpect = []byte(`raw: [{
+]`),
+				expect: []byte(`raw: [{
 switch: 
 	case: firstItem(item)
 		raw: "name": 
@@ -401,101 +506,35 @@ switch:
 		tpl: item.Slug pfx "slug": sfx ,
 	case: anonItem(item, "1")
 		raw: "no_data": true
-raw: }]
-`)
-	incOrigin    = []byte(`foo {% include sidebar/right %} bar`)
-	incOriginDot = []byte(`foo {% . sidebar/right %} bar`)
-	incExpect    = []byte(`raw: foo 
+raw: }]`),
+			},
+			{
+				key:    "include",
+				fn:     tst,
+				origin: []byte(`foo {% include sidebar/right %} bar`),
+				expect: []byte(`raw: foo 
 inc: sidebar/right 
-raw:  bar
-`)
-	locOrigin = []byte(`{% locale "ru-RU" %}{%= t("messages.welcome", "") %}`)
-	locExpect = []byte(`locale: ru-RU
-tpl:  mod t("messages.welcome", "")
-`)
-)
-
-func TestParser(t *testing.T) {
-	tst := func(t *testing.T, key string, tpl, expect []byte) {
-		tree, _ := Parse(tpl, false)
-		r := tree.HumanReadable()
-		if !bytes.Equal(r, expect) {
-			t.Errorf("%s test failed\nexp: %s\ngot: %s", key, string(expect), string(r))
+raw:  bar`),
+			},
+			{
+				key:    "includeDot",
+				fn:     tst,
+				origin: []byte(`foo {% . sidebar/right %} bar`),
+				expect: []byte(`raw: foo 
+inc: sidebar/right 
+raw:  bar`),
+			},
+			{
+				key:    "locale",
+				fn:     tst,
+				origin: []byte(`{% locale "ru-RU" %}{%= t("messages.welcome", "") %}`),
+				expect: []byte(`locale: ru-RU
+tpl:  mod t("messages.welcome", "")`),
+			},
 		}
-	}
-	tstErr := func(t *testing.T, key string, tpl []byte, errExp error) {
-		_, err := Parse(tpl, false)
-		if err != errExp {
-			t.Errorf("%s failed\nexp err: %s\ngot: %s", key, errExp, err)
-		}
-	}
+	)
 
-	t.Run("cutComments", func(t *testing.T) {
-		p := &Parser{tpl: cutCommentOrigin}
-		p.cutComments()
-		p.cutFmt()
-		if !bytes.Equal(cutCommentExpect, p.tpl) {
-			t.Errorf("comment cut test failed\nexp: %s\ngot: %s", string(cutCommentExpect), string(p.tpl))
-		}
-	})
-	t.Run("cutFmt", func(t *testing.T) {
-		p := &Parser{tpl: cutFmtOrigin}
-		p.cutFmt()
-		if !bytes.Equal(cutFmtExpect, p.tpl) {
-			t.Errorf("fmt cut test failed\nexp: %s\ngot: %s", string(cutFmtExpect), string(p.tpl))
-		}
-	})
-	t.Run("printVar", func(t *testing.T) { tst(t, "printVar", cutFmtOrigin, cutFmtHrExpect) })
-	t.Run("unexpectedEOF", func(t *testing.T) { tstErr(t, "unexpectedEOF", uEOTOrigin, ErrUnexpectedEOF) })
-	t.Run("prefixSuffix", func(t *testing.T) { tst(t, "prefixSuffix", tplPS, tplPSExpect) })
-	t.Run("exit", func(t *testing.T) { tst(t, "exit", tplExitOrigin, tplExitExpect) })
-	t.Run("mod", func(t *testing.T) { tst(t, "mod", tplModOrigin, tplModExpect) })
-	t.Run("modNoVar", func(t *testing.T) { tst(t, "modNoVar", tplModNoVarOrigin, tplModNoVarExpect) })
-	t.Run("modNestedArg", func(t *testing.T) { tst(t, "modNestedArg", tplModNestedArgOrigin, tplModNestedArgExpect) })
-
-	t.Run("ctxOriginAs", func(t *testing.T) { tst(t, "ctxOriginAs", ctxOriginAs, ctxExpect) })
-	t.Run("ctxDot", func(t *testing.T) { tst(t, "ctxDot", ctxOriginDot, ctxExpect) })
-	t.Run("ctxDot1", func(t *testing.T) { tst(t, "ctxDot1", ctxOriginDot1, ctxExpect1) })
-	t.Run("ctxModDot", func(t *testing.T) { tst(t, "ctxModDot", ctxOriginModDot, ctxExpectModDot) })
-	t.Run("ctxOriginAsOK", func(t *testing.T) { tst(t, "ctxOriginAsOK", ctxOriginAsOK, ctxExpectAsOK) })
-	t.Run("ctxOriginAsOK1", func(t *testing.T) { tst(t, "ctxOriginAsOK1", ctxOriginAsOK1, ctxExpectAsOK1) })
-
-	t.Run("counter", func(t *testing.T) { tst(t, "counter", cntrOrigin, cntrExpect) })
-	t.Run("condition", func(t *testing.T) { tst(t, "condition", condOrigin, condExpect) })
-	t.Run("conditionStr", func(t *testing.T) { tst(t, "conditionStr", condStrOrigin, condStrExpect) })
-	t.Run("conditionNested", func(t *testing.T) { tst(t, "conditionNested", condNestedOrigin, condNestedExpect) })
-	t.Run("conditionOK", func(t *testing.T) { tst(t, "conditionOK", condOriginOK, condExpectOK) })
-	t.Run("conditionNotOK", func(t *testing.T) { tst(t, "conditionNotOK", condOriginNotOK, condExpectNotOK) })
-
-	t.Run("loop", func(t *testing.T) { tst(t, "loop", loopOrigin, loopExpect) })
-	t.Run("loopSep", func(t *testing.T) { tst(t, "loopSep", loopSepOrigin, loopSepExpect) })
-	t.Run("loopBrk", func(t *testing.T) { tst(t, "loopBrk", loopBrkOrigin, loopBrkExpect) })
-	t.Run("loopBrkNested", func(t *testing.T) { tst(t, "loopBrkNested", loopBrkNestedOrigin, loopBrkNestedExpect) })
-
-	t.Run("switch", func(t *testing.T) { tst(t, "switch", switchOrigin, switchExpect) })
-	t.Run("switchNoCondition", func(t *testing.T) { tst(t, "switchNoCondition", switchNoCondOrigin, switchNoCondExpect) })
-	t.Run("switchNoConditionHelper", func(t *testing.T) {
-		tst(t, "switchNoConditionHelper", switchNoCondHelperOrigin, switchNoCondHelperExpect)
-	})
-
-	t.Run("include", func(t *testing.T) { tst(t, "include", incOrigin, incExpect) })
-	t.Run("includeDot", func(t *testing.T) { tst(t, "includeDot", incOriginDot, incExpect) })
-
-	t.Run("locale", func(t *testing.T) { tst(t, "locale", locOrigin, locExpect) })
-}
-
-func TestParser1(t *testing.T) {
-	tst := func(t *testing.T, stage *parserStage) {
-		tree, _ := Parse(stage.origin, false)
-		r := tree.HumanReadable()
-		r = bytealg.Trim(r, []byte("\n"))
-		if !bytes.Equal(r, stage.expect) {
-			t.Errorf("%s test failed\nexp: %s\ngot: %s", stage.key, string(stage.expect), string(r))
-		}
-	}
-
-	for i := 0; i < len(parserStages); i++ {
-		stage := &parserStages[i]
-		t.Run(stage.key, func(t *testing.T) { tst(t, stage) })
+	for _, s := range stages {
+		t.Run(s.key, func(t *testing.T) { s.fn(t, &s) })
 	}
 }
