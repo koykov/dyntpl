@@ -3,6 +3,8 @@ package dyntpl
 import (
 	"bytes"
 	"strconv"
+
+	"github.com/koykov/bytebuf"
 )
 
 // Tree structure that represents parsed template as list of nodes with childrens.
@@ -22,8 +24,8 @@ func (t *Tree) HumanReadable() []byte {
 	if len(t.nodes) == 0 {
 		return nil
 	}
-	var buf bytes.Buffer
-	t.hrHelper(&buf, t.nodes, []byte("\t"), 0)
+	var buf bytebuf.ChainBuf
+	t.hrHelper1(&buf, t.nodes, []byte("\t"), 0)
 	return buf.Bytes()
 }
 
@@ -275,4 +277,186 @@ func (t *Tree) hrHelper(buf *bytes.Buffer, nodes []Node, indent []byte, depth in
 			t.hrHelper(buf, node.child, indent, depth+1)
 		}
 	}
+}
+func (t *Tree) hrHelper1(buf *bytebuf.ChainBuf, nodes []Node, indent []byte, depth int) {
+	if depth == 0 {
+		buf.WriteStr("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+	}
+	buf.WriteStr("<nodes>\n")
+	depth++
+	for _, node := range nodes {
+		buf.Write(bytes.Repeat(indent, depth))
+		buf.WriteStr(`<node type="`).WriteStr(node.typ.String()).WriteByte('"')
+
+		if len(node.prefix) > 0 {
+			buf.WriteStr(` prefix="`).Write(node.prefix).WriteByte('"')
+		}
+		if len(node.suffix) > 0 {
+			buf.WriteStr(` suffix="`).Write(node.suffix).WriteByte('"')
+		}
+
+		if len(node.ctxVar) > 0 && len(node.ctxSrc) > 0 {
+			buf.WriteStr(` var="`).Write(node.ctxVar).WriteByte('"')
+			if len(node.ctxOK) > 0 {
+				buf.WriteStr(` varOK="`).Write(node.ctxOK).WriteByte('"')
+			}
+			buf.WriteStr(` src="`).Write(node.ctxSrc).WriteByte('"')
+			if len(node.ctxIns) > 0 {
+				buf.WriteStr(` ins="`).Write(node.ctxIns).WriteByte('"')
+			}
+		}
+
+		if len(node.cntrVar) > 0 {
+			buf.WriteStr(` var="`).Write(node.cntrVar).WriteByte('"')
+			if node.cntrInitF {
+				buf.WriteStr(` value="`).WriteInt(int64(node.cntrInit))
+			} else {
+				buf.WriteStr(` op="`).WriteStr(node.cntrOp.String()).WriteByte('"')
+				buf.WriteStr(` arg="`).WriteInt(int64(node.cntrOpArg)).WriteByte('"')
+			}
+		}
+
+		if node.typ == TypeCond {
+			if len(node.condL) > 0 {
+				buf.WriteStr(` left="`).Write(node.condL).WriteByte('"')
+			}
+			if node.condOp != 0 {
+				buf.WriteStr(` op="`).WriteStr(node.condOp.String()).WriteByte('"')
+			}
+			if len(node.condR) > 0 {
+				buf.WriteStr(` right="`).Write(node.condR).WriteByte('"')
+			}
+			if len(node.condHlp) > 0 {
+				buf.WriteStr(` helper="`).Write(node.condHlp).WriteByte('"')
+				if len(node.condHlpArg) > 0 {
+					for j, a := range node.condHlpArg {
+						pfx := "arg"
+						if a.static {
+							pfx = "sarg"
+						}
+						buf.WriteByte(' ').WriteStr(pfx).WriteInt(int64(j)).WriteStr(`="`).Write(a.val).WriteByte('"')
+					}
+				}
+			}
+		}
+
+		if node.typ == TypeCondOK {
+			buf.WriteStr(` left="`).Write(node.condOKL).WriteByte('"')
+			buf.WriteStr(` leftOK="`).Write(node.condOKR).WriteByte('"')
+
+			if len(node.condHlp) > 0 {
+				buf.WriteStr(` helperOK="`).Write(node.condHlp).WriteByte('"')
+				if len(node.condHlpArg) > 0 {
+					for j, a := range node.condHlpArg {
+						pfx := "arg"
+						if a.static {
+							pfx = "sarg"
+						}
+						buf.WriteByte(' ').WriteStr(pfx).WriteInt(int64(j)).WriteStr(`="`).Write(a.val).WriteByte('"')
+					}
+				}
+			}
+
+			if len(node.condL) > 0 {
+				buf.WriteStr(` left="`).Write(node.condL).WriteByte('"')
+			}
+			if node.condOp != 0 {
+				buf.WriteStr(` op="`).WriteStr(node.condOp.String()).WriteByte('"')
+			}
+			if len(node.condR) > 0 {
+				buf.WriteStr(` right="`).Write(node.condR).WriteByte('"')
+			}
+		}
+
+		if len(node.loopKey) > 0 {
+			buf.WriteStr(` key="`).Write(node.loopKey).WriteByte('"')
+		}
+		if len(node.loopVal) > 0 {
+			buf.WriteStr(` value="`).Write(node.loopVal).WriteByte('"')
+		}
+		if len(node.loopSrc) > 0 {
+			buf.WriteStr(` source="`).Write(node.loopSrc).WriteByte('"')
+		}
+		if len(node.loopCnt) > 0 {
+			buf.WriteStr(` counter`).Write(node.loopCnt).WriteByte('"')
+		}
+		if node.loopCondOp != 0 {
+			buf.WriteStr(` cond`).WriteStr(node.loopCondOp.String()).WriteByte('"')
+		}
+		if len(node.loopLim) > 0 {
+			buf.WriteStr(` limit="`).Write(node.loopLim).WriteByte('"')
+		}
+		if node.loopCntOp != 0 {
+			buf.WriteStr(` op="`).WriteStr(node.loopCntOp.String()).WriteByte('"')
+		}
+		if len(node.loopSep) > 0 {
+			buf.WriteStr(` separator="`).Write(node.loopSep).WriteByte('"')
+		}
+		if node.loopBrkD > 0 {
+			buf.WriteStr(` breakDepth="`).WriteInt(int64(node.loopBrkD)).WriteByte('"')
+		}
+
+		if len(node.switchArg) > 0 {
+			buf.WriteStr(` arg="`).Write(node.switchArg).WriteByte('"')
+		}
+		if len(node.caseL) > 0 && node.caseOp != 0 && len(node.caseR) > 0 {
+			buf.WriteStr(` left="`).Write(node.caseL).WriteByte('"').
+				WriteStr(` op="`).WriteStr(node.caseOp.String()).WriteByte('"').
+				WriteStr(` right="`).Write(node.caseR).WriteByte('"')
+		} else if len(node.caseL) > 0 {
+			buf.WriteStr(` value="`).Write(node.caseL).WriteByte('"')
+		}
+		if len(node.caseHlp) > 0 {
+			buf.WriteStr(` helper="`).Write(node.caseHlp).WriteByte('"')
+			if len(node.caseHlpArg) > 0 {
+				for j, a := range node.caseHlpArg {
+					pfx := "arg"
+					if a.static {
+						pfx = "sarg"
+					}
+					buf.WriteByte(' ').WriteStr(pfx).WriteInt(int64(j)).WriteStr(`="`).Write(a.val).WriteByte('"')
+				}
+			}
+		}
+
+		if len(node.tpl) > 0 {
+			for j, tpl := range node.tpl {
+				buf.WriteByte(' ').WriteStr("tpl").WriteInt(int64(j)).WriteStr(`="`).Write(tpl).WriteByte('"')
+			}
+		}
+
+		if len(node.loc) > 0 {
+			buf.WriteStr(` value="`).Write(node.loc).WriteByte('"')
+		}
+
+		if node.typ != TypeExit && node.typ != TypeBreak && node.typ != TypeLBreak && node.typ != TypeContinue {
+			buf.WriteStr(` value="`).Write(node.raw).WriteByte('"')
+		}
+
+		buf.WriteByte('>')
+
+		if len(node.mod) > 0 {
+			buf.WriteByte('\n').Write(bytes.Repeat(indent, depth)).WriteStr("<mods>\n")
+			for _, mod := range node.mod {
+				buf.Write(bytes.Repeat(indent, depth)).WriteStr(`<mod name="`).Write(mod.id).WriteByte('"')
+				if len(mod.arg) > 0 {
+					for j, a := range mod.arg {
+						pfx := "arg"
+						if a.static {
+							pfx = "sarg"
+						}
+						buf.WriteByte(' ').WriteStr(pfx).WriteInt(int64(j)).WriteStr(`="`).Write(a.val).WriteByte('"')
+					}
+				}
+			}
+			buf.Write(bytes.Repeat(indent, depth)).WriteStr("</mods>\n")
+		}
+
+		if len(node.child) > 0 {
+			buf.WriteByte('\n')
+			t.hrHelper1(buf, node.child, indent, depth+1)
+		}
+		buf.WriteStr("</node>\n")
+	}
+	buf.WriteStr("</nodes>\n")
 }
