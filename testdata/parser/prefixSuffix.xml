@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+	<node type="raw" val="{&quot;key0&quot;: 15,&quot;key1&quot;: "/>
+	<node type="tpl" val="val0"/>
+	<node type="raw" val=",&quot;key2&quot;: "/>
+	<node type="tpl" suffix="," val="val1"/>
+	<node type="tpl" prefix="&quot;key3&quot;" val="val2"/>
+	<node type="raw" val=","/>
+	<node type="tpl" prefix="&quot;key4&quot;" suffix="," val="val3"/>
+	<node type="raw" val="&quot;key5&quot;: &quot;foo bar&quot;}"/>
+</nodes>

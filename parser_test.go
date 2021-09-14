@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"io/ioutil"
 	"testing"
+
+	"github.com/koykov/bytealg"
 )
 
 func TestParser(t *testing.T) {
@@ -16,6 +18,7 @@ func TestParser(t *testing.T) {
 	}
 
 	tst := func(t *testing.T, stage *stage) {
+		stage.expect, _ = ioutil.ReadFile("testdata/parser/" + stage.key + ".xml")
 		tree, _ := Parse(stage.origin, false)
 		r := tree.HumanReadable()
 		if !bytes.Equal(r, stage.expect) {
@@ -23,6 +26,8 @@ func TestParser(t *testing.T) {
 		}
 	}
 	tstRaw := func(t *testing.T, stage *stage) {
+		stage.expect, _ = ioutil.ReadFile("testdata/parser/" + stage.key + ".txt")
+		stage.expect = bytealg.Trim(stage.expect, []byte("\n"))
 		p := &Parser{tpl: stage.origin}
 		p.cutComments()
 		p.cutFmt()
@@ -45,6 +50,7 @@ func TestParser(t *testing.T) {
 		{key: "prefixSuffix"},
 		{key: "exit"},
 		{key: "mod"},
+		{key: "modNoVar"},
 		{key: "modNestedArg"},
 		{key: "ctxDot"},
 		{key: "ctxDot1"},
@@ -75,7 +81,6 @@ func TestParser(t *testing.T) {
 			fn = tst
 		}
 		s.origin, _ = ioutil.ReadFile("testdata/parser/" + s.key + ".tpl")
-		s.expect, _ = ioutil.ReadFile("testdata/parser/" + s.key + ".txt")
 		t.Run(s.key, func(t *testing.T) { fn(t, &s) })
 	}
 }

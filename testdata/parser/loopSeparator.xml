@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+	<node type="raw" val="{&quot;rules&quot;: ["/>
+	<node type="rloop" val="rule" src="config.Rules" sep=",">
+		<nodes>
+			<node type="raw" val="{&quot;key&quot;: "/>
+			<node type="tpl" val="rule.Id"/>
+			<node type="raw" val=",&quot;val&quot;: "/>
+			<node type="tpl" val="rule.Slug"/>
+			<node type="raw" val="}"/>
+		</nodes>
+	</node>
+	<node type="raw" val="]}"/>
+</nodes>

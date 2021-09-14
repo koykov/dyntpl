@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+	<node type="raw" val="foo "/>
+	<node type="inc" tpl0="sidebar/right"/>
+	<node type="raw" val=" bar"/>
+</nodes>

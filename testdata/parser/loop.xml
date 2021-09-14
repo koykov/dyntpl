@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+	<node type="raw" val="<h2>Export history</h2><label>Type</label><select name=&quot;type&quot;>"/>
+	<node type="rloop" key="k" val="v" src="user.historyTags">
+		<nodes>
+			<node type="raw" val="<option value=&quot;"/>
+			<node type="tpl" val="k"/>
+			<node type="raw" val="&quot;>"/>
+			<node type="tpl" val="v"/>
+			<node type="raw" val="</option>"/>
+		</nodes>
+	</node>
+	<node type="raw" val="</select><label>Format</label><select name=&quot;fmt&quot;>"/>
+	<node type="cloop" counter="i" cond="<" limit="4" op="++">
+		<nodes>
+			<node type="raw" val="<option value=&quot;"/>
+			<node type="tpl" val="i"/>
+			<node type="raw" val="&quot;>"/>
+			<node type="tpl" val="allowFmt[i]"/>
+			<node type="raw" val="</option>"/>
+		</nodes>
+	</node>
+	<node type="raw" val="</select>"/>
+</nodes>

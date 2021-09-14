@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+	<node type="ctx" var="var0" src="obj.Key" ins="static"/>
+	<node type="ctx" var="var1" src="user.Id" ins="static"/>
+	<node type="tpl" val="var1"/>
+</nodes>

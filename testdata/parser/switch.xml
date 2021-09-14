@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+	<node type="raw" val="<Tracking event=&quot;"/>
+	<node type="switch" arg="track.Event">
+		<nodes>
+			<node type="case" val="param.Start">
+				<nodes>
+					<node type="raw" val="start"/>
+				</nodes>
+			</node>
+			<node type="case" val="param.FirstQuartile">
+				<nodes>
+					<node type="raw" val="firstQuartile"/>
+				</nodes>
+			</node>
+			<node type="case" val="param.Midpoint">
+				<nodes>
+					<node type="raw" val="midpoint"/>
+				</nodes>
+			</node>
+			<node type="case" val="param.ThirdQuartile">
+				<nodes>
+					<node type="raw" val="thirdQuartile"/>
+				</nodes>
+			</node>
+			<node type="case" val="param.Complete">
+				<nodes>
+					<node type="raw" val="complete"/>
+				</nodes>
+			</node>
+			<node type="def">
+				<nodes>
+					<node type="raw" val="unknown"/>
+				</nodes>
+			</node>
+		</nodes>
+	</node>
+	<node type="raw" val="&quot;><![CDATA["/>
+	<node type="tpl" val="track.Value"/>
+	<node type="raw" val="]]></Tracking>"/>
+</nodes>

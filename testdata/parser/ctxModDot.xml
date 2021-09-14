@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+	<node type="ctx" var="history" src="user.History" ins="TestHistory">
+		<mods>
+			<mod name="default" sarg0="date"/>
+		</mods>
+	</node>
+</nodes>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+	<node type="raw" val="[{"/>
+	<node type="tpl" val="val0"/>
+	<node type="raw" val=","/>
+	<node type="tpl" val="val1"/>
+	<node type="raw" val="},{"/>
+	<node type="tpl" val="val2"/>
+	<node type="raw" val=","/>
+	<node type="tpl" val="val3"/>
+	<node type="raw" val="}]"/>
+</nodes>

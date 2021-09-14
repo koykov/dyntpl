@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+	<node type="raw" val="[{"/>
+	<node type="switch">
+		<nodes>
+			<node type="case" helper="firstItem" arg0="item">
+				<nodes>
+					<node type="raw" val="&quot;name&quot;: "/>
+					<node type="tpl" val="item.Name"/>
+					<node type="raw" val=","/>
+				</nodes>
+			</node>
+			<node type="case" helper="secondItem" arg0="item" sarg1="false">
+				<nodes>
+					<node type="tpl" prefix="&quot;slug&quot;:" suffix="," val="item.Slug"/>
+				</nodes>
+			</node>
+			<node type="case" helper="anonItem" arg0="item" sarg1="1">
+				<nodes>
+					<node type="raw" val="&quot;no_data&quot;: true"/>
+				</nodes>
+			</node>
+		</nodes>
+	</node>
+	<node type="raw" val="}]"/>
+</nodes>

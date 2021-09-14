@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+	<node type="cntr" var="i" val="0"/>
+	<node type="cntr" var="j" val="5"/>
+	<node type="raw" val="foo"/>
+	<node type="cntr" var="i" op="++" delta="1"/>
+	<node type="raw" val="bar"/>
+	<node type="cntr" var="j" op="++" delta="3"/>
+</nodes>

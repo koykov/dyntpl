@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+	<node type="raw" val="Welcome, "/>
+	<node type="tpl">
+		<mods>
+			<mod name="testNameOf" arg0="user" sarg1="anonymous"/>
+		</mods>
+	</node>
+	<node type="raw" val="!"/>
+</nodes>

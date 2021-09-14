@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+	<node type="cond" left="request.Secure" op="==" right="1">
+		<nodes>
+			<node type="true">
+				<nodes>
+					<node type="cond">
+						<nodes>
+							<node type="true">
+								<nodes>
+									<node type="tpl" val="user.Name"/>
+									<node type="raw" val=", you may buy our items safely."/>
+								</nodes>
+							</node>
+							<node type="false">
+								<nodes>
+									<node type="tpl" val="user.Name"/>
+									<node type="raw" val=", you should confirm your account first."/>
+								</nodes>
+							</node>
+						</nodes>
+					</node>
+				</nodes>
+			</node>
+		</nodes>
+	</node>
+</nodes>

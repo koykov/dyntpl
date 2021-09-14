@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+	<node type="locale" val="ru-RU"/>
+	<node type="tpl">
+		<mods>
+			<mod name="t" sarg0="messages.welcome" sarg1=""/>
+		</mods>
+	</node>
+</nodes>

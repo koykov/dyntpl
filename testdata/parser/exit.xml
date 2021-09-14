@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+	<node type="cond" left="user.Status" op="==" right="0">
+		<nodes>
+			<node type="true">
+				<nodes>
+					<node type="exit"/>
+				</nodes>
+			</node>
+		</nodes>
+	</node>
+	<node type="raw" val="Allowed items: ..."/>
+</nodes>

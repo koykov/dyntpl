@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+	<node type="raw" val="Welcome, "/>
+	<node type="tpl">
+		<mods>
+			<mod name="testNameOf" arg0="user" key1="foo" sarg1="bar" key2="id" arg2="user.Id" sarg3="qwe"/>
+		</mods>
+	</node>
+</nodes>

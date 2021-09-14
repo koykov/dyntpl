@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+	<node type="raw" val="{"/>
+	<node type="cloop" counter="i" cond="<" limit="10" op="++">
+		<nodes>
+			<node type="raw" val="foo"/>
+			<node type="cond" left="i" op="==" right="8">
+				<nodes>
+					<node type="true">
+						<nodes>
+							<node type="break"/>
+						</nodes>
+					</node>
+				</nodes>
+			</node>
+			<node type="cond" left="i" op="==" right="7">
+				<nodes>
+					<node type="true">
+						<nodes>
+							<node type="lazybreak"/>
+						</nodes>
+					</node>
+				</nodes>
+			</node>
+			<node type="tpl" val="i"/>
+		</nodes>
+	</node>
+	<node type="raw" val="}"/>
+</nodes>

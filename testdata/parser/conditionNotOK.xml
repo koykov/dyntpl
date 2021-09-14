@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+	<node type="tpl" val="x"/>
+	<node type="condOK" var="v" varOK="ok" helper="filterVar" arg0="vars" left="ok" op="!=" right="true">
+		<nodes>
+			<node type="true">
+				<nodes>
+					<node type="tpl" val="v"/>
+				</nodes>
+			</node>
+			<node type="false">
+				<nodes>
+					<node type="raw" val="N/D"/>
+				</nodes>
+			</node>
+		</nodes>
+	</node>
+	<node type="raw" val="foo"/>
+</nodes>
