@@ -1,7 +1,0 @@
-tpl: x
-condOK: v, ok hlp filterVar(vars); left ok
-	true:
-		tpl: v
-	false:
-		raw: N/D
-raw: foo

@@ -1,3 +1,0 @@
-raw: Welcome,
-tpl:  mod testNameOf(user, "anonymous")
-raw: !

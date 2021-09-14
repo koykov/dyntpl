@@ -21,7 +21,7 @@ type arg struct {
 
 var (
 	hrQ  = []byte(`"`)
-	hrQR = []byte(`\"`)
+	hrQR = []byte(`&quot;`)
 )
 
 // Build human readable view of the tree.
@@ -39,8 +39,9 @@ func (t *Tree) hrHelper(buf *bytebuf.ChainBuf, nodes []Node, indent []byte, dept
 	if depth == 0 {
 		buf.WriteStr("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
 	} else {
-		buf.Write(bytes.Repeat(indent, depth)).WriteStr("<nodes>\n")
+		buf.Write(bytes.Repeat(indent, depth))
 	}
+	buf.WriteStr("<nodes>\n")
 	depth++
 	for _, node := range nodes {
 		buf.Write(bytes.Repeat(indent, depth))
@@ -99,8 +100,8 @@ func (t *Tree) hrHelper(buf *bytebuf.ChainBuf, nodes []Node, indent []byte, dept
 		}
 
 		if node.typ == TypeCondOK {
-			t.attrB(buf, "left", node.condOKL)
-			t.attrB(buf, "leftOK", node.condOKR)
+			t.attrB(buf, "var", node.condOKL)
+			t.attrB(buf, "varOK", node.condOKR)
 
 			if len(node.condHlp) > 0 {
 				t.attrB(buf, "helper", node.condHlp)
@@ -191,7 +192,9 @@ func (t *Tree) hrHelper(buf *bytebuf.ChainBuf, nodes []Node, indent []byte, dept
 			t.attrB(buf, "val", node.raw)
 		}
 
-		buf.WriteByte('>')
+		if len(node.mod) > 0 || len(node.child) > 0 {
+			buf.WriteByte('>')
+		}
 
 		if len(node.mod) > 0 {
 			depth++
@@ -212,7 +215,7 @@ func (t *Tree) hrHelper(buf *bytebuf.ChainBuf, nodes []Node, indent []byte, dept
 						buf.WriteByte(' ').WriteStr(pfx).WriteInt(int64(j)).WriteStr(`="`).Write(a.val).WriteByte('"')
 					}
 				}
-				buf.WriteStr("></mod>\n")
+				buf.WriteStr("/>\n")
 			}
 			depth--
 			buf.Write(bytes.Repeat(indent, depth)).WriteStr("</mods>\n")
@@ -224,9 +227,10 @@ func (t *Tree) hrHelper(buf *bytebuf.ChainBuf, nodes []Node, indent []byte, dept
 			t.hrHelper(buf, node.child, indent, depth+1)
 		}
 		if len(node.mod) > 0 || len(node.child) > 0 {
-			buf.Write(bytes.Repeat(indent, depth))
+			buf.Write(bytes.Repeat(indent, depth)).WriteStr("</node>\n")
+		} else {
+			buf.WriteStr("/>\n")
 		}
-		buf.WriteStr("</node>\n")
 	}
 	depth--
 	if depth > 0 {

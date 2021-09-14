@@ -1,2 +1,0 @@
-raw: Welcome,
-tpl:  mod testNameOf(user, "foo":"bar", "id":user.Id, "qwe")

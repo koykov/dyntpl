@@ -1,3 +1,0 @@
-ctx: var var0 src obj.Key ins static
-ctx: var var1 src user.Id ins static
-tpl: var1

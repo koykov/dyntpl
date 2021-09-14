@@ -1,9 +1,0 @@
-raw: [{
-tpl: val0
-raw: ,
-tpl: val1
-raw: },{
-tpl: val2
-raw: ,
-tpl: val3
-raw: }]
