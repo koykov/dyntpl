@@ -1,4 +1,3 @@
-
 <h2>Export history</h2>
 <label>Type</label>
 <select name="type">

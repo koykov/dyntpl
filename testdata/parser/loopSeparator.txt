@@ -1,8 +1,8 @@
 raw: {"rules": [
 rloop: val rule src config.Rules sep ,
-	raw: {"key": 
+	raw: {"key":
 	tpl: rule.Id
-	raw: ,"val": 
+	raw: ,"val":
 	tpl: rule.Slug
 	raw: }
 raw: ]}

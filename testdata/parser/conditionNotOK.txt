@@ -1,7 +1,7 @@
 tpl: x
 condOK: v, ok hlp filterVar(vars); left ok op != right true
-	true: 
+	true:
 		tpl: v
-	false: 
+	false:
 		raw: N/D
 raw: foo

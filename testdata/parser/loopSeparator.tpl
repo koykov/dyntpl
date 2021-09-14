@@ -1,4 +1,3 @@
-
 {
 	"rules": [
 		{% for _, rule := range config.Rules sep , %}

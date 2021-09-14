@@ -1,7 +1,7 @@
 raw: [{
-switch: 
+switch:
 	case: firstItem(item)
-		raw: "name": 
+		raw: "name":
 		tpl: item.Name
 		raw: ,
 	case: secondItem(item, "false")

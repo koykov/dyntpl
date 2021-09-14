@@ -2,10 +2,10 @@ raw: {
 cloop: cnt i cond < lim 10 op ++
 	raw: foo
 	cond: left i op == right 8
-		true: 
+		true:
 			break
 	cond: left i op == right 7
-		true: 
+		true:
 			lazybreak
 	tpl: i
 raw: }

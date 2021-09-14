@@ -4,10 +4,10 @@ cloop: cnt i cond < lim 10 op ++
 	cloop: cnt j cond < lim 10 op ++
 		raw: foo
 		cond: left j op == right 8
-			true: 
+			true:
 				break 2
 		cond: left j op == right 7
-			true: 
+			true:
 				lazybreak 2
 		tpl: j
 	tpl: i

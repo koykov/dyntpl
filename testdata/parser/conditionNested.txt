@@ -1,9 +1,9 @@
 cond: left request.Secure op == right 1
-	true: 
-		cond: 
-			true: 
+	true:
+		cond:
+			true:
 				tpl: user.Name
 				raw: , you may buy our items safely.
-			false: 
+			false:
 				tpl: user.Name
 				raw: , you should confirm your account first.

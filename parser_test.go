@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"io/ioutil"
 	"testing"
-
-	"github.com/koykov/bytealg"
 )
 
 func TestParser(t *testing.T) {
@@ -20,7 +18,6 @@ func TestParser(t *testing.T) {
 	tst := func(t *testing.T, stage *stage) {
 		tree, _ := Parse(stage.origin, false)
 		r := tree.HumanReadable()
-		r = bytealg.Trim(r, []byte("\n"))
 		if !bytes.Equal(r, stage.expect) {
 			t.Errorf("%s test failed\nexp: %s\ngot: %s", stage.key, string(stage.expect), string(r))
 		}

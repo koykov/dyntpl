@@ -1,7 +1,7 @@
 raw: [{
-switch: 
+switch:
 	case: left item.Index op == right 0
-		raw: "name": 
+		raw: "name":
 		tpl: item.Name
 		raw: ,
 	case: left item.Index op == right 1

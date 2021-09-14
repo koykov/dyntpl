@@ -1,5 +1,5 @@
 cond: left val op == right foo
-	true: 
+	true:
 		raw: foo
-	false: 
+	false:
 		raw: bar

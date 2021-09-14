@@ -10,7 +10,7 @@ switch: arg track.Event
 		raw: thirdQuartile
 	case: val param.Complete
 		raw: complete
-	def: 
+	def:
 		raw: unknown
 raw: "><![CDATA[
 tpl: track.Value
