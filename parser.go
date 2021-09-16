@@ -102,7 +102,7 @@ var (
 	reTplPS    = regexp.MustCompile(`^([jhqlu]*|[fF]\.*\d*)=\s*(.*) (?:prefix|pfx) (.*) (?:suffix|sfx) (.*)`)
 	reTplP     = regexp.MustCompile(`^([jhqlu]*|[fF]\.*\d*)=\s*(.*) (?:prefix|pfx) (.*)`)
 	reTplS     = regexp.MustCompile(`^([jhqlu]*|[fF]\.*\d*)=\s*(.*) (?:suffix|sfx) (.*)`)
-	reTpl      = regexp.MustCompile(`^([jhqlu]*|[fF]\.*\d*)= (.*)`)
+	reTpl      = regexp.MustCompile(`^([jhqlu]*|[fF]\.*\d*)=\s*(.*)`)
 	reModPfxF  = regexp.MustCompile(`([fF]+)\.*(\d*)`)
 	reModNoVar = regexp.MustCompile(`([^(]+)\(([^)]*)\)`)
 	reMod      = regexp.MustCompile(`([^(]+)\(*([^)]*)\)*`)
@@ -272,9 +272,6 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 			root.suffix = m[3]
 		} else if m := reTpl.FindSubmatch(t); m != nil {
 			// Simple tpl found.
-			if len(m[1]) != 0 {
-				m[1] = m[1]
-			}
 			root.raw, root.mod = p.extractMods(bytealg.Trim(m[2], ctlTrimAll), m[1])
 		} else {
 			root.raw, root.mod = p.extractMods(bytealg.Trim(t, ctlTrimAll), nil)

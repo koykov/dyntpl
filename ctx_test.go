@@ -25,19 +25,19 @@ var (
 			Balance:  9000,
 			History: []testobj.TestHistory{
 				{
-					152354345634,
-					14.345241,
-					[]byte("pay for domain"),
+					DateUnix: 152354345634,
+					Cost:     14.345241,
+					Comment:  []byte("pay for domain"),
 				},
 				{
-					153465345246,
-					-3.0000342543,
-					[]byte("got refund"),
+					DateUnix: 153465345246,
+					Cost:     -3.0000342543,
+					Comment:  []byte("got refund"),
 				},
 				{
-					156436535640,
-					2325242534.35324523,
-					[]byte("maintenance"),
+					DateUnix: 156436535640,
+					Cost:     2325242534.35324523,
+					Comment:  []byte("maintenance"),
 				},
 			},
 		},
