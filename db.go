@@ -29,7 +29,7 @@ func initDB() *db {
 // Save template tree in the storage and make two pairs (ID-tpl and key-tpl).
 func (db *db) set(id int, key string, tree *Tree) {
 	tpl := Tpl{
-		Id:   id,
+		ID:   id,
 		Key:  key,
 		tree: tree,
 	}

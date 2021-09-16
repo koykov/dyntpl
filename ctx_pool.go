@@ -2,12 +2,12 @@ package dyntpl
 
 import "sync"
 
-// Context pool.
+// CtxPool is a context pool.
 type CtxPool struct {
 	p sync.Pool
 }
 
-// Default instance of context pool.
+// CP is a default instance of context pool.
 // You may use it directly as dyntpl.CP.Get()/Put() or using functions AcquireCtx()/ReleaseCtx().
 var CP CtxPool
 
@@ -28,12 +28,12 @@ func (p *CtxPool) Put(ctx *Ctx) {
 	p.p.Put(ctx)
 }
 
-// Get object from the default context pool.
+// AcquireCtx gets object from the default context pool.
 func AcquireCtx() *Ctx {
 	return CP.Get()
 }
 
-// Put object back to default pool.
+// ReleaseCtx puts object back to default pool.
 func ReleaseCtx(ctx *Ctx) {
 	CP.Put(ctx)
 }

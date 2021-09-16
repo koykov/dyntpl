@@ -31,10 +31,10 @@ var (
 )
 
 // JSON quote of string value - '"' + JSON escape + '"'.
-func modJsonQuote(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{}) error {
+func modJSONQuote(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{}) error {
 	var b []byte
 	ctx.bufMO.Reset()
-	if err := modJsonEscape(ctx, buf, val, nil); err == nil {
+	if err := modJSONEscape(ctx, buf, val, nil); err == nil {
 		b = ctx.BufAcc.StakeOut().
 			WriteByte(jqQd).
 			Write(ctx.bufMO.Bytes()).
@@ -46,7 +46,7 @@ func modJsonQuote(ctx *Ctx, buf *interface{}, val interface{}, _ []interface{}) 
 }
 
 // JSON escape of string value.
-func modJsonEscape(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) error {
+func modJSONEscape(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) error {
 	// Get count of encode iterations (cases: jj=, jjj=, ...).
 	itr := printIterations(args)
 

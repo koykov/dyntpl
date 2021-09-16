@@ -24,7 +24,7 @@ var (
 	hrQR = []byte(`&quot;`)
 )
 
-// Build human readable view of the tree.
+// HumanReadable builds human readable view of the tree (currently in XML format).
 func (t *Tree) HumanReadable() []byte {
 	if len(t.nodes) == 0 {
 		return nil

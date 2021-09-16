@@ -13,7 +13,7 @@ type intConverter interface {
 	Int() (int64, error)
 }
 
-// Try to convert value to integer.
+// ConvInt tries to convert value to integer.
 func ConvInt(val interface{}) (i int64, ok bool) {
 	ok = true
 	switch val.(type) {
@@ -43,7 +43,7 @@ func ConvInt(val interface{}) (i int64, ok bool) {
 	return
 }
 
-// Try to convert value to uint.
+// ConvUint tries to convert value to uint.
 func ConvUint(val interface{}) (u uint64, ok bool) {
 	ok = true
 	switch val.(type) {
@@ -73,7 +73,7 @@ func ConvUint(val interface{}) (u uint64, ok bool) {
 	return
 }
 
-// Try to convert value ti float.
+// ConvFloat tries to convert value to float.
 func ConvFloat(val interface{}) (f float64, ok bool) {
 	ok = true
 	switch val.(type) {
@@ -91,7 +91,7 @@ func ConvFloat(val interface{}) (f float64, ok bool) {
 	return
 }
 
-// Try to convert value to bytes.
+// ConvBytes tries to convert value to bytes.
 func ConvBytes(val interface{}) (b []byte, ok bool) {
 	ok = true
 	switch val.(type) {
@@ -109,7 +109,7 @@ func ConvBytes(val interface{}) (b []byte, ok bool) {
 	return
 }
 
-// Try to convert value to slice of byte slice.
+// ConvBytesSlice tries to convert value to slice of bytes.
 func ConvBytesSlice(val interface{}) (b [][]byte, ok bool) {
 	ok = true
 	switch val.(type) {
@@ -123,7 +123,7 @@ func ConvBytesSlice(val interface{}) (b [][]byte, ok bool) {
 	return
 }
 
-// Try to convert value to string.
+// ConvStr tries to convert value to string.
 func ConvStr(val interface{}) (s string, ok bool) {
 	ok = true
 	switch val.(type) {
@@ -137,7 +137,7 @@ func ConvStr(val interface{}) (s string, ok bool) {
 	return
 }
 
-// Try to convert value to string slice.
+// ConvStrSlice tries to convert value to string slice.
 func ConvStrSlice(val interface{}) (s []string, ok bool) {
 	ok = true
 	switch val.(type) {
@@ -151,7 +151,7 @@ func ConvStrSlice(val interface{}) (s []string, ok bool) {
 	return
 }
 
-// Try to convert value ti boolean.
+// ConvBool tries to convert value ti boolean.
 func ConvBool(val interface{}) (b bool, ok bool) {
 	ok = true
 	switch val.(type) {

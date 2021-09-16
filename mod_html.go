@@ -16,7 +16,7 @@ var (
 	heAmpR = []byte("&amp;")
 )
 
-func modHtmlEscape(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) error {
+func modHTMLEscape(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) error {
 	var l, o int
 
 	// Get count of encode iterations (cases: hh=, hhh=, ...).

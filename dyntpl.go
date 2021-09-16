@@ -7,11 +7,11 @@ import (
 	"github.com/koykov/fastconv"
 )
 
-// Main template object.
+// Tpl is a main template object.
 // Template contains only parsed template and evaluation logic.
 // All temporary and intermediate data should be store in context object to make using of templates thread-safe.
 type Tpl struct {
-	Id   int
+	ID   int
 	Key  string
 	tree *Tree
 }
@@ -24,7 +24,7 @@ var (
 	_, _, _ = RegisterTplID, RenderFallback, RenderByID
 )
 
-// Register template by ID and key in the registry.
+// RegisterTpl saves template by ID and key in the registry.
 //
 // You may use to access to the template both ID or key.
 // This function can be used in any time to register new templates or overwrite existing to provide dynamics.
@@ -32,14 +32,14 @@ func RegisterTpl(id int, key string, tree *Tree) {
 	tplDB.set(id, key, tree)
 }
 
-// Register template using only ID.
+// RegisterTplID saves template using only ID.
 //
 // See RegisterTpl().
 func RegisterTplID(id int, tree *Tree) {
 	tplDB.set(id, "-1", tree)
 }
 
-// Register template using only key.
+// RegisterTplKey saves template using only key.
 //
 // See RegisterTpl().
 func RegisterTplKey(key string, tree *Tree) {
@@ -56,7 +56,7 @@ func Render(key string, ctx *Ctx) ([]byte, error) {
 	return buf.Bytes(), err
 }
 
-// Render template using one of keys: key or fallback key.
+// RenderFallback renders template using one of keys: key or fallback key.
 //
 // See WriteFallback().
 // Using this func you can handle cases when some objects has custom templates and all other should use default templates.
@@ -87,7 +87,7 @@ func Write(w io.Writer, key string, ctx *Ctx) (err error) {
 	return render(w, tpl, ctx)
 }
 
-// Write template using fallback key logic and write result to writer object.
+// WriteFallback writes template using fallback key logic and write result to writer object.
 //
 // See RenderFallback().
 // Use this function together with byte buffer pool to reduce allocations.
@@ -100,7 +100,7 @@ func WriteFallback(w io.Writer, key, fbKey string, ctx *Ctx) (err error) {
 	return render(w, tpl, ctx)
 }
 
-// Render template with given ID according given context.
+// RenderByID renders template with given ID according context.
 //
 // See WriteByID().
 // Recommend to use WriteByID() together with byte buffer pool to avoid redundant allocations.
@@ -110,7 +110,7 @@ func RenderByID(id int, ctx *Ctx) ([]byte, error) {
 	return buf.Bytes(), err
 }
 
-// Write template with given ID to given writer object.
+// WriteByID writes template with given ID to given writer object.
 //
 // Using this function together with byte buffer pool reduces allocations.
 func WriteByID(w io.Writer, id int, ctx *Ctx) (err error) {
@@ -151,7 +151,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 		} else if ctx.chHE {
 			// HTML escape mode.
 			ctx.bufCB.Reset().Write(node.raw)
-			err = modHtmlEscape(ctx, &ctx.bufX, &ctx.bufCB, nil)
+			err = modHTMLEscape(ctx, &ctx.bufX, &ctx.bufCB, nil)
 			if err != nil {
 				_, err = w.Write(node.raw)
 			} else {
@@ -160,7 +160,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 		} else if ctx.chUE {
 			// URL encode mode.
 			ctx.bufCB.Reset().Write(node.raw)
-			err = modUrlEncode(ctx, &ctx.bufX, &ctx.bufCB, nil)
+			err = modURLEncode(ctx, &ctx.bufX, &ctx.bufCB, nil)
 			if err != nil {
 				_, err = w.Write(node.raw)
 			} else {

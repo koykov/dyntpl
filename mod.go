@@ -6,7 +6,7 @@ import (
 	"github.com/koykov/fastconv"
 )
 
-// Signature of the modifier functions.
+// ModFn describes signature of the modifier functions.
 //
 // Arguments description:
 // * ctx provides access to additional variables and various buffers to reduce allocations.
@@ -27,7 +27,7 @@ var (
 	modRegistry = map[string]ModFn{}
 )
 
-// Register new modifier function.
+// RegisterModFn registers new modifier function.
 func RegisterModFn(name, alias string, mod ModFn) {
 	modRegistry[name] = mod
 	if len(alias) > 0 {
@@ -35,7 +35,7 @@ func RegisterModFn(name, alias string, mod ModFn) {
 	}
 }
 
-// Get modifier from the registry.
+// GetModFn gets modifier from the registry.
 func GetModFn(name string) *ModFn {
 	if fn, ok := modRegistry[name]; ok {
 		return &fn

@@ -13,8 +13,8 @@ import (
 	"github.com/koykov/inspector"
 )
 
-// Context object. Contains list of variables available to inspect.
-// In addition has buffers to help develop new modifiers without allocations.
+// Ctx is a context object. Contains list of variables available to inspect.
+// In addition has buffers to help develop new helpers without allocations.
 type Ctx struct {
 	// List of context variables and list len.
 	vars []ctxVar
@@ -90,7 +90,7 @@ var (
 	dot = []byte(".")
 )
 
-// Make new context object.
+// NewCtx makes new context object.
 func NewCtx() *Ctx {
 	ctx := Ctx{
 		vars: make([]ctxVar, 0),
@@ -133,7 +133,7 @@ func (c *Ctx) Set(key string, val interface{}, ins inspector.Inspector) {
 	c.ln++
 }
 
-// Set static variable to context.
+// SetStatic sets static variable to context.
 func (c *Ctx) SetStatic(key string, val interface{}) {
 	ins, err := inspector.GetInspector("static")
 	if err != nil {
@@ -143,7 +143,7 @@ func (c *Ctx) SetStatic(key string, val interface{}) {
 	c.Set(key, val, ins)
 }
 
-// Set bytes as static variable.
+// SetBytes sets bytes as static variable.
 //
 // See Ctx.Set().
 // This is a special case to improve speed.
@@ -175,12 +175,12 @@ func (c *Ctx) SetBytes(key string, val []byte) {
 	c.ln++
 }
 
-// Set string as static variable.
+// SetString sets string as static variable.
 func (c *Ctx) SetString(key, val string) {
 	c.SetBytes(key, fastconv.S2B(val))
 }
 
-// Set int counter as static variable.
+// SetCounter sets int counter as static variable.
 //
 // See Ctx.Set().
 // This is a special case to support counters.
@@ -230,7 +230,7 @@ func (c *Ctx) Get(path string) interface{} {
 	return c.get(fastconv.S2B(path))
 }
 
-// Get int counter value.
+// GetCounter gets int counter value.
 func (c *Ctx) GetCounter(key string) int {
 	rawC := c.Get(key)
 	if rawC == nil {
@@ -242,7 +242,7 @@ func (c *Ctx) GetCounter(key string) int {
 	return 0
 }
 
-// Config i18n locale and database.
+// I18n sets i18n locale and database.
 func (c *Ctx) I18n(locale string, db *i18n.DB) {
 	c.loc = locale
 	if db != nil {
@@ -250,13 +250,13 @@ func (c *Ctx) I18n(locale string, db *i18n.DB) {
 	}
 }
 
-// Bufferize mod output bytes.
+// BufModOut buffers mod output bytes.
 func (c *Ctx) BufModOut(buf *interface{}, p []byte) {
 	c.bufMO.Reset().Write(p)
 	*buf = &c.bufMO
 }
 
-// Bufferize mod output string.
+// BufModStrOut buffers mod output string.
 func (c *Ctx) BufModStrOut(buf *interface{}, s string) {
 	c.bufMO.Reset().WriteStr(s)
 	*buf = &c.bufMO
@@ -596,28 +596,28 @@ func (c *Ctx) replaceQB(path []byte) []byte {
 //
 // Made to write output of including sub-templates.
 func (c *Ctx) getW() *bytes.Buffer {
+	var b *bytes.Buffer
 	if c.wl < len(c.w) {
-		b := &c.w[c.wl]
+		b = &c.w[c.wl]
 		c.wl++
-		return b
 	} else {
 		c.w = append(c.w, bytes.Buffer{})
-		b := &c.w[len(c.w)-1]
+		b = &c.w[len(c.w)-1]
 		c.wl++
-		return b
 	}
+	return b
 }
 
 // Get new or existing KV pair.
 func (c *Ctx) getKV() *ctxKV {
+	var kv *ctxKV
 	if c.kvl < len(c.kv) {
-		kv := &c.kv[c.kvl]
+		kv = &c.kv[c.kvl]
 		c.kvl++
-		return kv
 	} else {
 		c.kv = append(c.kv, ctxKV{})
-		kv := &c.kv[len(c.kv)-1]
+		kv = &c.kv[len(c.kv)-1]
 		c.kvl++
-		return kv
 	}
+	return kv
 }

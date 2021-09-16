@@ -13,11 +13,11 @@ func init() {
 	RegisterModFn("translatePlural", "tp", modTranslatePlural)
 
 	// Register builtin escape/quote modifiers.
-	RegisterModFn("jsonEscape", "je", modJsonEscape)
-	RegisterModFn("jsonQuote", "jq", modJsonQuote)
-	RegisterModFn("htmlEscape", "he", modHtmlEscape)
+	RegisterModFn("jsonEscape", "je", modJSONEscape)
+	RegisterModFn("jsonQuote", "jq", modJSONQuote)
+	RegisterModFn("htmlEscape", "he", modHTMLEscape)
 	RegisterModFn("linkEscape", "le", modLinkEscape)
-	RegisterModFn("urlEncode", "ue", modUrlEncode)
+	RegisterModFn("urlEncode", "ue", modURLEncode)
 
 	// Register builtin round modifiers.
 	RegisterModFn("round", "round", modRound)

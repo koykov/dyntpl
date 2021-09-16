@@ -152,7 +152,7 @@ var (
 	_ = ParseFile
 )
 
-// Initialize parser and parse the template body.
+// Parse initializes parser and parse the template body.
 func Parse(tpl []byte, keepFmt bool) (tree *Tree, err error) {
 	p := &Parser{
 		tpl:     tpl,
@@ -168,7 +168,7 @@ func Parse(tpl []byte, keepFmt bool) (tree *Tree, err error) {
 	return
 }
 
-// Initialize parser and parse file contents.
+// ParseFile initializes parser and parse file contents.
 func ParseFile(fileName string, keepFmt bool) (tree *Tree, err error) {
 	_, err = os.Stat(fileName)
 	if os.IsNotExist(err) {
@@ -421,9 +421,8 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 
 				nodes = addNode(nodes, *root)
 				return nodes, offset, up, err
-			} else {
-				return nodes, pos, up, fmt.Errorf("too complex condition '%s' at offset %d", t, pos)
 			}
+			return nodes, pos, up, fmt.Errorf("too complex condition '%s' at offset %d", t, pos)
 		}
 		// Create new target, increase condition counter and dive deeper.
 		target := newTarget(p)
@@ -851,9 +850,8 @@ func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
 			return nil, mods
 		}
 		return chunks[0], mods
-	} else {
-		return t, nil
 	}
+	return t, nil
 }
 
 // Get list of arguments of modifier or helper, ex:

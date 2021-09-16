@@ -2,20 +2,20 @@ package dyntpl
 
 import "github.com/koykov/inspector/testobj"
 
-// Condition helper func signature.
+// CondOKFn describes helper func signature.
 type CondOKFn func(ctx *Ctx, v *interface{}, ok *bool, args []interface{})
 
 var (
-	// Registry of condition-ok helpers.
+	// Registry of condition-OK helpers.
 	condOKRegistry = map[string]CondOKFn{}
 )
 
-// Register new condition-ok helper.
+// RegisterCondOKFn registers new condition-OK helper in registry.
 func RegisterCondOKFn(name string, cond CondOKFn) {
 	condOKRegistry[name] = cond
 }
 
-// Get condition-ok helper from the registry.
+// GetCondOKFn returns condition-OK helper from the registry.
 func GetCondOKFn(name string) *CondOKFn {
 	if fn, ok := condOKRegistry[name]; ok {
 		return &fn
@@ -23,7 +23,7 @@ func GetCondOKFn(name string) *CondOKFn {
 	return nil
 }
 
-// Simple example of condition-ok helper func.
+// Simple example of condition-OK helper func.
 func testCondOK(ctx *Ctx, v *interface{}, ok *bool, args []interface{}) {
 	if len(args) == 0 {
 		*ok = false

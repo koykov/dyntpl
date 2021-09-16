@@ -11,12 +11,12 @@ var (
 	_ = RegisterVarInsPair
 )
 
-// Register new variable-inspector pair.
+// RegisterVarInsPair registers new variable-inspector pair.
 func RegisterVarInsPair(varName string, ins inspector.Inspector) {
 	varInsRegistry[varName] = ins
 }
 
-// Get inspector by variable name.
+// GetInsByVarName gets inspector by variable name.
 func GetInsByVarName(varName string) (inspector.Inspector, bool) {
 	if ins, ok := varInsRegistry[varName]; ok {
 		return ins, true
@@ -24,7 +24,7 @@ func GetInsByVarName(varName string) (inspector.Inspector, bool) {
 	return nil, false
 }
 
-// Get inspector by both variable name or inspector name.
+// GetInspector gets inspector by both variable name or inspector name.
 func GetInspector(varName, name string) (ins inspector.Inspector, err error) {
 	err = inspector.ErrUnknownInspector
 	if len(name) > 0 {

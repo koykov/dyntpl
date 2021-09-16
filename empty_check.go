@@ -1,6 +1,6 @@
 package dyntpl
 
-// Empty check helper func signature.
+// EmptyCheckFn describes empty check helper func signature.
 type EmptyCheckFn func(ctx *Ctx, val interface{}) bool
 
 var (
@@ -10,12 +10,12 @@ var (
 	_ = GetEmptyCheckFn
 )
 
-// Register new empty check helper.
+// RegisterEmptyCheckFn registers new empty check helper.
 func RegisterEmptyCheckFn(name string, cond EmptyCheckFn) {
 	emptyCheckRegistry[name] = cond
 }
 
-// Get empty check helper from the registry.
+// GetEmptyCheckFn gets empty check helper from the registry.
 func GetEmptyCheckFn(name string) *EmptyCheckFn {
 	if fn, ok := emptyCheckRegistry[name]; ok {
 		return &fn
@@ -23,7 +23,9 @@ func GetEmptyCheckFn(name string) *EmptyCheckFn {
 	return nil
 }
 
-// General empty check func.
+// EmptyCheck tries to apply all known helpers over the val.
+//
+// First acceptable helper will break next attempts.
 func EmptyCheck(ctx *Ctx, val interface{}) bool {
 	if val == nil {
 		return true
