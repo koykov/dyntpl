@@ -7,7 +7,7 @@ import (
 
 func TestTpl(t *testing.T) {
 	t.Run("condition", func(t *testing.T) { testTpl(t) })
-	t.Run("conditionHlp", func(t *testing.T) { testTpl(t) })
+	t.Run("conditionHelper", func(t *testing.T) { testTpl(t) })
 	t.Run("conditionNoStatic", func(t *testing.T) { testTpl(t) })
 	t.Run("conditionOK", func(t *testing.T) { testTpl(t) })
 	t.Run("conditionStr", func(t *testing.T) { testTpl(t) })
