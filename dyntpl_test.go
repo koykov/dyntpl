@@ -5,53 +5,38 @@ import (
 	"testing"
 )
 
-type tplStage struct {
-	key string
-	fn  func(tb testing.TB, key string)
-}
-
 func TestTpl(t *testing.T) {
 	loadStages()
 
-	tplStages := []tplStage{
-		{key: "condition"},
-		{key: "conditionHlp"},
-		{key: "conditionNoStatic"},
-		{key: "conditionOK"},
-		{key: "conditionStr"},
-		{key: "counter0"},
-		{key: "counter1"},
-		{key: "ctxOK"},
-		{key: "exit"},
-		{key: "includeHost"},
-		{key: "includeHostJS"},
-		{key: "loopCount", fn: testTplLC},
-		{key: "loopCountBreak"},
-		{key: "loopCountBreakN"},
-		{key: "loopCountContinue"},
-		{key: "loopCountCtx"},
-		{key: "loopCountLazybreak"},
-		{key: "loopCountLazybreakN"},
-		{key: "loopCountStatic"},
-		{key: "loopRange"},
-		{key: "loopRangeLazybreakN"},
-		{key: "raw"},
-		{key: "simple"},
-		{key: "switch"},
-		{key: "switchNoCondition"},
-	}
-
-	for _, s := range tplStages {
-		t.Run(s.key, func(t *testing.T) {
-			if s.fn == nil {
-				s.fn = testTpl
-			}
-			s.fn(t, s.key)
-		})
-	}
+	t.Run("condition", func(t *testing.T) { testTpl(t) })
+	t.Run("conditionHlp", func(t *testing.T) { testTpl(t) })
+	t.Run("conditionNoStatic", func(t *testing.T) { testTpl(t) })
+	t.Run("conditionOK", func(t *testing.T) { testTpl(t) })
+	t.Run("conditionStr", func(t *testing.T) { testTpl(t) })
+	t.Run("counter0", func(t *testing.T) { testTpl(t) })
+	t.Run("counter1", func(t *testing.T) { testTpl(t) })
+	t.Run("ctxOK", func(t *testing.T) { testTpl(t) })
+	t.Run("exit", func(t *testing.T) { testTpl(t) })
+	t.Run("includeHost", func(t *testing.T) { testTpl(t) })
+	t.Run("includeHostJS", func(t *testing.T) { testTpl(t) })
+	t.Run("loopCount", func(t *testing.T) { testTplLC(t) })
+	t.Run("loopCountBreak", func(t *testing.T) { testTpl(t) })
+	t.Run("loopCountBreakN", func(t *testing.T) { testTpl(t) })
+	t.Run("loopCountContinue", func(t *testing.T) { testTpl(t) })
+	t.Run("loopCountCtx", func(t *testing.T) { testTpl(t) })
+	t.Run("loopCountLazybreak", func(t *testing.T) { testTpl(t) })
+	t.Run("loopCountLazybreakN", func(t *testing.T) { testTpl(t) })
+	t.Run("loopCountStatic", func(t *testing.T) { testTpl(t) })
+	t.Run("loopRange", func(t *testing.T) { testTpl(t) })
+	t.Run("loopRangeLazybreakN", func(t *testing.T) { testTpl(t) })
+	t.Run("raw", func(t *testing.T) { testTpl(t) })
+	t.Run("simple", func(t *testing.T) { testTpl(t) })
+	t.Run("switch", func(t *testing.T) { testTpl(t) })
+	t.Run("switchNoCondition", func(t *testing.T) { testTpl(t) })
 }
 
-func testTpl(tb testing.TB, key string) {
+func testTpl(tb testing.TB) {
+	key := getTBName(tb)
 	st := getStage(key)
 	if st == nil {
 		tb.Error("stage not found")
@@ -73,10 +58,11 @@ func testTpl(tb testing.TB, key string) {
 	}
 }
 
-func testTplLC(t testing.TB, key string) {
+func testTplLC(tb testing.TB) {
+	key := getTBName(tb)
 	st := getStage(key)
 	if st == nil {
-		t.Error("stage not found")
+		tb.Error("stage not found")
 		return
 	}
 
@@ -86,10 +72,10 @@ func testTplLC(t testing.TB, key string) {
 	ctx.SetStatic("end", 3)
 	result, err := Render(key, ctx)
 	if err != nil {
-		t.Error(err)
+		tb.Error(err)
 	}
 	if !bytes.Equal(result, st.expect) {
-		t.Errorf("%s mismatch", key)
+		tb.Errorf("%s mismatch", key)
 	}
 }
 

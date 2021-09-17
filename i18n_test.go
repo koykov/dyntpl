@@ -8,11 +8,6 @@ import (
 	"github.com/koykov/i18n"
 )
 
-type i18nStage struct {
-	key string
-	fn  func(tb testing.TB, st *i18nStage, db *i18n.DB)
-}
-
 func TestI18n(t *testing.T) {
 	loadStages()
 
@@ -22,26 +17,16 @@ func TestI18n(t *testing.T) {
 	i18nDB.Set("en.pc.cpu", "no|yes")
 	i18nDB.Set("en.me.age", "{0} you just born|[1,10] you're a child|[10,18] you're teenager|[18,40] you're adult|[40,80] you're old|[80,*] you're dead")
 
-	stages := []i18nStage{
-		{key: "i18n"},
-		{key: "i18nPlural"},
-		{key: "i18nPluralExt"},
-		{key: "i18nSetLocale"},
-	}
-
-	for _, s := range stages {
-		t.Run(s.key, func(t *testing.T) {
-			if s.fn == nil {
-				s.fn = testI18n
-			}
-			s.fn(t, &s, i18nDB)
-		})
-	}
+	t.Run("i18n", func(t *testing.T) { testI18n(t, i18nDB) })
+	t.Run("i18nPlural", func(t *testing.T) { testI18n(t, i18nDB) })
+	t.Run("i18nPluralExt", func(t *testing.T) { testI18n(t, i18nDB) })
+	t.Run("i18nSetLocale", func(t *testing.T) { testI18n(t, i18nDB) })
 }
 
-func testI18n(tb testing.TB, st *i18nStage, db *i18n.DB) {
-	st1 := getStage(st.key)
-	if st1 == nil {
+func testI18n(tb testing.TB, db *i18n.DB) {
+	key := getTBName(tb)
+	st := getStage(key)
+	if st == nil {
 		tb.Error("stage not found")
 		return
 	}
@@ -51,12 +36,12 @@ func testI18n(tb testing.TB, st *i18nStage, db *i18n.DB) {
 	ctx.Set("user", user, &ins)
 	ctx.SetStatic("cores", 4)
 	ctx.SetStatic("years", 90)
-	result, err := Render(st.key, ctx)
+	result, err := Render(key, ctx)
 	if err != nil {
 		tb.Error(err)
 	}
-	if !bytes.Equal(result, st1.expect) {
-		tb.Errorf("%s mismatch", st.key)
+	if !bytes.Equal(result, st.expect) {
+		tb.Errorf("%s mismatch", key)
 	}
 }
 

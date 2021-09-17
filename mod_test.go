@@ -5,78 +5,78 @@ import (
 	"testing"
 )
 
-type modStage struct {
-	key  string
-	args map[string]interface{}
-	fn   func(tb testing.TB, st *modStage)
-}
-
 func TestMod(t *testing.T) {
 	loadStages()
 
-	modStages := []modStage{
-		{key: "modDefault"},
-		{key: "modDefaultStatic"},
-		{key: "modDefault1"},
-		{key: "modJSONEscape", fn: testModWA, args: map[string]interface{}{"userName": `Foo"bar`}},
-		{key: "modJSONEscapeShort", fn: testModWA, args: map[string]interface{}{"userName": `Foo"bar`}},
-		{key: "modJSONEscapeDbl", fn: testModWA, args: map[string]interface{}{"valueWithQuotes": `He said: "welcome friend"`}},
-		{key: "modJSONQuoteShort", fn: testModWA, args: map[string]interface{}{"userName": `Foo"bar`}},
-		{key: "modHtmlEscape", fn: testModWA, args: map[string]interface{}{
+	t.Run("modDefault", func(t *testing.T) { testMod(t) })
+	t.Run("modDefaultStatic", func(t *testing.T) { testMod(t) })
+	t.Run("modDefault1", func(t *testing.T) { testMod(t) })
+	t.Run("modJSONEscape", func(t *testing.T) { testModWA(t, map[string]interface{}{"userName": `Foo"bar`}) })
+	t.Run("modJSONEscapeShort", func(t *testing.T) { testModWA(t, map[string]interface{}{"userName": `Foo"bar`}) })
+	t.Run("modJSONEscapeDbl", func(t *testing.T) {
+		testModWA(t, map[string]interface{}{"valueWithQuotes": `He said: "welcome friend"`})
+	})
+	t.Run("modJSONQuoteShort", func(t *testing.T) { testModWA(t, map[string]interface{}{"userName": `Foo"bar`}) })
+	t.Run("modHtmlEscape", func(t *testing.T) {
+		testModWA(t, map[string]interface{}{
 			"title": `<h1>Go is an open source programming language that makes it easy to build <strong>simple<strong>, <strong>reliable</strong>, and <strong>efficient</strong> software.</h1>`,
 			"text":  `Visit >`,
-		}},
-		{key: "modHtmlEscapeShort", fn: testModWA, args: map[string]interface{}{
+		})
+	})
+	t.Run("modHtmlEscapeShort", func(t *testing.T) {
+		testModWA(t, map[string]interface{}{
 			"title": `<h1>Go is an open source programming language that makes it easy to build <strong>simple<strong>, <strong>reliable</strong>, and <strong>efficient</strong> software.</h1>`,
 			"text":  `Visit >`,
-		}},
-		{key: "modLinkEscape", fn: testModWA, args: map[string]interface{}{"link": `http://x.com/link-with-"-and space-symbol`}},
-		{key: "modURLEncode", fn: testModWA, args: map[string]interface{}{"url": `https://golang.org/src/net/url/url.go#L100`}},
-		{key: "modURLEncode2", fn: testModWA, args: map[string]interface{}{"url": `https://golang.org/src/net/url/url.go#L100`}},
-		{key: "modURLEncode3", fn: testModWA, args: map[string]interface{}{"url": `https://golang.org/src/net/url/url.go#L100`}},
-		{key: "modIfThen", fn: testModWA, args: map[string]interface{}{"allow": true}},
-		{key: "modIfThenElse", fn: testModWA, args: map[string]interface{}{"logged": true, "userName": "foobar"}},
-		{key: "modRound", fn: testModWA, args: map[string]interface{}{
+		})
+	})
+	t.Run("modLinkEscape", func(t *testing.T) {
+		testModWA(t, map[string]interface{}{"link": `http://x.com/link-with-"-and space-symbol`})
+	})
+	t.Run("modURLEncode", func(t *testing.T) {
+		testModWA(t, map[string]interface{}{"url": `https://golang.org/src/net/url/url.go#L100`})
+	})
+	t.Run("modURLEncode2", func(t *testing.T) {
+		testModWA(t, map[string]interface{}{"url": `https://golang.org/src/net/url/url.go#L100`})
+	})
+	t.Run("modURLEncode3", func(t *testing.T) {
+		testModWA(t, map[string]interface{}{"url": `https://golang.org/src/net/url/url.go#L100`})
+	})
+	t.Run("modIfThen", func(t *testing.T) { testModWA(t, map[string]interface{}{"allow": true}) })
+	t.Run("modIfThenElse", func(t *testing.T) { testModWA(t, map[string]interface{}{"logged": true, "userName": "foobar"}) })
+	t.Run("modRound", func(t *testing.T) {
+		testModWA(t, map[string]interface{}{
 			"f0": 7.243242,
 			"f1": 3.1415,
 			"f2": 11.39,
 			"f3": 56.68734,
 			"f4": 67.999,
 			"f5": 20.214999,
-		}},
-	}
-
-	for _, s := range modStages {
-		t.Run(s.key, func(t *testing.T) {
-			if s.fn == nil {
-				s.fn = testMod
-			}
-			s.fn(t, &s)
 		})
-	}
+	})
 }
 
-func testMod(tb testing.TB, st *modStage) {
-	testTpl(tb, st.key)
+func testMod(tb testing.TB) {
+	testTpl(tb)
 }
 
-func testModWA(tb testing.TB, st *modStage) {
-	st1 := getStage(st.key)
-	if st1 == nil {
+func testModWA(tb testing.TB, args map[string]interface{}) {
+	key := getTBName(tb)
+	st := getStage(key)
+	if st == nil {
 		tb.Error("stage not found")
 		return
 	}
 
 	ctx := NewCtx()
-	for k, v := range st.args {
+	for k, v := range args {
 		ctx.SetStatic(k, v)
 	}
-	result, err := Render(st.key, ctx)
+	result, err := Render(key, ctx)
 	if err != nil {
 		tb.Error(err)
 	}
-	if !bytes.Equal(result, st1.expect) {
-		tb.Errorf("%s mismatch", st.key)
+	if !bytes.Equal(result, st.expect) {
+		tb.Errorf("%s mismatch", key)
 	}
 }
 
