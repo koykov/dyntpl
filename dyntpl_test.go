@@ -6,8 +6,6 @@ import (
 )
 
 func TestTpl(t *testing.T) {
-	loadStages()
-
 	t.Run("condition", func(t *testing.T) { testTpl(t) })
 	t.Run("conditionHlp", func(t *testing.T) { testTpl(t) })
 	t.Run("conditionNoStatic", func(t *testing.T) { testTpl(t) })
@@ -80,8 +78,6 @@ func testTplLC(t *testing.T) {
 }
 
 func BenchmarkTpl(b *testing.B) {
-	loadStages()
-
 	b.Run("condition", func(b *testing.B) { benchTpl(b) })
 	b.Run("conditionHlp", func(b *testing.B) { benchTpl(b) })
 	b.Run("conditionNoStatic", func(b *testing.B) { benchTpl(b) })

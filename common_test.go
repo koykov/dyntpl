@@ -59,10 +59,7 @@ var (
 	buf bytes.Buffer
 )
 
-func loadStages() {
-	if len(stages) > 0 {
-		return
-	}
+func init() {
 	dirs := []string{"tpl", "mod", "i18n"}
 	for _, dir := range dirs {
 		_ = filepath.Walk("testdata/"+dir, func(path string, info os.FileInfo, err error) error {

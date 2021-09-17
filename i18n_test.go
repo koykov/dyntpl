@@ -9,8 +9,6 @@ import (
 )
 
 func TestI18n(t *testing.T) {
-	loadStages()
-
 	i18nDB, _ := i18n.New(fnv.Hasher{})
 	i18nDB.Set("en.messages.welcome", "Welcome, !user!")
 	i18nDB.Set("ru.messages.welcome", "Привет, !user!")
@@ -46,8 +44,6 @@ func testI18n(t *testing.T, db *i18n.DB) {
 }
 
 func BenchmarkI18n(b *testing.B) {
-	loadStages()
-
 	i18nDB, _ := i18n.New(fnv.Hasher{})
 	i18nDB.Set("en.messages.welcome", "Welcome, !user!")
 	i18nDB.Set("ru.messages.welcome", "Привет, !user!")

@@ -6,8 +6,6 @@ import (
 )
 
 func TestMod(t *testing.T) {
-	loadStages()
-
 	t.Run("modDefault", func(t *testing.T) { testMod(t) })
 	t.Run("modDefaultStatic", func(t *testing.T) { testMod(t) })
 	t.Run("modDefault1", func(t *testing.T) { testMod(t) })
@@ -81,8 +79,6 @@ func testModWA(t *testing.T, args map[string]interface{}) {
 }
 
 func BenchmarkMod(b *testing.B) {
-	loadStages()
-
 	b.Run("modDefault", func(b *testing.B) { benchMod(b) })
 	b.Run("modDefaultStatic", func(b *testing.B) { benchMod(b) })
 	b.Run("modDefault1", func(b *testing.B) { benchMod(b) })
