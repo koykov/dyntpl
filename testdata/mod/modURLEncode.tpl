@@ -1,0 +1,1 @@
+<a href="https://redir.com/{%u= url %}">go to >>></a>

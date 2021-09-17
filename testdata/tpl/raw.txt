@@ -1,0 +1,1 @@
+<h1>Raw template<h1><p>Lorem ipsum dolor sit amet, ...</p>

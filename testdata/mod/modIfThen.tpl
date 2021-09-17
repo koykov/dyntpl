@@ -1,0 +1,1 @@
+{%= allow|ifThen("You're allow to buy!") %}

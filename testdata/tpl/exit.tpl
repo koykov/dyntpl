@@ -1,0 +1,1 @@
+{% if user.Status < 100 %}{% exit %}{% endif %}foobar

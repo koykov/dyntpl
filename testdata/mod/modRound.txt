@@ -1,0 +1,1 @@
+Price 1: 7; Price 2: 3.141; Price 3: 12; Price 4: 56.688; Price 5: 67; Price 6: 20.214

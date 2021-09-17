@@ -1,0 +1,1 @@
+{% ctx defaultCost = 999.99 %}Cost is: {%= user.Cost|default(defaultCost) %} USD

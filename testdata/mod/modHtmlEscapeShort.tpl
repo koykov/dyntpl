@@ -1,0 +1,1 @@
+<a href="https://golang.org/" title="{%h= title %}">{%h= text %}</a>

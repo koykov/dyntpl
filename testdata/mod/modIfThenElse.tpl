@@ -1,0 +1,1 @@
+Welcome, {%= logged|ifThenElse(userName, "anonymous") %}!

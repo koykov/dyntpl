@@ -1,0 +1,1 @@
+<a href="https://golang.org/" title="{%= title|htmlEscape %}">{%= text|he %}</a>

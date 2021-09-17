@@ -6,26 +6,26 @@ import (
 )
 
 var (
-	tplModDef       = []byte(`Cost is: {%= user.Cost|default(999.99) %} USD`)
-	tplModDefStatic = []byte(`{% ctx defaultCost = 999.99 %}Cost is: {%= user.Cost|default(defaultCost) %} USD`)
-	expectModDef    = []byte(`Cost is: 999.99 USD`)
+	tplModDefault       = []byte(`Cost is: {%= user.Cost|default(999.99) %} USD`)
+	tplModDefaultStatic = []byte(`{% ctx defaultCost = 999.99 %}Cost is: {%= user.Cost|default(defaultCost) %} USD`)
+	expectModDefault    = []byte(`Cost is: 999.99 USD`)
 
-	tplModDef1    = []byte(`<span style="background-color:{%= user.ProfileColor|default("#fff") %}"></span>"`)
-	expectModDef1 = []byte(`<span style="background-color:#fff"></span>"`)
+	tplModDefault1    = []byte(`<span style="background-color:{%= user.ProfileColor|default("#fff") %}"></span>"`)
+	expectModDefault1 = []byte(`<span style="background-color:#fff"></span>"`)
 
-	tplModJsonEscape       = []byte(`{"id":"foo","name":"{%= userName|jsonEscape %}"}`)
-	tplModJsonEscapeShort  = []byte(`{"id":"foo","name":"{%j= userName %}"}`)
-	tplModJsonQuoteShort   = []byte(`{"id":"foo","name":{%q= userName %}}`)
-	expectModJson          = []byte(`{"id":"foo","name":"Foo\"bar"}`)
-	tplModJsonEscapeDbl    = []byte(`{"obj":"{% jsonquote %}{"inner":"{%j= valueWithQuotes %}"}{% endjsonquote %}"}`)
-	expectModJsonEscapeDbl = []byte(`{"obj":"{\"inner\":\"He said: \\\"welcome friend\\\"\"}"}`)
+	tplModJSONEscape       = []byte(`{"id":"foo","name":"{%= userName|jsonEscape %}"}`)
+	tplModJSONEscapeShort  = []byte(`{"id":"foo","name":"{%j= userName %}"}`)
+	tplModJSONQuoteShort   = []byte(`{"id":"foo","name":{%q= userName %}}`)
+	expectModJSON          = []byte(`{"id":"foo","name":"Foo\"bar"}`)
+	tplModJSONEscapeDbl    = []byte(`{"obj":"{% jsonquote %}{"inner":"{%j= valueWithQuotes %}"}{% endjsonquote %}"}`)
+	expectModJSONEscapeDbl = []byte(`{"obj":"{\"inner\":\"He said: \\\"welcome friend\\\"\"}"}`)
 
-	tplModUrlEncode     = []byte(`<a href="https://redir.com/{%u= url %}">go to >>></a>`)
-	expectModUrlEncode  = []byte(`<a href="https://redir.com/https%3A%2F%2Fgolang.org%2Fsrc%2Fnet%2Furl%2Furl.go%23L100">go to >>></a>`)
-	tplModUrlEncode2    = []byte(`<a href="https://redir.com/{%uu= url %}">go to >>></a>`)
-	expectModUrlEncode2 = []byte(`<a href="https://redir.com/https%253A%252F%252Fgolang.org%252Fsrc%252Fnet%252Furl%252Furl.go%2523L100">go to >>></a>`)
-	tplModUrlEncode3    = []byte(`<a href="https://redir.com/{%uuu= url %}">go to >>></a>`)
-	expectModUrlEncode3 = []byte(`<a href="https://redir.com/https%25253A%25252F%25252Fgolang.org%25252Fsrc%25252Fnet%25252Furl%25252Furl.go%252523L100">go to >>></a>`)
+	tplModURLEncode     = []byte(`<a href="https://redir.com/{%u= url %}">go to >>></a>`)
+	expectModURLEncode  = []byte(`<a href="https://redir.com/https%3A%2F%2Fgolang.org%2Fsrc%2Fnet%2Furl%2Furl.go%23L100">go to >>></a>`)
+	tplModURLEncode2    = []byte(`<a href="https://redir.com/{%uu= url %}">go to >>></a>`)
+	expectModURLEncode2 = []byte(`<a href="https://redir.com/https%253A%252F%252Fgolang.org%252Fsrc%252Fnet%252Furl%252Furl.go%2523L100">go to >>></a>`)
+	tplModURLEncode3    = []byte(`<a href="https://redir.com/{%uuu= url %}">go to >>></a>`)
+	expectModURLEncode3 = []byte(`<a href="https://redir.com/https%25253A%25252F%25252Fgolang.org%25252Fsrc%25252Fnet%25252Furl%25252Furl.go%252523L100">go to >>></a>`)
 
 	tplModHtmlEscape      = []byte(`<a href="https://golang.org/" title="{%= title|htmlEscape %}">{%= text|he %}</a>`)
 	tplModHtmlEscapeShort = []byte(`<a href="https://golang.org/" title="{%h= title %}">{%h= text %}</a>`)
@@ -43,192 +43,97 @@ var (
 	expectModRound = []byte(`Price 1: 7; Price 2: 3.141; Price 3: 12; Price 4: 56.688; Price 5: 67; Price 6: 20.214`)
 )
 
-func TestTplModDef(t *testing.T) {
-	testBase(t, "tplModDef", expectModDef, "mod def tpl mismatch")
+type modStage struct {
+	key  string
+	args map[string]interface{}
+	fn   func(t *testing.T, st *modStage)
 }
 
-func TestTplModDefStatic(t *testing.T) {
-	testBase(t, "tplModDefStatic", expectModDef, "mod def static tpl mismatch")
+func TestMod(t *testing.T) {
+	loadStages()
+
+	modStages := []modStage{
+		{key: "modDefault"},
+		{key: "modDefaultStatic"},
+		{key: "modDefault1"},
+		{key: "modJSONEscape", fn: fnModWA, args: map[string]interface{}{"userName": `Foo"bar`}},
+		{key: "modJSONEscapeShort", fn: fnModWA, args: map[string]interface{}{"userName": `Foo"bar`}},
+		{key: "modJSONEscapeDbl", fn: fnModWA, args: map[string]interface{}{"valueWithQuotes": `He said: "welcome friend"`}},
+		{key: "modJSONQuoteShort", fn: fnModWA, args: map[string]interface{}{"userName": `Foo"bar`}},
+		{key: "modHtmlEscape", fn: fnModWA, args: map[string]interface{}{
+			"title": `<h1>Go is an open source programming language that makes it easy to build <strong>simple<strong>, <strong>reliable</strong>, and <strong>efficient</strong> software.</h1>`,
+			"text":  `Visit >`,
+		}},
+		{key: "modHtmlEscapeShort", fn: fnModWA, args: map[string]interface{}{
+			"title": `<h1>Go is an open source programming language that makes it easy to build <strong>simple<strong>, <strong>reliable</strong>, and <strong>efficient</strong> software.</h1>`,
+			"text":  `Visit >`,
+		}},
+		{key: "modLinkEscape", fn: fnModWA, args: map[string]interface{}{"link": `http://x.com/link-with-"-and space-symbol`}},
+		{key: "modURLEncode", fn: fnModWA, args: map[string]interface{}{"url": `https://golang.org/src/net/url/url.go#L100`}},
+		{key: "modURLEncode2", fn: fnModWA, args: map[string]interface{}{"url": `https://golang.org/src/net/url/url.go#L100`}},
+		{key: "modURLEncode3", fn: fnModWA, args: map[string]interface{}{"url": `https://golang.org/src/net/url/url.go#L100`}},
+		{key: "modIfThen", fn: fnModWA, args: map[string]interface{}{"allow": true}},
+		{key: "modIfThenElse", fn: fnModWA, args: map[string]interface{}{"logged": true, "userName": "foobar"}},
+		{key: "modRound", fn: fnModWA, args: map[string]interface{}{
+			"f0": 7.243242,
+			"f1": 3.1415,
+			"f2": 11.39,
+			"f3": 56.68734,
+			"f4": 67.999,
+			"f5": 20.214999,
+		}},
+	}
+
+	for _, s := range modStages {
+		t.Run(s.key, func(t *testing.T) {
+			if s.fn == nil {
+				s.fn = fnMod
+			}
+			s.fn(t, &s)
+		})
+	}
 }
 
-func TestTplModArgs(t *testing.T) {
-	testBase(t, "tplModDef1", expectModDef1, "mod def (hex color arg) tpl mismatch")
+func fnMod(t *testing.T, st *modStage) {
+	fnTpl(t, st.key)
 }
 
-func BenchmarkTplModDef(b *testing.B) {
-	benchBase(b, "tplModDef", expectModDef, "mod def tpl mismatch")
+func fnModWA(t *testing.T, st *modStage) {
+	st1 := getStage(st.key)
+	if st1 == nil {
+		t.Error("stage not found")
+		return
+	}
+
+	ctx := NewCtx()
+	for k, v := range st.args {
+		ctx.SetStatic(k, v)
+	}
+	result, err := Render(st.key, ctx)
+	if err != nil {
+		t.Error(err)
+	}
+	if !bytes.Equal(result, st1.expect) {
+		t.Errorf("%s mismatch", st.key)
+	}
+	if !bytes.Equal(result, st1.expect) {
+		t.Errorf("%s mismatch", st.key)
+	}
 }
 
-func BenchmarkTplModDefStatic(b *testing.B) {
-	benchBase(b, "tplModDefStatic", expectModDef, "mod def static tpl mismatch")
+func BenchmarkTplModDefault(b *testing.B) {
+	benchBase(b, "tplModDefault", expectModDefault, "mod def tpl mismatch")
+}
+
+func BenchmarkTplModDefaultStatic(b *testing.B) {
+	benchBase(b, "tplModDefaultStatic", expectModDefault, "mod def static tpl mismatch")
 }
 
 func BenchmarkTplModArgs(b *testing.B) {
-	benchBase(b, "tplModDef1", expectModDef1, "mod def (hex color arg) static tpl mismatch")
+	benchBase(b, "tplModDefault1", expectModDefault1, "mod def (hex color arg) static tpl mismatch")
 }
 
-func TestTplModJsonQuote(t *testing.T) {
-	pretest()
-
-	ctx := NewCtx()
-	ctx.SetStatic("userName", `Foo"bar`)
-	result, err := Render("tplModJsonQuoteShort", ctx)
-	if err != nil {
-		t.Error(err)
-	}
-	if !bytes.Equal(result, expectModJson) {
-		t.Error("json quote tpl mismatch")
-	}
-}
-
-func TestTplModJsonEscape(t *testing.T) {
-	pretest()
-
-	ctx := NewCtx()
-	ctx.SetStatic("userName", `Foo"bar`)
-	result, err := Render("tplModJsonEscapeShort", ctx)
-	if err != nil {
-		t.Error(err)
-	}
-	if !bytes.Equal(result, expectModJson) {
-		t.Error("json escape tpl mismatch")
-	}
-}
-
-func TestTplModJsonEscapeDbl(t *testing.T) {
-	pretest()
-
-	ctx := NewCtx()
-	ctx.SetStatic("valueWithQuotes", `He said: "welcome friend"`)
-	result, err := Render("tplModJsonEscapeDbl", ctx)
-	if err != nil {
-		t.Error(err)
-	}
-	if !bytes.Equal(result, expectModJsonEscapeDbl) {
-		t.Error("json escape (dbl) tpl mismatch")
-	}
-}
-
-func TestTplModHtmlEscape(t *testing.T) {
-	pretest()
-
-	ctx := NewCtx()
-	ctx.SetStatic("title", `<h1>Go is an open source programming language that makes it easy to build <strong>simple<strong>, <strong>reliable</strong>, and <strong>efficient</strong> software.</h1>`)
-	ctx.SetStatic("text", `Visit >`)
-	result, err := Render("tplModHtmlEscape", ctx)
-	if err != nil {
-		t.Error(err)
-	}
-	if !bytes.Equal(result, expectModHtml) {
-		t.Error("html escape tpl mismatch")
-	}
-}
-
-func TestTplModLinkEscape(t *testing.T) {
-	pretest()
-
-	ctx := NewCtx()
-	ctx.SetStatic("link", `http://x.com/link-with-"-and space-symbol`)
-	result, err := Render("tplModLinkEscape", ctx)
-	if err != nil {
-		t.Error(err)
-	}
-	if !bytes.Equal(result, expectModLinkEscape) {
-		t.Error("link escape tpl mismatch")
-	}
-}
-
-func TestTplModUrlEncode(t *testing.T) {
-	pretest()
-
-	ctx := NewCtx()
-	ctx.SetStatic("url", `https://golang.org/src/net/url/url.go#L100`)
-	result, err := Render("tplModUrlEncode", ctx)
-	if err != nil {
-		t.Error(err)
-	}
-	if !bytes.Equal(result, expectModUrlEncode) {
-		t.Error("url encode tpl mismatch")
-	}
-}
-
-func TestTplModUrlEncode2(t *testing.T) {
-	pretest()
-
-	ctx := NewCtx()
-	ctx.SetStatic("url", `https://golang.org/src/net/url/url.go#L100`)
-	result, err := Render("tplModUrlEncode2", ctx)
-	if err != nil {
-		t.Error(err)
-	}
-	if !bytes.Equal(result, expectModUrlEncode2) {
-		t.Error("url encode 2 tpl mismatch")
-	}
-}
-
-func TestTplModUrlEncode3(t *testing.T) {
-	pretest()
-
-	ctx := NewCtx()
-	ctx.SetStatic("url", `https://golang.org/src/net/url/url.go#L100`)
-	result, err := Render("tplModUrlEncode3", ctx)
-	if err != nil {
-		t.Error(err)
-	}
-	if !bytes.Equal(result, expectModUrlEncode3) {
-		t.Error("url encode 3 tpl mismatch")
-	}
-}
-
-func TestTplModIfThen(t *testing.T) {
-	pretest()
-
-	ctx := NewCtx()
-	ctx.SetStatic("allow", true)
-	result, err := Render("tplModIfThen", ctx)
-	if err != nil {
-		t.Error(err)
-	}
-	if !bytes.Equal(result, expectModIfThen) {
-		t.Error("ifThen tpl mismatch")
-	}
-}
-
-func TestTplModIfThenElse(t *testing.T) {
-	pretest()
-
-	ctx := NewCtx()
-	ctx.SetStatic("logged", true)
-	ctx.SetStatic("userName", "foobar")
-	result, err := Render("tplModIfThenElse", ctx)
-	if err != nil {
-		t.Error(err)
-	}
-	if !bytes.Equal(result, expectModIfThenElse) {
-		t.Error("ifThenElse tpl mismatch")
-	}
-}
-
-func TestTplModRoundPrec(t *testing.T) {
-	pretest()
-
-	ctx := NewCtx()
-	ctx.SetStatic("f0", 7.243242)
-	ctx.SetStatic("f1", 3.1415)
-	ctx.SetStatic("f2", 11.39)
-	ctx.SetStatic("f3", 56.68734)
-	ctx.SetStatic("f4", 67.999)
-	ctx.SetStatic("f5", 20.214999)
-	result, err := Render("tplModRound", ctx)
-	if err != nil {
-		t.Error(err)
-	}
-	if !bytes.Equal(result, expectModRound) {
-		t.Error("round tpl mismatch")
-	}
-}
-
-func BenchmarkTplModJsonQuote(b *testing.B) {
+func BenchmarkTplModJSONQuote(b *testing.B) {
 	pretest()
 
 	b.ReportAllocs()
@@ -236,18 +141,18 @@ func BenchmarkTplModJsonQuote(b *testing.B) {
 		ctx := AcquireCtx()
 		buf.Reset()
 		ctx.SetStatic("userName", `Foo"bar`)
-		err := Write(&buf, "tplModJsonQuoteShort", ctx)
+		err := Write(&buf, "tplModJSONQuoteShort", ctx)
 		if err != nil {
 			b.Error(err)
 		}
-		if !bytes.Equal(buf.Bytes(), expectModJson) {
+		if !bytes.Equal(buf.Bytes(), expectModJSON) {
 			b.Error("json quote tpl mismatch")
 		}
 		ReleaseCtx(ctx)
 	}
 }
 
-func BenchmarkTplModJsonEscape(b *testing.B) {
+func BenchmarkTplModJSONEscape(b *testing.B) {
 	pretest()
 
 	b.ReportAllocs()
@@ -255,18 +160,18 @@ func BenchmarkTplModJsonEscape(b *testing.B) {
 		ctx := AcquireCtx()
 		buf.Reset()
 		ctx.SetStatic("userName", `Foo"bar`)
-		err := Write(&buf, "tplModJsonEscapeShort", ctx)
+		err := Write(&buf, "tplModJSONEscapeShort", ctx)
 		if err != nil {
 			b.Error(err)
 		}
-		if !bytes.Equal(buf.Bytes(), expectModJson) {
+		if !bytes.Equal(buf.Bytes(), expectModJSON) {
 			b.Error("json escape tpl mismatch")
 		}
 		ReleaseCtx(ctx)
 	}
 }
 
-func BenchmarkTplModJsonEscapeDbl(b *testing.B) {
+func BenchmarkTplModJSONEscapeDbl(b *testing.B) {
 	pretest()
 
 	b.ReportAllocs()
@@ -274,11 +179,11 @@ func BenchmarkTplModJsonEscapeDbl(b *testing.B) {
 		ctx := AcquireCtx()
 		buf.Reset()
 		ctx.SetStatic("valueWithQuotes", `He said: "welcome friend"`)
-		err := Write(&buf, "tplModJsonEscapeDbl", ctx)
+		err := Write(&buf, "tplModJSONEscapeDbl", ctx)
 		if err != nil {
 			b.Error(err)
 		}
-		if !bytes.Equal(buf.Bytes(), expectModJsonEscapeDbl) {
+		if !bytes.Equal(buf.Bytes(), expectModJSONEscapeDbl) {
 			b.Error("json escape (dbl) tpl mismatch")
 		}
 		ReleaseCtx(ctx)
@@ -324,7 +229,7 @@ func BenchmarkTplModLinkEscape(b *testing.B) {
 	}
 }
 
-func benchModUrlEncode(b *testing.B, tplID string, expect []byte, failMsg string) {
+func benchModURLEncode(b *testing.B, tplID string, expect []byte, failMsg string) {
 	pretest()
 
 	b.ReportAllocs()
@@ -343,16 +248,16 @@ func benchModUrlEncode(b *testing.B, tplID string, expect []byte, failMsg string
 	}
 }
 
-func BenchmarkTplModUrlEncode(b *testing.B) {
-	benchModUrlEncode(b, "tplModUrlEncode", expectModUrlEncode, "url encode tpl mismatch")
+func BenchmarkTplModURLEncode(b *testing.B) {
+	benchModURLEncode(b, "tplModURLEncode", expectModURLEncode, "url encode tpl mismatch")
 }
 
-func BenchmarkTplModUrlEncode2(b *testing.B) {
-	benchModUrlEncode(b, "tplModUrlEncode2", expectModUrlEncode2, "url encode 2 tpl mismatch")
+func BenchmarkTplModURLEncode2(b *testing.B) {
+	benchModURLEncode(b, "tplModURLEncode2", expectModURLEncode2, "url encode 2 tpl mismatch")
 }
 
-func BenchmarkTplModUrlEncode3(b *testing.B) {
-	benchModUrlEncode(b, "tplModUrlEncode3", expectModUrlEncode3, "url encode 3 tpl mismatch")
+func BenchmarkTplModURLEncode3(b *testing.B) {
+	benchModURLEncode(b, "tplModURLEncode3", expectModURLEncode3, "url encode 3 tpl mismatch")
 }
 
 func BenchmarkTplModIfThen(b *testing.B) {

@@ -1,0 +1,1 @@
+<h2>Status</h2><p>Privileged user, your balance: 9000.015.</p>
