@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"testing"
 
 	"github.com/koykov/bytealg"
 	"github.com/koykov/inspector/testobj"
@@ -91,4 +92,9 @@ func getStage(key string) (st *stage) {
 		}
 	}
 	return st
+}
+
+func getTBName(tb testing.TB) string {
+	key := tb.Name()
+	return key[strings.Index(key, "/")+1:]
 }
