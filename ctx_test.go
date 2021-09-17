@@ -44,7 +44,7 @@ var (
 	}
 )
 
-func TestCtxGet(t *testing.T) {
+func TestCtx(t *testing.T) {
 	var (
 		ins testobj_ins.TestObjectInspector
 		raw interface{}
@@ -52,78 +52,69 @@ func TestCtxGet(t *testing.T) {
 	ctx := NewCtx()
 	ctx.Set("obj", testO, &ins)
 
+	t.Run("get", func(t *testing.T) {
+		raw = ctx.Get("obj.Id")
+		if ctx.Err != nil {
+			t.Error("ctx get error", ctx.Err)
+		}
+		if *raw.(*string) != "foo" {
+			t.Error("ctx get mismatch: obj.Id")
+		}
+
+		raw = ctx.Get("obj.Finance.Balance")
+		if ctx.Err != nil {
+			t.Error("ctx get error", ctx.Err)
+		}
+		if *raw.(*float64) != 9000 {
+			t.Error("ctx get mismatch: obj.Finance.Balance")
+		}
+	})
+}
+
+func BenchmarkCtx(b *testing.B) {
+	var (
+		ins testobj_ins.TestObjectInspector
+		raw interface{}
+	)
+	b.Run("get", func(b *testing.B) {
+		ctx := NewCtx()
+		ctx.Set("obj", testO, &ins)
+
+		b.ReportAllocs()
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			benchCtx(b, ctx, &raw)
+		}
+	})
+	b.Run("getWithPool", func(b *testing.B) {
+		b.ReportAllocs()
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			ctx := AcquireCtx()
+			ctx.Set("obj", testO, &ins)
+
+			benchCtx(b, ctx, &raw)
+
+			ReleaseCtx(ctx)
+		}
+	})
+}
+
+func benchCtx(b *testing.B, ctx *Ctx, buf *interface{}) {
+	raw := *buf
 	raw = ctx.Get("obj.Id")
 	if ctx.Err != nil {
-		t.Error("ctx get error", ctx.Err)
+		b.Error("ctx get error", ctx.Err)
 	}
 	if *raw.(*string) != "foo" {
-		t.Error("ctx get mismatch: obj.Id")
+		b.Error("ctx get mismatch: obj.Id")
 	}
 
 	raw = ctx.Get("obj.Finance.Balance")
 	if ctx.Err != nil {
-		t.Error("ctx get error", ctx.Err)
+		b.Error("ctx get error", ctx.Err)
 	}
 	if *raw.(*float64) != 9000 {
-		t.Error("ctx get mismatch: obj.Finance.Balance")
-	}
-}
-
-func BenchmarkCtxGet(b *testing.B) {
-	var (
-		ins testobj_ins.TestObjectInspector
-		raw interface{}
-	)
-	ctx := NewCtx()
-	ctx.Set("obj", testO, &ins)
-
-	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
-		raw = ctx.Get("obj.Id")
-		if ctx.Err != nil {
-			b.Error("ctx get error", ctx.Err)
-		}
-		if *raw.(*string) != "foo" {
-			b.Error("ctx get mismatch: obj.Id")
-		}
-
-		raw = ctx.Get("obj.Finance.Balance")
-		if ctx.Err != nil {
-			b.Error("ctx get error", ctx.Err)
-		}
-		if *raw.(*float64) != 9000 {
-			b.Error("ctx get mismatch: obj.Finance.Balance")
-		}
-	}
-}
-
-func BenchmarkCtxPoolGet(b *testing.B) {
-	var (
-		ins testobj_ins.TestObjectInspector
-		raw interface{}
-	)
-
-	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
-		ctx := AcquireCtx()
-		ctx.Set("obj", testO, &ins)
-
-		raw = ctx.Get("obj.Id")
-		if ctx.Err != nil {
-			b.Error("ctx get error", ctx.Err)
-		}
-		if *raw.(*string) != "foo" {
-			b.Error("ctx get mismatch: obj.Id")
-		}
-
-		raw = ctx.Get("obj.Finance.Balance")
-		if ctx.Err != nil {
-			b.Error("ctx get error", ctx.Err)
-		}
-		if *raw.(*float64) != 9000 {
-			b.Error("ctx get mismatch: obj.Finance.Balance")
-		}
-
-		ReleaseCtx(ctx)
+		b.Error("ctx get mismatch: obj.Finance.Balance")
 	}
 }
