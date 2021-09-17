@@ -291,7 +291,7 @@ func TestTpl(t *testing.T) {
 		{key: "exit"},
 		{key: "includeHost"},
 		{key: "includeHostJS"},
-		{key: "loopCount", fn: fnTplLC},
+		{key: "loopCount", fn: testTplLC},
 		{key: "loopCountBreak"},
 		{key: "loopCountBreakN"},
 		{key: "loopCountContinue"},
@@ -310,14 +310,14 @@ func TestTpl(t *testing.T) {
 	for _, s := range tplStages {
 		t.Run(s.key, func(t *testing.T) {
 			if s.fn == nil {
-				s.fn = fnTpl
+				s.fn = testTpl
 			}
 			s.fn(t, s.key)
 		})
 	}
 }
 
-func fnTpl(t *testing.T, key string) {
+func testTpl(t *testing.T, key string) {
 	st := getStage(key)
 	if st == nil {
 		t.Error("stage not found")
@@ -339,7 +339,7 @@ func fnTpl(t *testing.T, key string) {
 	}
 }
 
-func fnTplLC(t *testing.T, key string) {
+func testTplLC(t *testing.T, key string) {
 	st := getStage(key)
 	if st == nil {
 		t.Error("stage not found")

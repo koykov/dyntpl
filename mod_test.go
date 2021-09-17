@@ -56,25 +56,25 @@ func TestMod(t *testing.T) {
 		{key: "modDefault"},
 		{key: "modDefaultStatic"},
 		{key: "modDefault1"},
-		{key: "modJSONEscape", fn: fnModWA, args: map[string]interface{}{"userName": `Foo"bar`}},
-		{key: "modJSONEscapeShort", fn: fnModWA, args: map[string]interface{}{"userName": `Foo"bar`}},
-		{key: "modJSONEscapeDbl", fn: fnModWA, args: map[string]interface{}{"valueWithQuotes": `He said: "welcome friend"`}},
-		{key: "modJSONQuoteShort", fn: fnModWA, args: map[string]interface{}{"userName": `Foo"bar`}},
-		{key: "modHtmlEscape", fn: fnModWA, args: map[string]interface{}{
+		{key: "modJSONEscape", fn: testModWA, args: map[string]interface{}{"userName": `Foo"bar`}},
+		{key: "modJSONEscapeShort", fn: testModWA, args: map[string]interface{}{"userName": `Foo"bar`}},
+		{key: "modJSONEscapeDbl", fn: testModWA, args: map[string]interface{}{"valueWithQuotes": `He said: "welcome friend"`}},
+		{key: "modJSONQuoteShort", fn: testModWA, args: map[string]interface{}{"userName": `Foo"bar`}},
+		{key: "modHtmlEscape", fn: testModWA, args: map[string]interface{}{
 			"title": `<h1>Go is an open source programming language that makes it easy to build <strong>simple<strong>, <strong>reliable</strong>, and <strong>efficient</strong> software.</h1>`,
 			"text":  `Visit >`,
 		}},
-		{key: "modHtmlEscapeShort", fn: fnModWA, args: map[string]interface{}{
+		{key: "modHtmlEscapeShort", fn: testModWA, args: map[string]interface{}{
 			"title": `<h1>Go is an open source programming language that makes it easy to build <strong>simple<strong>, <strong>reliable</strong>, and <strong>efficient</strong> software.</h1>`,
 			"text":  `Visit >`,
 		}},
-		{key: "modLinkEscape", fn: fnModWA, args: map[string]interface{}{"link": `http://x.com/link-with-"-and space-symbol`}},
-		{key: "modURLEncode", fn: fnModWA, args: map[string]interface{}{"url": `https://golang.org/src/net/url/url.go#L100`}},
-		{key: "modURLEncode2", fn: fnModWA, args: map[string]interface{}{"url": `https://golang.org/src/net/url/url.go#L100`}},
-		{key: "modURLEncode3", fn: fnModWA, args: map[string]interface{}{"url": `https://golang.org/src/net/url/url.go#L100`}},
-		{key: "modIfThen", fn: fnModWA, args: map[string]interface{}{"allow": true}},
-		{key: "modIfThenElse", fn: fnModWA, args: map[string]interface{}{"logged": true, "userName": "foobar"}},
-		{key: "modRound", fn: fnModWA, args: map[string]interface{}{
+		{key: "modLinkEscape", fn: testModWA, args: map[string]interface{}{"link": `http://x.com/link-with-"-and space-symbol`}},
+		{key: "modURLEncode", fn: testModWA, args: map[string]interface{}{"url": `https://golang.org/src/net/url/url.go#L100`}},
+		{key: "modURLEncode2", fn: testModWA, args: map[string]interface{}{"url": `https://golang.org/src/net/url/url.go#L100`}},
+		{key: "modURLEncode3", fn: testModWA, args: map[string]interface{}{"url": `https://golang.org/src/net/url/url.go#L100`}},
+		{key: "modIfThen", fn: testModWA, args: map[string]interface{}{"allow": true}},
+		{key: "modIfThenElse", fn: testModWA, args: map[string]interface{}{"logged": true, "userName": "foobar"}},
+		{key: "modRound", fn: testModWA, args: map[string]interface{}{
 			"f0": 7.243242,
 			"f1": 3.1415,
 			"f2": 11.39,
@@ -87,18 +87,18 @@ func TestMod(t *testing.T) {
 	for _, s := range modStages {
 		t.Run(s.key, func(t *testing.T) {
 			if s.fn == nil {
-				s.fn = fnMod
+				s.fn = testMod
 			}
 			s.fn(t, &s)
 		})
 	}
 }
 
-func fnMod(t *testing.T, st *modStage) {
-	fnTpl(t, st.key)
+func testMod(t *testing.T, st *modStage) {
+	testTpl(t, st.key)
 }
 
-func fnModWA(t *testing.T, st *modStage) {
+func testModWA(t *testing.T, st *modStage) {
 	st1 := getStage(st.key)
 	if st1 == nil {
 		t.Error("stage not found")

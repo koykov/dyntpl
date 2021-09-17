@@ -32,14 +32,14 @@ func TestI18n(t *testing.T) {
 	for _, s := range stages {
 		t.Run(s.key, func(t *testing.T) {
 			if s.fn == nil {
-				s.fn = fnI18n
+				s.fn = testI18n
 			}
 			s.fn(t, &s, i18nDB)
 		})
 	}
 }
 
-func fnI18n(t *testing.T, st *i18nStage, db *i18n.DB) {
+func testI18n(t *testing.T, st *i18nStage, db *i18n.DB) {
 	st1 := getStage(st.key)
 	if st1 == nil {
 		t.Error("stage not found")
