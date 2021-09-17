@@ -35,11 +35,11 @@ func TestTpl(t *testing.T) {
 	t.Run("switchNoCondition", func(t *testing.T) { testTpl(t) })
 }
 
-func testTpl(tb testing.TB) {
-	key := getTBName(tb)
+func testTpl(t *testing.T) {
+	key := getTBName(t)
 	st := getStage(key)
 	if st == nil {
-		tb.Error("stage not found")
+		t.Error("stage not found")
 		return
 	}
 
@@ -47,22 +47,22 @@ func testTpl(tb testing.TB) {
 	ctx.Set("user", user, &ins)
 	result, err := Render(key, ctx)
 	if err != nil {
-		tb.Error(err)
+		t.Error(err)
 	}
 	if len(st.expect) == 0 && len(result) != 0 {
-		tb.Errorf("%s mismatch", key)
+		t.Errorf("%s mismatch", key)
 		return
 	}
 	if !bytes.Equal(result, st.expect) {
-		tb.Errorf("%s mismatch", key)
+		t.Errorf("%s mismatch", key)
 	}
 }
 
-func testTplLC(tb testing.TB) {
-	key := getTBName(tb)
+func testTplLC(t *testing.T) {
+	key := getTBName(t)
 	st := getStage(key)
 	if st == nil {
-		tb.Error("stage not found")
+		t.Error("stage not found")
 		return
 	}
 
@@ -72,10 +72,10 @@ func testTplLC(tb testing.TB) {
 	ctx.SetStatic("end", 3)
 	result, err := Render(key, ctx)
 	if err != nil {
-		tb.Error(err)
+		t.Error(err)
 	}
 	if !bytes.Equal(result, st.expect) {
-		tb.Errorf("%s mismatch", key)
+		t.Errorf("%s mismatch", key)
 	}
 }
 
@@ -109,13 +109,12 @@ func BenchmarkTpl(b *testing.B) {
 	b.Run("switchNoCondition", func(b *testing.B) { benchTpl(b) })
 }
 
-func benchTpl(tb testing.TB) {
-	b := interface{}(tb).(*testing.B)
+func benchTpl(b *testing.B) {
 	key := getTBName(b)
 
 	st := getStage(key)
 	if st == nil {
-		tb.Error("stage not found")
+		b.Error("stage not found")
 		return
 	}
 
@@ -139,13 +138,12 @@ func benchTpl(tb testing.TB) {
 	}
 }
 
-func benchTplLC(tb testing.TB) {
-	b := interface{}(tb).(*testing.B)
+func benchTplLC(b *testing.B) {
 	key := getTBName(b)
 
 	st := getStage(key)
 	if st == nil {
-		tb.Error("stage not found")
+		b.Error("stage not found")
 		return
 	}
 

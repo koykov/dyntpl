@@ -55,15 +55,15 @@ func TestMod(t *testing.T) {
 	})
 }
 
-func testMod(tb testing.TB) {
-	testTpl(tb)
+func testMod(t *testing.T) {
+	testTpl(t)
 }
 
-func testModWA(tb testing.TB, args map[string]interface{}) {
-	key := getTBName(tb)
+func testModWA(t *testing.T, args map[string]interface{}) {
+	key := getTBName(t)
 	st := getStage(key)
 	if st == nil {
-		tb.Error("stage not found")
+		t.Error("stage not found")
 		return
 	}
 
@@ -73,10 +73,10 @@ func testModWA(tb testing.TB, args map[string]interface{}) {
 	}
 	result, err := Render(key, ctx)
 	if err != nil {
-		tb.Error(err)
+		t.Error(err)
 	}
 	if !bytes.Equal(result, st.expect) {
-		tb.Errorf("%s mismatch", key)
+		t.Errorf("%s mismatch", key)
 	}
 }
 
@@ -130,17 +130,16 @@ func BenchmarkMod(b *testing.B) {
 	})
 }
 
-func benchMod(tb testing.TB) {
-	benchTpl(tb)
+func benchMod(b *testing.B) {
+	benchTpl(b)
 }
 
-func benchModWA(tb testing.TB, args map[string]interface{}) {
-	b := interface{}(tb).(*testing.B)
+func benchModWA(b *testing.B, args map[string]interface{}) {
 	key := getTBName(b)
 
 	st := getStage(key)
 	if st == nil {
-		tb.Error("stage not found")
+		b.Error("stage not found")
 		return
 	}
 
@@ -154,10 +153,10 @@ func benchModWA(tb testing.TB, args map[string]interface{}) {
 		buf.Reset()
 		err := Write(&buf, key, ctx)
 		if err != nil {
-			tb.Error(err)
+			b.Error(err)
 		}
 		if !bytes.Equal(buf.Bytes(), st.expect) {
-			tb.Errorf("%s mismatch", key)
+			b.Errorf("%s mismatch", key)
 		}
 		ReleaseCtx(ctx)
 	}

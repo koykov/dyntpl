@@ -23,11 +23,11 @@ func TestI18n(t *testing.T) {
 	t.Run("i18nSetLocale", func(t *testing.T) { testI18n(t, i18nDB) })
 }
 
-func testI18n(tb testing.TB, db *i18n.DB) {
-	key := getTBName(tb)
+func testI18n(t *testing.T, db *i18n.DB) {
+	key := getTBName(t)
 	st := getStage(key)
 	if st == nil {
-		tb.Error("stage not found")
+		t.Error("stage not found")
 		return
 	}
 
@@ -38,10 +38,10 @@ func testI18n(tb testing.TB, db *i18n.DB) {
 	ctx.SetStatic("years", 90)
 	result, err := Render(key, ctx)
 	if err != nil {
-		tb.Error(err)
+		t.Error(err)
 	}
 	if !bytes.Equal(result, st.expect) {
-		tb.Errorf("%s mismatch", key)
+		t.Errorf("%s mismatch", key)
 	}
 }
 
@@ -60,13 +60,12 @@ func BenchmarkI18n(b *testing.B) {
 	b.Run("i18nSetLocale", func(b *testing.B) { benchI18n(b, i18nDB) })
 }
 
-func benchI18n(tb testing.TB, db *i18n.DB) {
-	b := interface{}(tb).(*testing.B)
-	key := getTBName(tb)
+func benchI18n(b *testing.B, db *i18n.DB) {
+	key := getTBName(b)
 
 	st := getStage(key)
 	if st == nil {
-		tb.Error("stage not found")
+		b.Error("stage not found")
 		return
 	}
 
