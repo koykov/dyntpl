@@ -79,7 +79,7 @@ func testTplLC(t *testing.T) {
 
 func BenchmarkTpl(b *testing.B) {
 	b.Run("condition", func(b *testing.B) { benchTpl(b) })
-	b.Run("conditionHlp", func(b *testing.B) { benchTpl(b) })
+	b.Run("conditionHelper", func(b *testing.B) { benchTpl(b) })
 	b.Run("conditionNoStatic", func(b *testing.B) { benchTpl(b) })
 	b.Run("conditionOK", func(b *testing.B) { benchTpl(b) })
 	b.Run("conditionStr", func(b *testing.B) { benchTpl(b) })
