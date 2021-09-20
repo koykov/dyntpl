@@ -9,14 +9,14 @@ import (
 	"testing"
 
 	"github.com/koykov/bytealg"
+	"github.com/koykov/fastconv"
 	"github.com/koykov/inspector/testobj"
 	"github.com/koykov/inspector/testobj_ins"
 )
 
 type stage struct {
-	key string
-	origin,
-	expect []byte
+	key, err            string
+	origin, expect, raw []byte
 }
 
 var (
@@ -79,6 +79,29 @@ func init() {
 			return nil
 		})
 	}
+
+	_ = filepath.Walk("testdata/parser", func(path string, info os.FileInfo, err error) error {
+		if filepath.Ext(path) == ".tpl" {
+			st := stage{}
+			st.key = strings.Replace(filepath.Base(path), ".tpl", "", 1)
+			st.key = "parser/" + st.key
+
+			st.origin, _ = ioutil.ReadFile(path)
+			tree, _ := Parse(st.origin, false)
+
+			if raw, err := ioutil.ReadFile(strings.Replace(path, ".tpl", ".xml", 1)); err == nil {
+				st.expect = raw
+			} else if raw, err := ioutil.ReadFile(strings.Replace(path, ".tpl", ".raw", 1)); err == nil {
+				st.raw = bytealg.Trim(raw, []byte("\n"))
+			} else if raw, err := ioutil.ReadFile(strings.Replace(path, ".tpl", ".err", 1)); err == nil {
+				st.err = bytealg.TrimStr(fastconv.B2S(raw), "\n")
+			}
+			stages = append(stages, st)
+
+			RegisterTplKey(st.key, tree)
+		}
+		return nil
+	})
 }
 
 func getStage(key string) (st *stage) {

@@ -2,86 +2,67 @@ package dyntpl
 
 import (
 	"bytes"
-	"io/ioutil"
 	"testing"
-
-	"github.com/koykov/bytealg"
 )
 
 func TestParser(t *testing.T) {
-	type stage struct {
-		key string
-		origin,
-		expect []byte
-		fn  func(t *testing.T, key string, origin []byte, _ error)
-		err error
-	}
+	t.Run("cutComments", func(t *testing.T) { testParser(t) })
+	t.Run("cutFmt", func(t *testing.T) { testParser(t) })
+	t.Run("printVar", func(t *testing.T) { testParser(t) })
+	t.Run("unexpectedEOF", func(t *testing.T) { testParser(t) })
+	t.Run("prefixSuffix", func(t *testing.T) { testParser(t) })
+	t.Run("exit", func(t *testing.T) { testParser(t) })
+	t.Run("mod", func(t *testing.T) { testParser(t) })
+	t.Run("modNoVar", func(t *testing.T) { testParser(t) })
+	t.Run("modNestedArg", func(t *testing.T) { testParser(t) })
+	t.Run("ctxDot", func(t *testing.T) { testParser(t) })
+	t.Run("ctxDot1", func(t *testing.T) { testParser(t) })
+	t.Run("ctxModDot", func(t *testing.T) { testParser(t) })
+	t.Run("ctxAsOK", func(t *testing.T) { testParser(t) })
+	t.Run("ctx", func(t *testing.T) { testParser(t) })
+	t.Run("counter", func(t *testing.T) { testParser(t) })
+	t.Run("condition", func(t *testing.T) { testParser(t) })
+	t.Run("conditionStr", func(t *testing.T) { testParser(t) })
+	t.Run("conditionNested", func(t *testing.T) { testParser(t) })
+	t.Run("conditionOK", func(t *testing.T) { testParser(t) })
+	t.Run("conditionNotOK", func(t *testing.T) { testParser(t) })
+	t.Run("loop", func(t *testing.T) { testParser(t) })
+	t.Run("loopSeparator", func(t *testing.T) { testParser(t) })
+	t.Run("loopBreak", func(t *testing.T) { testParser(t) })
+	t.Run("loopBreakNested", func(t *testing.T) { testParser(t) })
+	t.Run("switch", func(t *testing.T) { testParser(t) })
+	t.Run("switchNoCondition", func(t *testing.T) { testParser(t) })
+	t.Run("switchNoConditionWithHelper", func(t *testing.T) { testParser(t) })
+	t.Run("include", func(t *testing.T) { testParser(t) })
+	t.Run("includeDot", func(t *testing.T) { testParser(t) })
+	t.Run("locale", func(t *testing.T) { testParser(t) })
+}
 
-	fn := func(t *testing.T, key string, origin []byte, _ error) {
-		expect, _ := ioutil.ReadFile("testdata/parser/" + key + ".xml")
-		tree, _ := Parse(origin, false)
-		r := tree.HumanReadable()
-		if !bytes.Equal(r, expect) {
-			t.Errorf("%s test failed\nexp: %s\ngot: %s", key, string(expect), string(r))
-		}
+func testParser(t *testing.T) {
+	key := getTBName(t)
+	st := getStage("parser/" + key)
+	if st == nil {
+		t.Error("stage not found")
+		return
 	}
-	fnRaw := func(t *testing.T, key string, origin []byte, _ error) {
-		expect, _ := ioutil.ReadFile("testdata/parser/" + key + ".txt")
-		expect = bytealg.Trim(expect, []byte("\n"))
-		p := &Parser{tpl: origin}
+	if len(st.expect) > 0 {
+		tree, _ := Parse(st.origin, false)
+		r := tree.HumanReadable()
+		if !bytes.Equal(r, st.expect) {
+			t.Errorf("%s test failed\nexp: %s\ngot: %s", key, string(st.expect), string(r))
+		}
+	} else if len(st.raw) > 0 {
+		p := &Parser{tpl: st.origin}
 		p.cutComments()
 		p.cutFmt()
-		if !bytes.Equal(expect, p.tpl) {
-			t.Errorf("%s test raw failed\nexp: %s\ngot: %s", key, string(expect), string(p.tpl))
+		if !bytes.Equal(st.raw, p.tpl) {
+			t.Errorf("%s test raw failed\nexp: %s\ngot: %s", key, string(st.expect), string(p.tpl))
 		}
-	}
-	fnErr := func(t *testing.T, key string, origin []byte, err error) {
-		_, err1 := Parse(origin, false)
-		if err != err1 {
-			t.Errorf("%s test error failed\nexp err: %s\ngot: %s", key, err, err1)
-		}
-	}
-
-	stages := []stage{
-		{key: "cutComments", fn: fnRaw},
-		{key: "cutFmt", fn: fnRaw},
-		{key: "printVar"},
-		{key: "unexpectedEOF", fn: fnErr, err: ErrUnexpectedEOF},
-		{key: "prefixSuffix"},
-		{key: "exit"},
-		{key: "mod"},
-		{key: "modNoVar"},
-		{key: "modNestedArg"},
-		{key: "ctxDot"},
-		{key: "ctxDot1"},
-		{key: "ctxModDot"},
-		{key: "ctxAsOK"},
-		{key: "ctx"},
-		{key: "counter"},
-		{key: "condition"},
-		{key: "conditionStr"},
-		{key: "conditionNested"},
-		{key: "conditionOK"},
-		{key: "conditionNotOK"},
-		{key: "loop"},
-		{key: "loopSeparator"},
-		{key: "loopBreak"},
-		{key: "loopBreakNested"},
-		{key: "switch"},
-		{key: "switchNoCondition"},
-		{key: "switchNoConditionWithHelper"},
-		{key: "include"},
-		{key: "includeDot"},
-		{key: "locale"},
-	}
-
-	for _, s := range stages {
-		t.Run(s.key, func(t *testing.T) {
-			s.origin, _ = ioutil.ReadFile("testdata/parser/" + s.key + ".tpl")
-			if s.fn == nil {
-				s.fn = fn
+	} else if len(st.err) > 0 {
+		if _, err := Parse(st.origin, false); err != nil {
+			if err.Error() != st.err {
+				t.Errorf("%s test error failed\nexp err: %s\ngot: %s", key, err, st.err)
 			}
-			s.fn(t, s.key, s.origin, s.err)
-		})
+		}
 	}
 }
