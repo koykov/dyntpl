@@ -40,6 +40,8 @@ func trans(ctx *Ctx, buf *interface{}, args []interface{}, plural bool) error {
 	// Try to get the key.
 	if raw, ok := args[0].(*[]byte); ok && len(*raw) > 0 {
 		key = fastconv.B2S(*raw)
+	} else if err := ctx.BufAcc.StakeOut().WriteX(args[0]); err == nil {
+		key = ctx.BufAcc.StakedString()
 	}
 	args = args[1:]
 	// Try to get the default value.
