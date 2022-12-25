@@ -1,11 +1,13 @@
 package dyntpl
 
+import "github.com/koykov/byteptr"
+
 // Node is a description of template part.
 // Every piece of the template, beginning from static text and finishing of complex structures (switch, loop, ...)
 // Represents by this type.
 type Node struct {
 	typ    Type
-	raw    []byte
+	raw    byteptr.Byteptr
 	prefix []byte
 	suffix []byte
 
@@ -69,8 +71,8 @@ func addNode(nodes []Node, node Node) []Node {
 }
 
 // Add raw node (static text) to the list.
-func addRaw(nodes []Node, raw []byte) []Node {
-	if len(raw) == 0 {
+func addRaw(nodes []Node, raw byteptr.Byteptr) []Node {
+	if raw.Len() == 0 {
 		return nodes
 	}
 	nodes = append(nodes, Node{typ: TypeRaw, raw: raw})

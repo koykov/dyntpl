@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"github.com/koykov/bytealg"
+	"github.com/koykov/byteptr"
 	"github.com/koykov/fastconv"
 )
 
@@ -212,7 +213,9 @@ func (p *Parser) parseTpl(nodes []Node, offset int, target *target) ([]Node, int
 			if inCtl {
 				return nodes, o, ErrUnexpectedEOF
 			}
-			nodes = addRaw(nodes, p.tpl[o:])
+			raw := byteptr.Byteptr{}
+			raw.Init(p.tpl, o, len(p.tpl)-o)
+			nodes = addRaw(nodes, raw)
 			o = len(p.tpl)
 			break
 		}
@@ -235,7 +238,9 @@ func (p *Parser) parseTpl(nodes []Node, offset int, target *target) ([]Node, int
 			}
 		} else {
 			// Start of control structure caught.
-			nodes = addRaw(nodes, p.tpl[o:i])
+			raw := byteptr.Byteptr{}
+			raw.Init(p.tpl, o, i-o)
+			nodes = addRaw(nodes, raw)
 			o = i
 			inCtl = true
 		}
