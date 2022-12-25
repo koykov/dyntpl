@@ -10,6 +10,7 @@ import (
 // Tree structure that represents parsed template as list of nodes with childrens.
 type Tree struct {
 	nodes []Node
+	hsum  uint32
 }
 
 // Representation argument of modifier or helper.
