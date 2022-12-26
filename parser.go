@@ -3,7 +3,7 @@ package dyntpl
 import (
 	"bytes"
 	"fmt"
-	"hash/crc32"
+	"hash/crc64"
 	"io/ioutil"
 	"os"
 	"regexp"
@@ -149,22 +149,25 @@ var (
 	// Regexp to parse locale instruction.
 	reLoc = regexp.MustCompile(`(?:locale|loc) "([\w\-]+)"`)
 
+	crc64Tab = crc64.MakeTable(crc64.ISO)
+
 	// Suppress go vet warning.
 	_ = ParseFile
 )
 
 // Parse initializes parser and parse the template body.
 func Parse(tpl []byte, keepFmt bool) (tree *Tree, err error) {
-	hsum := crc32.ChecksumIEEE(tpl)
-	if tree = tplDB.getTreeByHash(hsum); tree != nil {
-		return
-	}
 	p := &Parser{
 		tpl:     tpl,
 		keepFmt: keepFmt,
 	}
 	p.cutComments()
 	p.cutFmt()
+
+	hsum := crc64.Checksum(p.tpl, crc64Tab)
+	if tree = tplDB.getTreeByHash(hsum); tree != nil {
+		return
+	}
 
 	// Prepare template tree.
 	tree = &Tree{hsum: hsum}
