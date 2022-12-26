@@ -3,6 +3,7 @@ package dyntpl
 import (
 	"bytes"
 	"fmt"
+	"hash/crc32"
 	"io/ioutil"
 	"os"
 	"regexp"
@@ -154,6 +155,10 @@ var (
 
 // Parse initializes parser and parse the template body.
 func Parse(tpl []byte, keepFmt bool) (tree *Tree, err error) {
+	hsum := crc32.ChecksumIEEE(tpl)
+	if tree = tplDB.getTreeByHash(hsum); tree != nil {
+		return
+	}
 	p := &Parser{
 		tpl:     tpl,
 		keepFmt: keepFmt,
@@ -162,7 +167,7 @@ func Parse(tpl []byte, keepFmt bool) (tree *Tree, err error) {
 	p.cutFmt()
 
 	// Prepare template tree.
-	tree = &Tree{}
+	tree = &Tree{hsum: hsum}
 	target := newTarget(p)
 	tree.nodes, _, err = p.parseTpl(tree.nodes, 0, target)
 	return

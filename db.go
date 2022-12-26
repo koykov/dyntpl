@@ -10,18 +10,21 @@ import (
 // Contains two indexes describes two types of pairs between templates and keys/IDs.
 type db struct {
 	mux sync.RWMutex
-	// ID index. Value is a offset in the tpl array.
+	// ID index. Value is an offset in the tpl array.
 	idxID map[int]int
-	// Key index. Value is a offset in the tpl array as well.
+	// Key index. Value is an offset in the tpl array as well.
 	idxKey map[string]int
+	// Hash index. Value is an offset in the tpl array.
+	idxHash map[uint32]int
 	// Templates storage.
 	tpl []*Tpl
 }
 
 func initDB() *db {
 	db := &db{
-		idxID:  make(map[int]int),
-		idxKey: make(map[string]int),
+		idxID:   make(map[int]int),
+		idxKey:  make(map[string]int),
+		idxHash: make(map[uint32]int),
 	}
 	return db
 }
@@ -36,8 +39,10 @@ func (db *db) set(id int, key string, tree *Tree) {
 	db.mux.Lock()
 	if idx := db.getIdxLF(id, key); idx >= 0 && idx < len(db.tpl) {
 		db.tpl[idx] = &tpl
+		db.idxHash[tree.hsum] = len(db.tpl) - 1
 	} else {
 		db.tpl = append(db.tpl, &tpl)
+		db.idxHash[tree.hsum] = len(db.tpl) - 1
 		if id >= 0 {
 			db.idxID[id] = len(db.tpl) - 1
 		}
@@ -97,6 +102,16 @@ func (db *db) getKey1(key, key1 string) (tpl *Tpl) {
 		tpl = db.tpl[idx]
 	}
 	return
+}
+
+// Get parsed tree by hash sum.
+func (db *db) getTreeByHash(hsum uint32) *Tree {
+	db.mux.RLock()
+	defer db.mux.RUnlock()
+	if idx, ok := db.idxHash[hsum]; ok && idx >= 0 && idx < len(db.tpl) {
+		return db.tpl[idx].tree
+	}
+	return nil
 }
 
 // Get template by list of keys describes as bytes arrays.
