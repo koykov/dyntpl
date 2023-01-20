@@ -37,19 +37,21 @@ func (db *db) set(id int, key string, tree *Tree) {
 		tree: tree,
 	}
 	db.mux.Lock()
-	if idx := db.getIdxLF(id, key); idx >= 0 && idx < len(db.tpl) {
+	var idx int
+	if idx = db.getIdxLF(id, key); idx >= 0 && idx < len(db.tpl) {
 		db.tpl[idx] = &tpl
 	} else {
 		db.tpl = append(db.tpl, &tpl)
+		idx = len(db.tpl) - 1
 		if id >= 0 {
-			db.idxID[id] = len(db.tpl) - 1
+			db.idxID[id] = idx
 		}
 		if key != "-1" {
-			db.idxKey[key] = len(db.tpl) - 1
+			db.idxKey[key] = idx
 		}
 	}
 	if _, ok := db.idxHash[tree.hsum]; !ok {
-		db.idxHash[tree.hsum] = len(db.tpl) - 1
+		db.idxHash[tree.hsum] = idx
 	}
 	db.mux.Unlock()
 }
