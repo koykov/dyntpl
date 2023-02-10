@@ -72,24 +72,23 @@ var (
 	bTrue      = []byte("true")
 
 	// Print prefixes and replacements.
-	outmJ = []byte("j")           // json quote
-	idJ   = []byte("jsonEscape")  // json quote
-	outmQ = []byte("q")           // json quote
-	idQ   = []byte("jsonQuote")   // json quote
-	outmH = []byte("h")           // html escape
-	idH   = []byte("htmlEscape")  // html escape
-	outmL = []byte("l")           // link escape
-	idL   = []byte("linkEscape")  // link escape
-	outmU = []byte("u")           // url encode
-	idU   = []byte("urlEncode")   // url encode
-	outma = []byte("a")           // attr escape
-	ida   = []byte("attrEscape")  // attr escape
-	outmA = []byte("A")           // attr escape (upper case)
-	idA   = []byte("attrEscape1") // attr escape (upper case)
-	outmf = 'f'                   // float precision floor
-	idf   = []byte("floorPrec")   // float precision floor
-	outmF = 'F'                   // float precision ceil
-	idF   = []byte("ceilPrec")    // float precision ceil
+	outmJ = []byte("j")          // json quote
+	idJ   = []byte("jsonEscape") // json quote
+	outmQ = []byte("q")          // json quote
+	idQ   = []byte("jsonQuote")  // json quote
+	outmH = []byte("h")          // html escape
+	idH   = []byte("htmlEscape") // html escape
+	outmL = []byte("l")          // link escape
+	idL   = []byte("linkEscape") // link escape
+	outmU = []byte("u")          // url encode
+	idU   = []byte("urlEncode")  // url encode
+	outma = []byte("a")          // attr escape
+	outmA = []byte("A")          // attr escape (upper case)
+	idA   = []byte("attrEscape") // attr escape
+	outmf = 'f'                  // float precision floor
+	idf   = []byte("floorPrec")  // float precision floor
+	outmF = 'F'                  // float precision ceil
+	idF   = []byte("ceilPrec")   // float precision ceil
 
 	// Operation constants.
 	opEq  = []byte("==")
@@ -843,16 +842,16 @@ func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
 		if a, ok := checkEqMany(outm, outma); ok {
 			fn := GetModFn("attrEscape")
 			mods = append(mods, mod{
-				id:  idU,
+				id:  idA,
 				fn:  fn,
 				arg: []*arg{a, {val: quote, static: true}},
 			})
 		}
 		// - {%A= ... %} - attribute escape.
 		if a, ok := checkEqMany(outm, outmA); ok {
-			fn := GetModFn("AttrEscape")
+			fn := GetModFn("attrEscape")
 			mods = append(mods, mod{
-				id:  idU,
+				id:  idA,
 				fn:  fn,
 				arg: []*arg{a, {val: squote, static: true}},
 			})

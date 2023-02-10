@@ -32,5 +32,17 @@
 			<mod name="urlEncode" sarg0="1"/>
 		</mods>
 	</node>
-	<node type="raw" val="&quot;>go to</a>"/>
+	<node type="raw" val="&quot;>go to</a><link href=&quot;https://fonts.googleapis.com/css2?family="/>
+	<node type="tpl" val="var1">
+		<mods>
+			<mod name="attrEscape" sarg0="1" sarg1="&quot;"/>
+		</mods>
+	</node>
+	<node type="raw" val="&quot;><link href='https://fonts.googleapis.com/css2?family="/>
+	<node type="tpl" val="var1">
+		<mods>
+			<mod name="attrEscape" sarg0="1" sarg1="'"/>
+		</mods>
+	</node>
+	<node type="raw" val="'>"/>
 </nodes>

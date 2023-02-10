@@ -213,7 +213,11 @@ func (t *Tree) hrHelper(buf *bytebuf.ChainBuf, nodes []Node, indent []byte, dept
 						if a.static {
 							pfx = "sarg"
 						}
-						buf.WriteByte(' ').WriteStr(pfx).WriteInt(int64(j)).WriteStr(`="`).Write(a.val).WriteByte('"')
+						v := a.val
+						if bytes.Contains(v, hrQ) {
+							v = bytes.ReplaceAll(v, hrQ, hrQR)
+						}
+						buf.WriteByte(' ').WriteStr(pfx).WriteInt(int64(j)).WriteStr(`="`).Write(v).WriteByte('"')
 					}
 				}
 				buf.WriteStr("/>\n")
