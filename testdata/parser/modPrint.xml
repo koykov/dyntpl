@@ -35,7 +35,7 @@
 	<node type="raw" val="&quot;>go to</a><link href=&quot;https://fonts.googleapis.com/css2?family="/>
 	<node type="tpl" val="var1">
 		<mods>
-			<mod name="attrEscape" sarg0="2"/>
+			<mod name="attrEscape" sarg0="1"/>
 		</mods>
 	</node>
 	<node type="raw" val="&quot;>"/>
