@@ -41,6 +41,9 @@ func TestMod(t *testing.T) {
 	t.Run("modURLEncode3", func(t *testing.T) {
 		testModWA(t, modArgs{"url": `https://golang.org/src/net/url/url.go#L100`})
 	})
+	t.Run("modAttrEscape", func(t *testing.T) {
+		testModWA(t, modArgs{"var1": "foo'bar", "var2": `foo"bar`})
+	})
 	t.Run("modIfThen", func(t *testing.T) { testModWA(t, modArgs{"allow": true}) })
 	t.Run("modIfThenElse", func(t *testing.T) { testModWA(t, modArgs{"logged": true, "userName": "foobar"}) })
 	t.Run("modRound", func(t *testing.T) {

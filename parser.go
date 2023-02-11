@@ -47,7 +47,6 @@ var (
 	quotes     = []byte("\"'`")
 	ddquote    = []byte(`""`)
 	quote      = []byte("\"")
-	squote     = []byte("'")
 	noFmt      = []byte(" \t\n")
 	ctlExit    = []byte("exit")
 	ctlOpen    = []byte("{%")
