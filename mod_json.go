@@ -80,7 +80,6 @@ func jsonEscape(b []byte, buf *bytebuf.AccumulativeBuf) *bytebuf.AccumulativeBuf
 	if l == 0 {
 		return buf
 	}
-	// buf.Reset()
 	_ = b[l-1]
 	for i := 0; i < l; i++ {
 		c := b[i]

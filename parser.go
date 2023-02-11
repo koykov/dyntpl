@@ -82,8 +82,7 @@ var (
 	idL   = []byte("linkEscape") // link escape
 	outmU = []byte("u")          // url encode
 	idU   = []byte("urlEncode")  // url encode
-	outma = []byte("a")          // attr escape
-	outmA = []byte("A")          // attr escape (upper case)
+	outmA = []byte("a")          // attr escape
 	idA   = []byte("attrEscape") // attr escape
 	outmf = 'f'                  // float precision floor
 	idf   = []byte("floorPrec")  // float precision floor
@@ -839,21 +838,12 @@ func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
 			})
 		}
 		// - {%a= ... %} - attribute escape.
-		if a, ok := checkEqMany(outm, outma); ok {
-			fn := GetModFn("attrEscape")
-			mods = append(mods, mod{
-				id:  idA,
-				fn:  fn,
-				arg: []*arg{a, {val: quote, static: true}},
-			})
-		}
-		// - {%A= ... %} - attribute escape.
 		if a, ok := checkEqMany(outm, outmA); ok {
 			fn := GetModFn("attrEscape")
 			mods = append(mods, mod{
 				id:  idA,
 				fn:  fn,
-				arg: []*arg{a, {val: squote, static: true}},
+				arg: []*arg{a},
 			})
 		}
 		if m := reModPfxF.FindSubmatch(outm); m != nil {
