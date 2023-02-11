@@ -1,1 +1,1 @@
-todo
+<span font='foo&amp;&lt;&gt;&quot;&#x27;&#x60;&#x21;&#x40;&#x24;&#x25;&#x28;&#x29;&#x3D;&#x2B;&#x7B;&#x7D;&#x5B;&#x5D;&#x23;&#x3B;bar'><a name="foo&amp;amp&#x3B;&amp;lt&#x3B;&amp;gt&#x3B;&amp;quot&#x3B;&amp;&#x23;x27&#x3B;&amp;&#x23;x60&#x3B;&amp;&#x23;x21&#x3B;&amp;&#x23;x40&#x3B;&amp;&#x23;x24&#x3B;&amp;&#x23;x25&#x3B;&amp;&#x23;x28&#x3B;&amp;&#x23;x29&#x3B;&amp;&#x23;x3D&#x3B;&amp;&#x23;x2B&#x3B;&amp;&#x23;x7B&#x3B;&amp;&#x23;x7D&#x3B;&amp;&#x23;x5B&#x3B;&amp;&#x23;x5D&#x3B;&amp;&#x23;x23&#x3B;&amp;&#x23;x3B&#x3B;bar">

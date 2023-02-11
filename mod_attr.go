@@ -37,7 +37,37 @@ func modAttrEscape(ctx *Ctx, buf *interface{}, val interface{}, args []interface
 			case '"':
 				ctx.BufAcc.WriteStr("&quot;")
 			case '\'':
-				ctx.BufAcc.WriteStr("&#039;")
+				ctx.BufAcc.WriteStr("&#x27;")
+			case '`':
+				ctx.BufAcc.WriteStr("&#x60;")
+			case '!':
+				ctx.BufAcc.WriteStr("&#x21;")
+			case '@':
+				ctx.BufAcc.WriteStr("&#x40;")
+			case '$':
+				ctx.BufAcc.WriteStr("&#x24;")
+			case '%':
+				ctx.BufAcc.WriteStr("&#x25;")
+			case '(':
+				ctx.BufAcc.WriteStr("&#x28;")
+			case ')':
+				ctx.BufAcc.WriteStr("&#x29;")
+			case '=':
+				ctx.BufAcc.WriteStr("&#x3D;")
+			case '+':
+				ctx.BufAcc.WriteStr("&#x2B;")
+			case '{':
+				ctx.BufAcc.WriteStr("&#x7B;")
+			case '}':
+				ctx.BufAcc.WriteStr("&#x7D;")
+			case '[':
+				ctx.BufAcc.WriteStr("&#x5B;")
+			case ']':
+				ctx.BufAcc.WriteStr("&#x5D;")
+			case '#':
+				ctx.BufAcc.WriteStr("&#x23;")
+			case ';':
+				ctx.BufAcc.WriteStr("&#x3B;")
 			default:
 				ctx.BufAcc.WriteByte(b[j])
 			}

@@ -29,6 +29,7 @@ func TestMod(t *testing.T) {
 			"text":  `Visit >`,
 		})
 	})
+	t.Run("modAttrEscape", func(t *testing.T) { testModWA(t, modArgs{"var1": "foo&<>\"'`!@$%()=+{}[]#;bar"}) })
 	t.Run("modLinkEscape", func(t *testing.T) {
 		testModWA(t, modArgs{"link": `http://x.com/link-with-"-and space-symbol`})
 	})
@@ -40,9 +41,6 @@ func TestMod(t *testing.T) {
 	})
 	t.Run("modURLEncode3", func(t *testing.T) {
 		testModWA(t, modArgs{"url": `https://golang.org/src/net/url/url.go#L100`})
-	})
-	t.Run("modAttrEscape", func(t *testing.T) {
-		testModWA(t, modArgs{"var1": "foo'bar", "var2": `foo"bar`})
 	})
 	t.Run("modIfThen", func(t *testing.T) { testModWA(t, modArgs{"allow": true}) })
 	t.Run("modIfThenElse", func(t *testing.T) { testModWA(t, modArgs{"logged": true, "userName": "foobar"}) })
@@ -105,6 +103,7 @@ func BenchmarkMod(b *testing.B) {
 			"text":  `Visit >`,
 		})
 	})
+	b.Run("modAttrEscape", func(b *testing.B) { benchModWA(b, modArgs{"var1": "foo&<>\"'`!@$%()=+{}[]#;bar"}) })
 	b.Run("modLinkEscape", func(b *testing.B) {
 		benchModWA(b, modArgs{"link": `http://x.com/link-with-"-and space-symbol`})
 	})
