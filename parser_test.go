@@ -17,6 +17,7 @@ func TestParser(t *testing.T) {
 	t.Run("modNestedArg", func(t *testing.T) { testParser(t) })
 	t.Run("modPrint", func(t *testing.T) { testParser(t) })
 	t.Run("modPrintMulti", func(t *testing.T) { testParser(t) })
+	t.Run("modPrintMix", func(t *testing.T) { testParser(t) })
 	t.Run("ctxDot", func(t *testing.T) { testParser(t) })
 	t.Run("ctxDot1", func(t *testing.T) { testParser(t) })
 	t.Run("ctxModDot", func(t *testing.T) { testParser(t) })
