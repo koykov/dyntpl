@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+	<node type="raw" val="{&quot;key&quot;:&quot;"/>
+	<node type="tpl" val="var1">
+		<mods>
+			<mod name="jsonEscape" sarg0="3"/>
+		</mods>
+	</node>
+	<node type="raw" val="&quot;}{&quot;key&quot;:"/>
+	<node type="tpl" val="var1">
+		<mods>
+			<mod name="jsonQuote" sarg0="3"/>
+		</mods>
+	</node>
+	<node type="raw" val="}<h1>"/>
+	<node type="tpl" val="var1">
+		<mods>
+			<mod name="htmlEscape" sarg0="3"/>
+		</mods>
+	</node>
+	<node type="raw" val="</h1><a href=&quot;"/>
+	<node type="tpl" val="var1">
+		<mods>
+			<mod name="linkEscape" sarg0="3"/>
+		</mods>
+	</node>
+	<node type="raw" val="&quot;>go to</a><a href=&quot;https://ya.ru?q="/>
+	<node type="tpl" val="var1">
+		<mods>
+			<mod name="urlEncode" sarg0="3"/>
+		</mods>
+	</node>
+	<node type="raw" val="&quot;>go to</a><link href=&quot;https://fonts.googleapis.com/css2?family="/>
+	<node type="tpl" val="var1">
+		<mods>
+			<mod name="attrEscape" sarg0="3"/>
+		</mods>
+	</node>
+	<node type="raw" val="&quot;>"/>
+</nodes>
