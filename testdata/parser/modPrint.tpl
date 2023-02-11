@@ -5,3 +5,5 @@ foo{%= var1 %}bar
 <a href="{%l= var1 %}">go to</a>
 <a href="https://ya.ru?q={%u= var1 %}">go to</a>
 <link href="https://fonts.googleapis.com/css2?family={%a= var1 %}">
+foo{%f.5= var1 %}bar
+asd{%F.3= var1 %}fgh

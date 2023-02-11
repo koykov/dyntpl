@@ -38,5 +38,17 @@
 			<mod name="attrEscape" sarg0="1"/>
 		</mods>
 	</node>
-	<node type="raw" val="&quot;>"/>
+	<node type="raw" val="&quot;>foo"/>
+	<node type="tpl" val="var1">
+		<mods>
+			<mod name="floorPrec" sarg0="5"/>
+		</mods>
+	</node>
+	<node type="raw" val="barasd"/>
+	<node type="tpl" val="var1">
+		<mods>
+			<mod name="ceilPrec" sarg0="3"/>
+		</mods>
+	</node>
+	<node type="raw" val="fgh"/>
 </nodes>
