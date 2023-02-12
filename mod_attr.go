@@ -1,27 +1,15 @@
 package dyntpl
 
-import "github.com/koykov/fastconv"
-
 // Attribute escape.
 func modAttrEscape(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
 	// Get count of encode iterations (cases: aa=, aaa=, AA=, AAA=, ...).
 	itr := printIterations(args)
 
 	// Get string to escape.
-	var b []byte
-	switch val.(type) {
-	case []byte:
-		b = val.([]byte)
-	case *[]byte:
-		b = *val.(*[]byte)
-	case string:
-		b = fastconv.S2B(val.(string))
-	case *string:
-		b = fastconv.S2B(*val.(*string))
-	default:
-		err = ErrModNoStr
-		return
+	if ctx.BufAcc.StakeOut().WriteX(val).Error() != nil {
+		return ErrModNoStr
 	}
+	b := ctx.BufAcc.StakedBytes()
 
 	// Apply escape.
 	for i := 0; i < itr; i++ {
