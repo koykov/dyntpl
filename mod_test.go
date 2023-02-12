@@ -29,6 +29,10 @@ func TestMod(t *testing.T) {
 			"text":  `Visit >`,
 		})
 	})
+	t.Run("modAttrEscape", func(t *testing.T) { testModWA(t, modArgs{"var1": "foo&<>\"'`!@$%()=+{}[]#;bar"}) })
+	t.Run("modAttrEscapeMB", func(t *testing.T) { testModWA(t, modArgs{"var1": "Привет мир😀!"}) })
+	t.Run("modCSSEscape", func(t *testing.T) { testModWA(t, modArgs{"var1": "<>'\"&Ā,._aAzZ09 !😀"}) })
+	t.Run("modJSEscape", func(t *testing.T) { testModWA(t, modArgs{"var1": "<>'\"&/,._aAzZ09 Ā😀"}) })
 	t.Run("modLinkEscape", func(t *testing.T) {
 		testModWA(t, modArgs{"link": `http://x.com/link-with-"-and space-symbol`})
 	})
@@ -102,6 +106,10 @@ func BenchmarkMod(b *testing.B) {
 			"text":  `Visit >`,
 		})
 	})
+	b.Run("modAttrEscape", func(b *testing.B) { benchModWA(b, modArgs{"var1": "foo&<>\"'`!@$%()=+{}[]#;bar"}) })
+	b.Run("modAttrEscapeMB", func(b *testing.B) { benchModWA(b, modArgs{"var1": "Привет мир😀!"}) })
+	b.Run("modCSSEscape", func(b *testing.B) { benchModWA(b, modArgs{"var1": "<>'\"&Ā,._aAzZ09 !😀"}) })
+	b.Run("modJSEscape", func(b *testing.B) { benchModWA(b, modArgs{"var1": "<>'\"&/,._aAzZ09 Ā😀"}) })
 	b.Run("modLinkEscape", func(b *testing.B) {
 		benchModWA(b, modArgs{"link": `http://x.com/link-with-"-and space-symbol`})
 	})

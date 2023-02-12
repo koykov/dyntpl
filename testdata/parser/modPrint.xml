@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+	<node type="raw" val="foo"/>
+	<node type="tpl" val="var1"/>
+	<node type="raw" val="bar{&quot;key&quot;:&quot;"/>
+	<node type="tpl" val="var1">
+		<mods>
+			<mod name="jsonEscape" sarg0="1"/>
+		</mods>
+	</node>
+	<node type="raw" val="&quot;}{&quot;key&quot;:"/>
+	<node type="tpl" val="var1">
+		<mods>
+			<mod name="jsonQuote" sarg0="1"/>
+		</mods>
+	</node>
+	<node type="raw" val="}<h1>"/>
+	<node type="tpl" val="var1">
+		<mods>
+			<mod name="htmlEscape" sarg0="1"/>
+		</mods>
+	</node>
+	<node type="raw" val="</h1><a href=&quot;"/>
+	<node type="tpl" val="var1">
+		<mods>
+			<mod name="linkEscape" sarg0="1"/>
+		</mods>
+	</node>
+	<node type="raw" val="&quot;>go to</a><a href=&quot;https://ya.ru?q="/>
+	<node type="tpl" val="var1">
+		<mods>
+			<mod name="urlEncode" sarg0="1"/>
+		</mods>
+	</node>
+	<node type="raw" val="&quot;>go to</a><link href=&quot;https://fonts.googleapis.com/css2?family="/>
+	<node type="tpl" val="var1">
+		<mods>
+			<mod name="attrEscape" sarg0="1"/>
+		</mods>
+	</node>
+	<node type="raw" val="&quot;>foo"/>
+	<node type="tpl" val="var1">
+		<mods>
+			<mod name="floorPrec" sarg0="5"/>
+		</mods>
+	</node>
+	<node type="raw" val="barasd"/>
+	<node type="tpl" val="var1">
+		<mods>
+			<mod name="ceilPrec" sarg0="3"/>
+		</mods>
+	</node>
+	<node type="raw" val="fghbackground:url("/>
+	<node type="tpl" val="var1">
+		<mods>
+			<mod name="cssEscape" sarg0="1"/>
+		</mods>
+	</node>
+	<node type="raw" val=");<script>"/>
+	<node type="tpl" val="var1">
+		<mods>
+			<mod name="jsEscape" sarg0="1"/>
+		</mods>
+	</node>
+	<node type="raw" val="</script>"/>
+</nodes>

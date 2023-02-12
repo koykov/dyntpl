@@ -37,7 +37,6 @@ type target map[int]int
 var (
 	// Byte constants.
 	empty      []byte
-	one        = []byte("1")
 	space      = []byte(" ")
 	spaceCBE   = []byte("} ")
 	comma      = []byte(",")
@@ -46,6 +45,7 @@ var (
 	colon      = []byte(":")
 	quotes     = []byte("\"'`")
 	ddquote    = []byte(`""`)
+	quote      = []byte("\"")
 	noFmt      = []byte(" \t\n")
 	ctlExit    = []byte("exit")
 	ctlOpen    = []byte("{%")
@@ -70,20 +70,18 @@ var (
 	bTrue      = []byte("true")
 
 	// Print prefixes and replacements.
-	outmJ = []byte("j")          // json quote
-	idJ   = []byte("jsonEscape") // json quote
-	outmQ = []byte("q")          // json quote
-	idQ   = []byte("jsonQuote")  // json quote
-	outmH = []byte("h")          // html escape
-	idH   = []byte("htmlEscape") // html escape
-	outmL = []byte("l")          // link escape
-	idL   = []byte("linkEscape") // link escape
-	outmU = []byte("u")          // url encode
-	idU   = []byte("urlEncode")  // url encode
-	outmf = 'f'                  // float precision floor
-	idf   = []byte("floorPrec")  // float precision floor
-	outmF = 'F'                  // float precision ceil
-	idF   = []byte("ceilPrec")   // float precision ceil
+	idJ   = []byte("jsonEscape")
+	idQ   = []byte("jsonQuote")
+	idH   = []byte("htmlEscape")
+	idL   = []byte("linkEscape")
+	idU   = []byte("urlEncode")
+	idA   = []byte("attrEscape")
+	idC   = []byte("cssEscape")
+	idJS  = []byte("jsEscape")
+	outmf = 'f'                 // float precision floor
+	idf   = []byte("floorPrec") // float precision floor
+	outmF = 'F'                 // float precision ceil
+	idF   = []byte("ceilPrec")  // float precision ceil
 
 	// Operation constants.
 	opEq  = []byte("==")
@@ -100,11 +98,11 @@ var (
 	reCutFmt      = regexp.MustCompile(`\n+\t*\s*`)
 
 	// Regexp to parse print instructions.
-	reTplPS    = regexp.MustCompile(`^([jhqlu]*|[fF]\.*\d*)=\s*(.*) (?:prefix|pfx) (.*) (?:suffix|sfx) (.*)`)
-	reTplP     = regexp.MustCompile(`^([jhqlu]*|[fF]\.*\d*)=\s*(.*) (?:prefix|pfx) (.*)`)
-	reTplS     = regexp.MustCompile(`^([jhqlu]*|[fF]\.*\d*)=\s*(.*) (?:suffix|sfx) (.*)`)
-	reTpl      = regexp.MustCompile(`^([jhqlu]*|[fF]\.*\d*)=\s*(.*)`)
-	reModPfxF  = regexp.MustCompile(`([fF]+)\.*(\d*)`)
+	reTplPS    = regexp.MustCompile(`^([jhqluacJfF.\d]*)=\s*(.*) (?:prefix|pfx) (.*) (?:suffix|sfx) (.*)`)
+	reTplP     = regexp.MustCompile(`^([jhqluacJfF.\d]*)=\s*(.*) (?:prefix|pfx) (.*)`)
+	reTplS     = regexp.MustCompile(`^([jhqluacJfF.\d]*)=\s*(.*) (?:suffix|sfx) (.*)`)
+	reTpl      = regexp.MustCompile(`^([jhqluacJfF.\d]*)=\s*(.*)`)
+	reModPfxF  = regexp.MustCompile(`([fF]+)\.*(\d*).*`)
 	reModNoVar = regexp.MustCompile(`([^(]+)\(([^)]*)\)`)
 	reMod      = regexp.MustCompile(`([^(]+)\(*([^)]*)\)*`)
 
@@ -777,80 +775,130 @@ func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
 		}
 
 		// Second check prefix mods, like {%q= ... %}, {%u= ... %}, ...
-		// check single or multiple prefix mod
-		checkEqMany := func(a, b []byte) (*arg, bool) {
-			if len(a) == 1 && len(b) == 1 && bytes.Equal(a, b) {
-				return &arg{val: one, static: true}, true
+		if len(outm) > 0 {
+			getc := func(p []byte, c byte, off int) (n int) {
+				for i := off; i < len(p); i++ {
+					if p[i] != c {
+						break
+					}
+					n++
+				}
+				return
 			}
-			if len(a) > 1 && len(b) == 1 && a[0] == b[0] {
-				cnt := strconv.Itoa(len(a))
-				return &arg{val: fastconv.S2B(cnt), static: true}, bytes.Equal(a, bytes.Repeat(b, len(a)))
-			}
-			return nil, false
-		}
-		// - {%j= ... %} - JSON escape.
-		if a, ok := checkEqMany(outm, outmJ); ok {
-			fn := GetModFn("jsonEscape")
-			mods = append(mods, mod{
-				id:  idJ,
-				fn:  fn,
-				arg: []*arg{a},
-			})
-		}
-		// - {%q= ... %} - JSON quote.
-		if a, ok := checkEqMany(outm, outmQ); ok {
-			fn := GetModFn("jsonQuote")
-			mods = append(mods, mod{
-				id:  idQ,
-				fn:  fn,
-				arg: []*arg{a},
-			})
-		}
-		// - {%h= ... %} - HTML escape.
-		if a, ok := checkEqMany(outm, outmH); ok {
-			fn := GetModFn("htmlEscape")
-			mods = append(mods, mod{
-				id:  idH,
-				fn:  fn,
-				arg: []*arg{a},
-			})
-		}
-		// - {%l= ... %} - link escape.
-		if a, ok := checkEqMany(outm, outmL); ok {
-			fn := GetModFn("linkEscape")
-			mods = append(mods, mod{
-				id:  idL,
-				fn:  fn,
-				arg: []*arg{a},
-			})
-		}
-		// - {%u= ... %} - URL encode.
-		if a, ok := checkEqMany(outm, outmU); ok {
-			fn := GetModFn("urlEncode")
-			mods = append(mods, mod{
-				id:  idU,
-				fn:  fn,
-				arg: []*arg{a},
-			})
-		}
-		if m := reModPfxF.FindSubmatch(outm); m != nil {
-			switch m[1][0] {
-			case byte(outmf):
-				// - {%f.<prec>= ... %} - Float with precision.
-				fn := GetModFn("floorPrec")
-				mods = append(mods, mod{
-					id:  idf,
-					fn:  fn,
-					arg: []*arg{{nil, m[2], true}},
-				})
-			case byte(outmF):
-				// - {%F.<prec>= ... %} - Ceil rounded to precision float.
-				fn := GetModFn("ceilPrec")
-				mods = append(mods, mod{
-					id:  idF,
-					fn:  fn,
-					arg: []*arg{{nil, m[2], true}},
-				})
+			for off := 0; off < len(outm); {
+				if outm[off] == 'j' {
+					// - {%j= ... %} - JSON escape.
+					fn := GetModFn("jsonEscape")
+					c := getc(outm, 'j', off)
+					off += c
+					a := arg{val: []byte(strconv.Itoa(c)), static: true}
+					mods = append(mods, mod{
+						id:  idJ,
+						fn:  fn,
+						arg: []*arg{&a},
+					})
+				} else if outm[off] == 'q' {
+					// - {%q= ... %} - JSON quote.
+					fn := GetModFn("jsonQuote")
+					c := getc(outm, 'q', off)
+					off += c
+					a := arg{val: []byte(strconv.Itoa(c)), static: true}
+					mods = append(mods, mod{
+						id:  idQ,
+						fn:  fn,
+						arg: []*arg{&a},
+					})
+				} else if outm[off] == 'h' {
+					// - {%h= ... %} - HTML escape.
+					fn := GetModFn("htmlEscape")
+					c := getc(outm, 'h', off)
+					off += c
+					a := arg{val: []byte(strconv.Itoa(c)), static: true}
+					mods = append(mods, mod{
+						id:  idH,
+						fn:  fn,
+						arg: []*arg{&a},
+					})
+				} else if outm[off] == 'l' {
+					// - {%l= ... %} - link escape.
+					fn := GetModFn("linkEscape")
+					c := getc(outm, 'l', off)
+					off += c
+					a := arg{val: []byte(strconv.Itoa(c)), static: true}
+					mods = append(mods, mod{
+						id:  idL,
+						fn:  fn,
+						arg: []*arg{&a},
+					})
+				} else if outm[off] == 'u' {
+					// - {%u= ... %} - URL encode.
+					fn := GetModFn("urlEncode")
+					c := getc(outm, 'u', off)
+					off += c
+					a := arg{val: []byte(strconv.Itoa(c)), static: true}
+					mods = append(mods, mod{
+						id:  idU,
+						fn:  fn,
+						arg: []*arg{&a},
+					})
+				} else if outm[off] == 'a' {
+					// - {%a= ... %} - attribute escape.
+					fn := GetModFn("attrEscape")
+					c := getc(outm, 'a', off)
+					off += c
+					a := arg{val: []byte(strconv.Itoa(c)), static: true}
+					mods = append(mods, mod{
+						id:  idA,
+						fn:  fn,
+						arg: []*arg{&a},
+					})
+				} else if outm[off] == 'c' {
+					// - {%c= ... %} - attribute escape.
+					fn := GetModFn("cssEscape")
+					c := getc(outm, 'c', off)
+					off += c
+					a := arg{val: []byte(strconv.Itoa(c)), static: true}
+					mods = append(mods, mod{
+						id:  idC,
+						fn:  fn,
+						arg: []*arg{&a},
+					})
+				} else if outm[off] == 'J' {
+					// - {%J= ... %} - attribute escape.
+					fn := GetModFn("jsEscape")
+					c := getc(outm, 'J', off)
+					off += c
+					a := arg{val: []byte(strconv.Itoa(c)), static: true}
+					mods = append(mods, mod{
+						id:  idJS,
+						fn:  fn,
+						arg: []*arg{&a},
+					})
+				} else if m := reModPfxF.FindSubmatch(outm[off:]); m != nil {
+					switch m[1][0] {
+					case byte(outmf):
+						// - {%f.<prec>= ... %} - Float with precision.
+						fn := GetModFn("floorPrec")
+						mods = append(mods, mod{
+							id:  idf,
+							fn:  fn,
+							arg: []*arg{{nil, m[2], true}},
+						})
+					case byte(outmF):
+						// - {%F.<prec>= ... %} - Ceil rounded to precision float.
+						fn := GetModFn("ceilPrec")
+						mods = append(mods, mod{
+							id:  idF,
+							fn:  fn,
+							arg: []*arg{{nil, m[2], true}},
+						})
+					}
+					off += len(m[2]) + 2
+				} else {
+					// Unknown print modifier. Ignore it.
+					// Perhaps need report error here.
+					off++
+				}
 			}
 		}
 
