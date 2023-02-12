@@ -50,5 +50,11 @@
 			<mod name="ceilPrec" sarg0="3"/>
 		</mods>
 	</node>
-	<node type="raw" val="fgh"/>
+	<node type="raw" val="fghbackground:url("/>
+	<node type="tpl" val="var1">
+		<mods>
+			<mod name="cssEscape" sarg0="1"/>
+		</mods>
+	</node>
+	<node type="raw" val=");"/>
 </nodes>

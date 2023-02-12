@@ -76,6 +76,7 @@ var (
 	idL   = []byte("linkEscape")
 	idU   = []byte("urlEncode")
 	idA   = []byte("attrEscape")
+	idC   = []byte("cssEscape")
 	outmf = 'f'                 // float precision floor
 	idf   = []byte("floorPrec") // float precision floor
 	outmF = 'F'                 // float precision ceil
@@ -96,10 +97,10 @@ var (
 	reCutFmt      = regexp.MustCompile(`\n+\t*\s*`)
 
 	// Regexp to parse print instructions.
-	reTplPS    = regexp.MustCompile(`^([jhqluafF.\d]*)=\s*(.*) (?:prefix|pfx) (.*) (?:suffix|sfx) (.*)`)
-	reTplP     = regexp.MustCompile(`^([jhqluafF.\d]*)=\s*(.*) (?:prefix|pfx) (.*)`)
-	reTplS     = regexp.MustCompile(`^([jhqluafF.\d]*)=\s*(.*) (?:suffix|sfx) (.*)`)
-	reTpl      = regexp.MustCompile(`^([jhqluafF.\d]*)=\s*(.*)`)
+	reTplPS    = regexp.MustCompile(`^([jhqluacfF.\d]*)=\s*(.*) (?:prefix|pfx) (.*) (?:suffix|sfx) (.*)`)
+	reTplP     = regexp.MustCompile(`^([jhqluacfF.\d]*)=\s*(.*) (?:prefix|pfx) (.*)`)
+	reTplS     = regexp.MustCompile(`^([jhqluacfF.\d]*)=\s*(.*) (?:suffix|sfx) (.*)`)
+	reTpl      = regexp.MustCompile(`^([jhqluacfF.\d]*)=\s*(.*)`)
 	reModPfxF  = regexp.MustCompile(`([fF]+)\.*(\d*).*`)
 	reModNoVar = regexp.MustCompile(`([^(]+)\(([^)]*)\)`)
 	reMod      = regexp.MustCompile(`([^(]+)\(*([^)]*)\)*`)
@@ -847,6 +848,17 @@ func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
 					a := arg{val: []byte(strconv.Itoa(c)), static: true}
 					mods = append(mods, mod{
 						id:  idA,
+						fn:  fn,
+						arg: []*arg{&a},
+					})
+				} else if outm[off] == 'c' {
+					// - {%c= ... %} - attribute escape.
+					fn := GetModFn("cssEscape")
+					c := getc(outm, 'c', off)
+					off += c
+					a := arg{val: []byte(strconv.Itoa(c)), static: true}
+					mods = append(mods, mod{
+						id:  idC,
 						fn:  fn,
 						arg: []*arg{&a},
 					})

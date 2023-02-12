@@ -7,3 +7,4 @@ foo{%= var1 %}bar
 <link href="https://fonts.googleapis.com/css2?family={%a= var1 %}">
 foo{%f.5= var1 %}bar
 asd{%F.3= var1 %}fgh
+background:url({%c= var1 %});
