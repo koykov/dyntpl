@@ -8,3 +8,4 @@ foo{%= var1 %}bar
 foo{%f.5= var1 %}bar
 asd{%F.3= var1 %}fgh
 background:url({%c= var1 %});
+<script>{%J= var1 %}</script>

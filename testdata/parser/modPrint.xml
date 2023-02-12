@@ -56,5 +56,11 @@
 			<mod name="cssEscape" sarg0="1"/>
 		</mods>
 	</node>
-	<node type="raw" val=");"/>
+	<node type="raw" val=");<script>"/>
+	<node type="tpl" val="var1">
+		<mods>
+			<mod name="jsEscape" sarg0="1"/>
+		</mods>
+	</node>
+	<node type="raw" val="</script>"/>
 </nodes>
