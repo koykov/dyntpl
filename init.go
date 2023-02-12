@@ -20,6 +20,7 @@ func init() {
 	RegisterModFn("urlEncode", "ue", modURLEncode)
 	RegisterModFn("attrEscape", "ae", modAttrEscape)
 	RegisterModFn("cssEscape", "ce", modCSSEscape)
+	RegisterModFn("jsEscape", "jse", modJSEscape)
 
 	// Register builtin round modifiers.
 	RegisterModFn("round", "round", modRound)
