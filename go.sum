@@ -2,8 +2,8 @@ github.com/koykov/batch_replace v1.1.0 h1:KE9G3uQUT/uzZD1Mo0zkmQPzpdccUm181mwM2c
 github.com/koykov/batch_replace v1.1.0/go.mod h1:8eMg4KQuz3bxaiOmA3SzgMsJaKY6l65vlnwr/Ozpo/I=
 github.com/koykov/bytealg v1.0.1 h1:WlD9/4PMThmfQuIRVpVCujzM/3AVTEwlgvaYrErO9Nk=
 github.com/koykov/bytealg v1.0.1/go.mod h1:kMvejxwPkAt7YfHpB1PQ/utMwKpHSY54u1rCxna6Wvg=
-github.com/koykov/bytebuf v1.0.1 h1:2n6YrsxR16+x7raVUTqN6ZCU0cJ+VA5qn3ncqzQqMmI=
-github.com/koykov/bytebuf v1.0.1/go.mod h1:E+SABMRkI1wTGVjSNm4JN6zUBtjbos6F4bkYkx2GtcI=
+github.com/koykov/bytebuf v1.0.2 h1:JPD06ZAm8X5mbkQfxfPcOGXkyg8ooyKbVtdN2H9Iiqs=
+github.com/koykov/bytebuf v1.0.2/go.mod h1:E+SABMRkI1wTGVjSNm4JN6zUBtjbos6F4bkYkx2GtcI=
 github.com/koykov/byteptr v1.0.0 h1:tOMEM2qwfFOKTeMNgnzHKyBVWeXxiD1SduLlbzVKJJg=
 github.com/koykov/byteptr v1.0.0/go.mod h1:SSRuU7v8JgUo1deHib6Za8s6ya1PQEG2gNpRVKsO3QM=
 github.com/koykov/entry v1.0.1 h1:XurTLzqcbluBKMJqBB23HoKrkd1tdp5nH8RrbSE9Jl0=
