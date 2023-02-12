@@ -109,19 +109,25 @@ This is a field of struct: {%= obj.Parent.Name %}
 Construction `{%= ... %}` prints data as is, independent of its type.
 
 There are special directives before `=` that modifies output before printing:
-* `h` - HTML-escape output.
-* `j` - JSON-escape output.
-* `q` - JSON-quote.
-* `u` - URL-encode output.
-* `l` - Link-escape output.
+* `h` - HTML escape.
+* `a` - HTML attribute escape.
+* `j` - JSON escape.
+* `q` - JSON quote.
+* `J` - JS escape.
+* `u` - URL encode.
+* `l` - Link escape.
+* `c` - CSS escape.
 * `f.<num>` - float with precision, example: `{%f.3= 3.1415 %}` will output `3.141`.
 * `F.<num>` - ceil rounded float with precision, example: `{%F.3= 3.1415 %}` will output `3.142`.
 
 Note, that none of these directives doesn't apply by default. It's your responsibility to controls what and where you print.
 
-Directives `j`, `h` and `u` supports multipliers, like `jj=`, `uu=`, `uuu=`, ...
+All directives supports multipliers, like `{%jj= ... %}`, `{%uu= ... %}`, `{%uuu= ... %}`, ...
 
 For example, the following instruction `{%uu= someUrl %}` will print double url-encoded value of `someUrl`.
+
+Also, you may combine directives, eg `{%Ja= var1 %}`. In this example JS escape and URL encode will apply consecutively
+before output `var1`.
 
 Print construction supports prefix and suffix attributes, it may be handy when you print HTML or XML:
 ```html
