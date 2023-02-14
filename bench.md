@@ -1,0 +1,53 @@
+# Benchmarks
+
+```
+BenchmarkTpl/condition-8                 1311134	       983.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTpl/conditionHelper-8         	 3377134	       355.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTpl/conditionNoStatic-8       	 1000000	      1149 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTpl/conditionOK-8             	  286275	      4136 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTpl/conditionStr-8            	 3293070	       328.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTpl/counter0-8                	  602942	      2085 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTpl/counter1-8                	  488251	      2532 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTpl/ctxOK-8                   	 1451350	       863.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTpl/exit-8                    	 3129615	       357.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTpl/includeHost-8             	 1931149	       615.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTpl/includeHostJS-8           	 1000000	      1110 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTpl/loopCount-8               	  193197	      6055 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTpl/loopCountBreak-8          	  187999	      7339 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTpl/loopCountBreakN-8         	  182666	      7622 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTpl/loopCountContinue-8       	  147439	      8531 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTpl/loopCountCtx-8            	  194248	      6223 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTpl/loopCountLazybreak-8      	  231560	      4688 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTpl/loopCountLazybreakN-8     	  148591	      6978 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTpl/loopCountStatic-8         	  218581	      5744 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTpl/loopRange-8               	  265495	      4512 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTpl/loopRangeLazybreakN-8     	  211413	      5733 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTpl/raw-8                     	 7804897	       164.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTpl/simple-8                  	  993526	      1200 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTpl/switch-8                  	 1302399	       919.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkTpl/switchNoCondition-8       	 1670337	       710.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkI18n/i18n-8                   	 1362742	       906.8 ns/op	       0 B/op	       0 allocs/op
+BenchmarkI18n/i18nPlural-8             	 1956316	       638.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkI18n/i18nPluralExt-8          	 1827032	       658.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkI18n/i18nSetLocale-8          	 1230222	       961.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkMod/modDefault-8              	 2504716	       488.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkMod/modDefaultStatic-8        	 1689326	       670.3 ns/op	       0 B/op	       0 allocs/op
+BenchmarkMod/modDefault1-8             	 3151796	       373.0 ns/op	       0 B/op	       0 allocs/op
+BenchmarkMod/modJSONEscape-8           	 2090421	       565.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkMod/modJSONEscapeShort-8      	 1955150	       599.2 ns/op	       0 B/op	       0 allocs/op
+BenchmarkMod/modJSONEscapeDbl-8        	  902782	      1306 ns/op	       0 B/op	       0 allocs/op
+BenchmarkMod/modJSONQuoteShort-8       	 1971082	       651.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkMod/modHtmlEscape-8           	  728499	      1568 ns/op	       0 B/op	       0 allocs/op
+BenchmarkMod/modHtmlEscapeShort-8      	  707343	      1683 ns/op	       0 B/op	       0 allocs/op
+BenchmarkMod/modAttrEscape-8           	  341512	      3499 ns/op	       0 B/op	       0 allocs/op
+BenchmarkMod/modAttrEscapeMB-8         	 1000000	      1120 ns/op	       0 B/op	       0 allocs/op
+BenchmarkMod/modCSSEscape-8            	  842694	      1380 ns/op	       0 B/op	       0 allocs/op
+BenchmarkMod/modJSEscape-8             	 1000000	      1001 ns/op	       0 B/op	       0 allocs/op
+BenchmarkMod/modLinkEscape-8           	 1549305	       768.1 ns/op	       0 B/op	       0 allocs/op
+BenchmarkMod/modURLEncode-8            	 1691002	       723.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkMod/modURLEncode2-8           	 1252048	       968.9 ns/op	       0 B/op	       0 allocs/op
+BenchmarkMod/modURLEncode3-8           	 1037336	      1220 ns/op	       0 B/op	       0 allocs/op
+BenchmarkMod/modIfThen-8               	 3685759	       307.5 ns/op	       0 B/op	       0 allocs/op
+BenchmarkMod/modIfThenElse-8           	 2047888	       538.7 ns/op	       0 B/op	       0 allocs/op
+BenchmarkMod/modRound-8                	  389305	      3020 ns/op	       0 B/op	       0 allocs/op
+```
