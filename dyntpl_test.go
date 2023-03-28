@@ -31,6 +31,7 @@ func TestTpl(t *testing.T) {
 	t.Run("simple", func(t *testing.T) { testTpl(t) })
 	t.Run("switch", func(t *testing.T) { testTpl(t) })
 	t.Run("switchNoCondition", func(t *testing.T) { testTpl(t) })
+	t.Run("field404", func(t *testing.T) { testTpl(t) })
 }
 
 func testTpl(t *testing.T) {
@@ -103,6 +104,7 @@ func BenchmarkTpl(b *testing.B) {
 	b.Run("simple", func(b *testing.B) { benchTpl(b) })
 	b.Run("switch", func(b *testing.B) { benchTpl(b) })
 	b.Run("switchNoCondition", func(b *testing.B) { benchTpl(b) })
+	b.Run("field404", func(b *testing.B) { benchTpl(b) })
 }
 
 func benchTpl(b *testing.B) {

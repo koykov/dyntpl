@@ -346,6 +346,7 @@ func (c *Ctx) get(path []byte) interface{} {
 			}
 			// Inspect variable using inspector object.
 			// Give search path as list of splitted path minus first key, e.g. []string{"Bio", "Birthday"}
+			c.bufX = nil
 			c.Err = v.ins.GetTo(v.val, &c.bufX, c.bufS[1:]...)
 			if c.Err != nil {
 				return nil
