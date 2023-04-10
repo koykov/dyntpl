@@ -374,9 +374,9 @@ func (c *Ctx) cmp(path []byte, cond Op, right []byte) bool {
 		if v.key == c.bufS[0] {
 			// Compare var with right value using inspector.
 			if v.cntrF {
-				c.Err = v.ins.Cmp(v.cntr, inspector.Op(cond), fastconv.B2S(right), &c.BufB, c.bufS[1:]...)
+				c.Err = v.ins.Compare(v.cntr, inspector.Op(cond), fastconv.B2S(right), &c.BufB, c.bufS[1:]...)
 			} else {
-				c.Err = v.ins.Cmp(v.val, inspector.Op(cond), fastconv.B2S(right), &c.BufB, c.bufS[1:]...)
+				c.Err = v.ins.Compare(v.val, inspector.Op(cond), fastconv.B2S(right), &c.BufB, c.bufS[1:]...)
 			}
 			if c.Err != nil {
 				return false
