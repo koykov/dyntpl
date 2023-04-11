@@ -3,7 +3,7 @@ package dyntpl
 import "github.com/koykov/inspector/testobj"
 
 // CondOKFn describes helper func signature.
-type CondOKFn func(ctx *Ctx, v *interface{}, ok *bool, args []interface{})
+type CondOKFn func(ctx *Ctx, v *any, ok *bool, args []any)
 
 var (
 	// Registry of condition-OK helpers.
@@ -24,7 +24,7 @@ func GetCondOKFn(name string) *CondOKFn {
 }
 
 // Simple example of condition-OK helper func.
-func testCondOK(ctx *Ctx, v *interface{}, ok *bool, args []interface{}) {
+func testCondOK(ctx *Ctx, v *any, ok *bool, args []any) {
 	if len(args) == 0 {
 		*ok = false
 		return

@@ -15,7 +15,7 @@ const (
 )
 
 // If var is empty, the given default value (first in args) will print instead.
-func modDefault(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
+func modDefault(ctx *Ctx, buf *any, val any, args []any) (err error) {
 	if len(args) == 0 {
 		err = ErrModNoArgs
 		return
@@ -30,7 +30,7 @@ func modDefault(ctx *Ctx, buf *interface{}, val interface{}, args []interface{})
 // Shorthand replacement of {% if ... %}{%= ... %}{% endif %} statement.
 //
 // Example of usage: {%= leftVal|ifThen(val) %}, leftVal should be a boolean.
-func modIfThen(_ *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
+func modIfThen(_ *Ctx, buf *any, val any, args []any) (err error) {
 	if len(args) == 0 {
 		err = ErrModNoArgs
 		return
@@ -47,7 +47,7 @@ func modIfThen(_ *Ctx, buf *interface{}, val interface{}, args []interface{}) (e
 //
 // Example of usage: {%= leftVal|ifThenElse(valIfTrue, valIfFalse) %}, leftVal should be a boolean.
 // valIfTrue and valIfFalse may has arbitrary types or may be a static values.
-func modIfThenElse(_ *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
+func modIfThenElse(_ *Ctx, buf *any, val any, args []any) (err error) {
 	if len(args) < 2 {
 		err = ErrModPoorArgs
 		return
@@ -63,7 +63,7 @@ func modIfThenElse(_ *Ctx, buf *interface{}, val interface{}, args []interface{}
 }
 
 // Round float val to integer using rounding half away from zero algorithm.
-func modRound(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
+func modRound(ctx *Ctx, buf *any, val any, args []any) (err error) {
 	if f, ok := ConvFloat(val); ok {
 		ctx.BufF = roundHelper(f, round, args)
 		*buf = &ctx.BufF
@@ -72,7 +72,7 @@ func modRound(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) (
 }
 
 // Round to precision, example: pi|roundPrec(3) will print 3.141
-func modRoundPrec(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
+func modRoundPrec(ctx *Ctx, buf *any, val any, args []any) (err error) {
 	if f, ok := ConvFloat(val); ok {
 		ctx.BufF = roundHelper(f, roundPrec, args)
 		*buf = &ctx.BufF
@@ -81,7 +81,7 @@ func modRoundPrec(ctx *Ctx, buf *interface{}, val interface{}, args []interface{
 }
 
 // Round to least integer value greater than or equal to val.
-func modCeil(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
+func modCeil(ctx *Ctx, buf *any, val any, args []any) (err error) {
 	if f, ok := ConvFloat(val); ok {
 		ctx.BufF = roundHelper(f, ceil, args)
 		*buf = &ctx.BufF
@@ -90,7 +90,7 @@ func modCeil(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) (e
 }
 
 // Ceil round to precision, example: 56.68734|ceilPrec will print 56.688
-func modCeilPrec(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
+func modCeilPrec(ctx *Ctx, buf *any, val any, args []any) (err error) {
 	if f, ok := ConvFloat(val); ok {
 		ctx.BufF = roundHelper(f, ceilPrec, args)
 		*buf = &ctx.BufF
@@ -99,7 +99,7 @@ func modCeilPrec(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}
 }
 
 // Round to greatest integer value less than or equal to val.
-func modFloor(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
+func modFloor(ctx *Ctx, buf *any, val any, args []any) (err error) {
 	if f, ok := ConvFloat(val); ok {
 		ctx.BufF = roundHelper(f, floor, args)
 		*buf = &ctx.BufF
@@ -108,7 +108,7 @@ func modFloor(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) (
 }
 
 // Float round to precision, example: 20.214999|floorPrec(3) will print 20.214
-func modFloorPrec(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
+func modFloorPrec(ctx *Ctx, buf *any, val any, args []any) (err error) {
 	if f, ok := ConvFloat(val); ok {
 		ctx.BufF = roundHelper(f, floorPrec, args)
 		*buf = &ctx.BufF
@@ -117,7 +117,7 @@ func modFloorPrec(ctx *Ctx, buf *interface{}, val interface{}, args []interface{
 }
 
 // Universal internal round helper for round modifiers.
-func roundHelper(f float64, mode int, args []interface{}) float64 {
+func roundHelper(f float64, mode int, args []any) float64 {
 	var (
 		prec int64
 		ok   bool
@@ -158,7 +158,7 @@ func roundHelper(f float64, mode int, args []interface{}) float64 {
 	return f
 }
 
-func modTestNameOf(_ *Ctx, _ *interface{}, _ interface{}, _ []interface{}) (err error) {
+func modTestNameOf(_ *Ctx, _ *any, _ any, _ []any) (err error) {
 	// do nothing
 	return
 }

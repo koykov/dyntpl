@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"hash/crc64"
-	"io/ioutil"
 	"os"
 	"regexp"
 	"strconv"
@@ -131,7 +130,7 @@ var (
 
 	// Regexp to parse loop instruction.
 	reLoop      = regexp.MustCompile(`for .*`)
-	reLoopRange = regexp.MustCompile(`for ([^:]+)\s*:*=\s*range\s*([^\s]*)\s*(?:separator|sep)*\s*(.*)`)
+	reLoopRange = regexp.MustCompile(`for ([^:]+)\s*:*=\s*range\s*([^\s]*)\s*(?:separator|sep)*\s*(.*)` + "")
 	reLoopCount = regexp.MustCompile(`for (\w*)\s*:*=\s*(\w+)\s*;\s*\w+\s*(<|<=|>|>=|!=)+\s*([^;]+)\s*;\s*\w*(--|\+\+)+\s*(?:separator|sep)*\s*(.*)`)
 	reLoopBrk   = regexp.MustCompile(`break (\d+)`)
 	reLoopLBrk  = regexp.MustCompile(`lazybreak (\d+)`)
@@ -181,7 +180,7 @@ func ParseFile(fileName string, keepFmt bool) (tree *Tree, err error) {
 		return
 	}
 	var raw []byte
-	raw, err = ioutil.ReadFile(fileName)
+	raw, err = os.ReadFile(fileName)
 	if err != nil {
 		return nil, fmt.Errorf("couldn't read file %s", fileName)
 	}
@@ -403,7 +402,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 	if reCond.Match(t) {
 		// Check complexity of the condition first.
 		if reCondComplex.Match(t) {
-			// Check if condition may handled by the condition helper.
+			// Check if condition may be handled by the condition helper.
 			if m := reCondHelper.FindSubmatch(t); m != nil {
 				target := newTarget(p)
 				p.cc++
@@ -912,9 +911,12 @@ func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
 
 // Get list of arguments of modifier or helper, ex:
 // {%= variable|mod(arg0, ..., argN) %}
-//                  ^             ^
+//
+//	^             ^
+//
 // {% if condHelper(arg0, ..., argN) %}...{% endif %}
-//                  ^             ^
+//
+//	^             ^
 func (p *Parser) extractArgs(raw []byte) []*arg {
 	r := make([]*arg, 0)
 	if len(raw) == 0 {

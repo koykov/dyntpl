@@ -13,7 +13,7 @@ import (
 // * buf is a storage for final result after finishing modifier work.
 // * val is a left side variable that preceded to call of modifier func, example: {%= val|mod(...) %}
 // * args is a list of all arguments listed on modifier call.
-type ModFn func(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) error
+type ModFn func(ctx *Ctx, buf *any, val any, args []any) error
 
 // Internal modifier representation.
 type mod struct {
@@ -44,7 +44,7 @@ func GetModFn(name string) *ModFn {
 }
 
 // Get count of print iterations.
-func printIterations(args []interface{}) int {
+func printIterations(args []any) int {
 	itr := 1
 	if len(args) > 0 {
 		if itrRaw, ok := args[0].(*[]byte); ok {

@@ -1,7 +1,7 @@
 package dyntpl
 
 // CondFn describes helper func signature.
-type CondFn func(ctx *Ctx, args []interface{}) bool
+type CondFn func(ctx *Ctx, args []any) bool
 
 var (
 	// Registry of condition helpers.

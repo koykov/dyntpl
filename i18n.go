@@ -12,17 +12,17 @@ var (
 )
 
 // Translate label.
-func modTranslate(ctx *Ctx, buf *interface{}, _ interface{}, args []interface{}) error {
+func modTranslate(ctx *Ctx, buf *any, _ any, args []any) error {
 	return trans(ctx, buf, args, false)
 }
 
 // Translate label with plural formula.
-func modTranslatePlural(ctx *Ctx, buf *interface{}, _ interface{}, args []interface{}) error {
+func modTranslatePlural(ctx *Ctx, buf *any, _ any, args []any) error {
 	return trans(ctx, buf, args, true)
 }
 
 // Generic translate function.
-func trans(ctx *Ctx, buf *interface{}, args []interface{}, plural bool) error {
+func trans(ctx *Ctx, buf *any, args []any, plural bool) error {
 	// Check db available.
 	if ctx.i18n == nil {
 		return nil

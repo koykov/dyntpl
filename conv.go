@@ -14,7 +14,7 @@ type intConverter interface {
 }
 
 // ConvInt tries to convert value to integer.
-func ConvInt(val interface{}) (i int64, ok bool) {
+func ConvInt(val any) (i int64, ok bool) {
 	ok = true
 	switch val.(type) {
 	case int:
@@ -44,7 +44,7 @@ func ConvInt(val interface{}) (i int64, ok bool) {
 }
 
 // ConvUint tries to convert value to uint.
-func ConvUint(val interface{}) (u uint64, ok bool) {
+func ConvUint(val any) (u uint64, ok bool) {
 	ok = true
 	switch val.(type) {
 	case uint:
@@ -74,7 +74,7 @@ func ConvUint(val interface{}) (u uint64, ok bool) {
 }
 
 // ConvFloat tries to convert value to float.
-func ConvFloat(val interface{}) (f float64, ok bool) {
+func ConvFloat(val any) (f float64, ok bool) {
 	ok = true
 	switch val.(type) {
 	case float32:
@@ -92,7 +92,7 @@ func ConvFloat(val interface{}) (f float64, ok bool) {
 }
 
 // ConvBytes tries to convert value to bytes.
-func ConvBytes(val interface{}) (b []byte, ok bool) {
+func ConvBytes(val any) (b []byte, ok bool) {
 	ok = true
 	switch val.(type) {
 	case []byte:
@@ -110,7 +110,7 @@ func ConvBytes(val interface{}) (b []byte, ok bool) {
 }
 
 // ConvBytesSlice tries to convert value to slice of bytes.
-func ConvBytesSlice(val interface{}) (b [][]byte, ok bool) {
+func ConvBytesSlice(val any) (b [][]byte, ok bool) {
 	ok = true
 	switch val.(type) {
 	case [][]byte:
@@ -124,7 +124,7 @@ func ConvBytesSlice(val interface{}) (b [][]byte, ok bool) {
 }
 
 // ConvStr tries to convert value to string.
-func ConvStr(val interface{}) (s string, ok bool) {
+func ConvStr(val any) (s string, ok bool) {
 	ok = true
 	switch val.(type) {
 	case string:
@@ -138,7 +138,7 @@ func ConvStr(val interface{}) (s string, ok bool) {
 }
 
 // ConvStrSlice tries to convert value to string slice.
-func ConvStrSlice(val interface{}) (s []string, ok bool) {
+func ConvStrSlice(val any) (s []string, ok bool) {
 	ok = true
 	switch val.(type) {
 	case []string:
@@ -152,7 +152,7 @@ func ConvStrSlice(val interface{}) (s []string, ok bool) {
 }
 
 // ConvBool tries to convert value ti boolean.
-func ConvBool(val interface{}) (b bool, ok bool) {
+func ConvBool(val any) (b bool, ok bool) {
 	ok = true
 	switch val.(type) {
 	case bool:
@@ -166,7 +166,7 @@ func ConvBool(val interface{}) (b bool, ok bool) {
 }
 
 // Convert interface value with arbitrary underlying type to integer value.
-func if2int(raw interface{}) (r int64, ok bool) {
+func if2int(raw any) (r int64, ok bool) {
 	ok = true
 	switch raw.(type) {
 	case int:

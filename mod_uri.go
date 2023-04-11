@@ -6,7 +6,7 @@ const (
 )
 
 // Link escape string value.
-func modLinkEscape(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
+func modLinkEscape(ctx *Ctx, buf *any, val any, args []any) (err error) {
 	// Get count of encode iterations (cases: ll=, lll=, ...).
 	itr := printIterations(args)
 
@@ -42,7 +42,7 @@ func modLinkEscape(ctx *Ctx, buf *interface{}, val interface{}, args []interface
 // URL encode string value.
 //
 // see https://golang.org/src/net/url/url.go#L100
-func modURLEncode(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
+func modURLEncode(ctx *Ctx, buf *any, val any, args []any) (err error) {
 	// Get count of encode iterations (cases: uu=, uuu=, ...).
 	itr := printIterations(args)
 
