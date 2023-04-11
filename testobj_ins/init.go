@@ -8,8 +8,8 @@ import (
 )
 
 func init() {
-	inspector.RegisterInspector("BenchRow", &BenchRowInspector{})
-	inspector.RegisterInspector("BenchRows", &BenchRowsInspector{})
-	inspector.RegisterInspector("MarshalData", &MarshalDataInspector{})
-	inspector.RegisterInspector("MarshalRow", &MarshalRowInspector{})
+	inspector.RegisterInspector("BenchRow", BenchRowInspector{})
+	inspector.RegisterInspector("BenchRows", BenchRowsInspector{})
+	inspector.RegisterInspector("MarshalData", MarshalDataInspector{})
+	inspector.RegisterInspector("MarshalRow", MarshalRowInspector{})
 }
