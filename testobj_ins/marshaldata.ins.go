@@ -4,6 +4,7 @@
 package testobj_ins
 
 import (
+	"encoding/json"
 	"github.com/koykov/dyntpl/testobj"
 	"github.com/koykov/inspector"
 	"strconv"
@@ -13,13 +14,17 @@ type MarshalDataInspector struct {
 	inspector.BaseInspector
 }
 
-func (i2 *MarshalDataInspector) Get(src interface{}, path ...string) (interface{}, error) {
-	var buf interface{}
+func (i2 MarshalDataInspector) TypeName() string {
+	return "MarshalData"
+}
+
+func (i2 MarshalDataInspector) Get(src any, path ...string) (any, error) {
+	var buf any
 	err := i2.GetTo(src, &buf, path...)
 	return buf, err
 }
 
-func (i2 *MarshalDataInspector) GetTo(src interface{}, buf *interface{}, path ...string) (err error) {
+func (i2 MarshalDataInspector) GetTo(src any, buf *any, path ...string) (err error) {
 	if src == nil {
 		return
 	}
@@ -53,11 +58,11 @@ func (i2 *MarshalDataInspector) GetTo(src interface{}, buf *interface{}, path ..
 			_ = x0
 			if len(path) > 1 {
 				var i int
-				t9, err9 := strconv.ParseInt(path[1], 0, 0)
-				if err9 != nil {
-					return err9
+				t11, err11 := strconv.ParseInt(path[1], 0, 0)
+				if err11 != nil {
+					return err11
 				}
-				i = int(t9)
+				i = int(t11)
 				if len(x0) > i {
 					x1 := &(x0)[i]
 					_ = x1
@@ -81,7 +86,7 @@ func (i2 *MarshalDataInspector) GetTo(src interface{}, buf *interface{}, path ..
 	return
 }
 
-func (i2 *MarshalDataInspector) Cmp(src interface{}, cond inspector.Op, right string, result *bool, path ...string) (err error) {
+func (i2 MarshalDataInspector) Compare(src any, cond inspector.Op, right string, result *bool, path ...string) (err error) {
 	if len(path) == 0 {
 		return
 	}
@@ -103,11 +108,11 @@ func (i2 *MarshalDataInspector) Cmp(src interface{}, cond inspector.Op, right st
 	if len(path) > 0 {
 		if path[0] == "Foo" {
 			var rightExact int
-			t10, err10 := strconv.ParseInt(right, 0, 0)
-			if err10 != nil {
-				return err10
+			t12, err12 := strconv.ParseInt(right, 0, 0)
+			if err12 != nil {
+				return err12
 			}
-			rightExact = int(t10)
+			rightExact = int(t12)
 			switch cond {
 			case inspector.OpEq:
 				*result = x.Foo == rightExact
@@ -149,11 +154,11 @@ func (i2 *MarshalDataInspector) Cmp(src interface{}, cond inspector.Op, right st
 			_ = x0
 			if len(path) > 1 {
 				var i int
-				t12, err12 := strconv.ParseInt(path[1], 0, 0)
-				if err12 != nil {
-					return err12
+				t14, err14 := strconv.ParseInt(path[1], 0, 0)
+				if err14 != nil {
+					return err14
 				}
-				i = int(t12)
+				i = int(t14)
 				if len(x0) > i {
 					x1 := &(x0)[i]
 					_ = x1
@@ -180,11 +185,11 @@ func (i2 *MarshalDataInspector) Cmp(src interface{}, cond inspector.Op, right st
 						}
 						if path[2] == "N" {
 							var rightExact int
-							t14, err14 := strconv.ParseInt(right, 0, 0)
-							if err14 != nil {
-								return err14
+							t16, err16 := strconv.ParseInt(right, 0, 0)
+							if err16 != nil {
+								return err16
 							}
-							rightExact = int(t14)
+							rightExact = int(t16)
 							switch cond {
 							case inspector.OpEq:
 								*result = x1.N == rightExact
@@ -209,7 +214,7 @@ func (i2 *MarshalDataInspector) Cmp(src interface{}, cond inspector.Op, right st
 	return
 }
 
-func (i2 *MarshalDataInspector) Loop(src interface{}, l inspector.Looper, buf *[]byte, path ...string) (err error) {
+func (i2 MarshalDataInspector) Loop(src any, l inspector.Iterator, buf *[]byte, path ...string) (err error) {
 	if len(path) == 0 {
 		return
 	}
@@ -252,7 +257,7 @@ func (i2 *MarshalDataInspector) Loop(src interface{}, l inspector.Looper, buf *[
 	return
 }
 
-func (i2 *MarshalDataInspector) SetWB(dst, value interface{}, buf inspector.AccumulativeBuffer, path ...string) error {
+func (i2 MarshalDataInspector) SetWithBuffer(dst, value any, buf inspector.AccumulativeBuffer, path ...string) error {
 	if len(path) == 0 {
 		return nil
 	}
@@ -293,11 +298,11 @@ func (i2 *MarshalDataInspector) SetWB(dst, value interface{}, buf inspector.Accu
 			_ = x0
 			if len(path) > 1 {
 				var i int
-				t15, err15 := strconv.ParseInt(path[1], 0, 0)
-				if err15 != nil {
-					return err15
+				t17, err17 := strconv.ParseInt(path[1], 0, 0)
+				if err17 != nil {
+					return err17
 				}
-				i = int(t15)
+				i = int(t17)
 				if len(x0) > i {
 					x1 := &(x0)[i]
 					_ = x1
@@ -321,6 +326,287 @@ func (i2 *MarshalDataInspector) SetWB(dst, value interface{}, buf inspector.Accu
 	return nil
 }
 
-func (i2 *MarshalDataInspector) Set(dst, value interface{}, path ...string) error {
-	return i2.SetWB(dst, value, nil, path...)
+func (i2 MarshalDataInspector) Set(dst, value any, path ...string) error {
+	return i2.SetWithBuffer(dst, value, nil, path...)
+}
+
+func (i2 MarshalDataInspector) DeepEqual(l, r any) bool {
+	return i2.DeepEqualWithOptions(l, r, nil)
+}
+
+func (i2 MarshalDataInspector) DeepEqualWithOptions(l, r any, opts *inspector.DEQOptions) bool {
+	var (
+		lx, rx   *testobj.MarshalData
+		leq, req bool
+	)
+	_, _, _, _ = lx, rx, leq, req
+	if lp, ok := l.(**testobj.MarshalData); ok {
+		lx, leq = *lp, true
+	} else if lp, ok := l.(*testobj.MarshalData); ok {
+		lx, leq = lp, true
+	} else if lp, ok := l.(testobj.MarshalData); ok {
+		lx, leq = &lp, true
+	}
+	if rp, ok := r.(**testobj.MarshalData); ok {
+		rx, req = *rp, true
+	} else if rp, ok := r.(*testobj.MarshalData); ok {
+		rx, req = rp, true
+	} else if rp, ok := r.(testobj.MarshalData); ok {
+		rx, req = &rp, true
+	}
+	if !leq || !req {
+		return false
+	}
+	if lx == nil && rx == nil {
+		return true
+	}
+	if (lx == nil && rx != nil) || (lx != nil && rx == nil) {
+		return false
+	}
+
+	if lx.Foo != rx.Foo && inspector.DEQMustCheck("Foo", opts) {
+		return false
+	}
+	if lx.Bar != rx.Bar && inspector.DEQMustCheck("Bar", opts) {
+		return false
+	}
+	lx1 := lx.Rows
+	rx1 := rx.Rows
+	_, _ = lx1, rx1
+	if inspector.DEQMustCheck("Rows", opts) {
+		if len(lx1) != len(rx1) {
+			return false
+		}
+		for i := 0; i < len(lx1); i++ {
+			lx2 := (lx1)[i]
+			rx2 := (rx1)[i]
+			_, _ = lx2, rx2
+			if lx2.Msg != rx2.Msg && inspector.DEQMustCheck("Rows.Msg", opts) {
+				return false
+			}
+			if lx2.N != rx2.N && inspector.DEQMustCheck("Rows.N", opts) {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+func (i2 MarshalDataInspector) Unmarshal(p []byte, typ inspector.Encoding) (any, error) {
+	var x testobj.MarshalData
+	switch typ {
+	case inspector.EncodingJSON:
+		err := json.Unmarshal(p, &x)
+		return &x, err
+	default:
+		return nil, inspector.ErrUnknownEncodingType
+	}
+}
+
+func (i2 MarshalDataInspector) Copy(x any) (any, error) {
+	var r testobj.MarshalData
+	switch x.(type) {
+	case testobj.MarshalData:
+		r = x.(testobj.MarshalData)
+	case *testobj.MarshalData:
+		r = *x.(*testobj.MarshalData)
+	case **testobj.MarshalData:
+		r = **x.(**testobj.MarshalData)
+	default:
+		return nil, inspector.ErrUnsupportedType
+	}
+	bc := i2.countBytes(&r)
+	var l testobj.MarshalData
+	err := i2.CopyTo(&r, &l, inspector.NewByteBuffer(bc))
+	return &l, err
+}
+
+func (i2 MarshalDataInspector) CopyTo(src, dst any, buf inspector.AccumulativeBuffer) error {
+	var r testobj.MarshalData
+	switch src.(type) {
+	case testobj.MarshalData:
+		r = src.(testobj.MarshalData)
+	case *testobj.MarshalData:
+		r = *src.(*testobj.MarshalData)
+	case **testobj.MarshalData:
+		r = **src.(**testobj.MarshalData)
+	default:
+		return inspector.ErrUnsupportedType
+	}
+	var l *testobj.MarshalData
+	switch dst.(type) {
+	case testobj.MarshalData:
+		return inspector.ErrMustPointerType
+	case *testobj.MarshalData:
+		l = dst.(*testobj.MarshalData)
+	case **testobj.MarshalData:
+		l = *dst.(**testobj.MarshalData)
+	default:
+		return inspector.ErrUnsupportedType
+	}
+	bb := buf.AcquireBytes()
+	var err error
+	if bb, err = i2.cpy(bb, l, &r); err != nil {
+		return err
+	}
+	buf.ReleaseBytes(bb)
+	return nil
+}
+
+func (i2 MarshalDataInspector) countBytes(x *testobj.MarshalData) (c int) {
+	c += len(x.Bar)
+	for i1 := 0; i1 < len(x.Rows); i1++ {
+		x1 := &(x.Rows)[i1]
+		c += len(x1.Msg)
+	}
+	return c
+}
+
+func (i2 MarshalDataInspector) cpy(buf []byte, l, r *testobj.MarshalData) ([]byte, error) {
+	l.Foo = r.Foo
+	buf, l.Bar = inspector.BufferizeString(buf, r.Bar)
+	if len(r.Rows) > 0 {
+		buf1 := (l.Rows)
+		if buf1 == nil {
+			buf1 = make([]testobj.MarshalRow, 0, len(r.Rows))
+		}
+		for i1 := 0; i1 < len(r.Rows); i1++ {
+			var b1 testobj.MarshalRow
+			x1 := &(r.Rows)[i1]
+			buf, b1.Msg = inspector.BufferizeString(buf, x1.Msg)
+			b1.N = x1.N
+			buf1 = append(buf1, b1)
+		}
+		l.Rows = buf1
+	}
+	return buf, nil
+}
+
+func (i2 MarshalDataInspector) Length(src any, result *int, path ...string) error {
+	if src == nil {
+		return nil
+	}
+	var x *testobj.MarshalData
+	_ = x
+	if p, ok := src.(**testobj.MarshalData); ok {
+		x = *p
+	} else if p, ok := src.(*testobj.MarshalData); ok {
+		x = p
+	} else if v, ok := src.(testobj.MarshalData); ok {
+		x = &v
+	} else {
+		return inspector.ErrUnsupportedType
+	}
+
+	*result = 0
+	if len(path) == 0 {
+		return nil
+	}
+	if path[0] == "Bar" {
+		*result = len(x.Bar)
+		return nil
+	}
+	if path[0] == "Rows" {
+		if len(path) == 1 {
+			*result = len(x.Rows)
+			return nil
+		}
+		if len(path) < 2 {
+			return nil
+		}
+		var i int
+		t18, err18 := strconv.ParseInt(path[1], 0, 0)
+		if err18 != nil {
+			return err18
+		}
+		i = int(t18)
+		if len(x.Rows) > i {
+			x1 := &(x.Rows)[i]
+			_ = x1
+			if len(path) < 3 {
+				return nil
+			}
+			if path[2] == "Msg" {
+				*result = len(x1.Msg)
+				return nil
+			}
+		}
+	}
+	return nil
+}
+
+func (i2 MarshalDataInspector) Capacity(src any, result *int, path ...string) error {
+	if src == nil {
+		return nil
+	}
+	var x *testobj.MarshalData
+	_ = x
+	if p, ok := src.(**testobj.MarshalData); ok {
+		x = *p
+	} else if p, ok := src.(*testobj.MarshalData); ok {
+		x = p
+	} else if v, ok := src.(testobj.MarshalData); ok {
+		x = &v
+	} else {
+		return inspector.ErrUnsupportedType
+	}
+
+	*result = 0
+	if len(path) == 0 {
+		return nil
+	}
+	if path[0] == "Bar" {
+	}
+	if path[0] == "Rows" {
+		if len(path) == 1 {
+			*result = cap(x.Rows)
+			return nil
+		}
+		if len(path) < 2 {
+			return nil
+		}
+		var i int
+		t19, err19 := strconv.ParseInt(path[1], 0, 0)
+		if err19 != nil {
+			return err19
+		}
+		i = int(t19)
+		if len(x.Rows) > i {
+			x1 := &(x.Rows)[i]
+			_ = x1
+			if len(path) < 3 {
+				return nil
+			}
+			if path[2] == "Msg" {
+			}
+		}
+	}
+	return nil
+}
+
+func (i2 MarshalDataInspector) Reset(x any) error {
+	var origin *testobj.MarshalData
+	_ = origin
+	switch x.(type) {
+	case testobj.MarshalData:
+		return inspector.ErrMustPointerType
+	case *testobj.MarshalData:
+		origin = x.(*testobj.MarshalData)
+	case **testobj.MarshalData:
+		origin = *x.(**testobj.MarshalData)
+	default:
+		return inspector.ErrUnsupportedType
+	}
+	origin.Foo = 0
+	origin.Bar = ""
+	if l := len((origin.Rows)); l > 0 {
+		_ = (origin.Rows)[l-1]
+		for i := 0; i < l; i++ {
+			x1 := &(origin.Rows)[i]
+			x1.Msg = ""
+			x1.N = 0
+		}
+		(origin.Rows) = (origin.Rows)[:0]
+	}
+	return nil
 }
