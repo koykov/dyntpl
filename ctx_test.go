@@ -47,7 +47,7 @@ var (
 func TestCtx(t *testing.T) {
 	var (
 		ins testobj_ins.TestObjectInspector
-		raw interface{}
+		raw any
 	)
 	ctx := NewCtx()
 	ctx.Set("obj", testO, &ins)
@@ -74,7 +74,7 @@ func TestCtx(t *testing.T) {
 func BenchmarkCtx(b *testing.B) {
 	var (
 		ins testobj_ins.TestObjectInspector
-		raw interface{}
+		raw any
 	)
 	b.Run("get", func(b *testing.B) {
 		ctx := NewCtx()
@@ -100,7 +100,7 @@ func BenchmarkCtx(b *testing.B) {
 	})
 }
 
-func benchCtx(b *testing.B, ctx *Ctx, buf *interface{}) {
+func benchCtx(b *testing.B, ctx *Ctx, buf *any) {
 	raw := *buf
 	raw = ctx.Get("obj.Id")
 	if ctx.Err != nil {

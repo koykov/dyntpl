@@ -1,7 +1,7 @@
 package dyntpl
 
 // Check if argument length equal zero.
-func condLenEq0(_ *Ctx, args []interface{}) bool {
+func condLenEq0(_ *Ctx, args []any) bool {
 	if len(args) == 0 {
 		return false
 	}
@@ -9,7 +9,7 @@ func condLenEq0(_ *Ctx, args []interface{}) bool {
 }
 
 // Check if argument length is greater than zero.
-func condLenGt0(_ *Ctx, args []interface{}) bool {
+func condLenGt0(_ *Ctx, args []any) bool {
 	if len(args) == 0 {
 		return false
 	}
@@ -17,7 +17,7 @@ func condLenGt0(_ *Ctx, args []interface{}) bool {
 }
 
 // Check if argument length is greater or equal than zero.
-func condLenGtq0(_ *Ctx, args []interface{}) bool {
+func condLenGtq0(_ *Ctx, args []any) bool {
 	if len(args) == 0 {
 		return false
 	}
@@ -25,7 +25,7 @@ func condLenGtq0(_ *Ctx, args []interface{}) bool {
 }
 
 // Get length of argument if it is a string or bytes.
-func getLen(val interface{}) int {
+func getLen(val any) int {
 	if b, ok := ConvBytes(val); ok {
 		return len(b)
 	}

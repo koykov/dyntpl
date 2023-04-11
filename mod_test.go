@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-type modArgs map[string]interface{}
+type modArgs map[string]any
 
 func TestMod(t *testing.T) {
 	t.Run("modDefault", func(t *testing.T) { testMod(t) })

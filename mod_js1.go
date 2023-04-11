@@ -5,7 +5,7 @@ import (
 )
 
 // JS escape.
-func modJSEscape(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) (err error) {
+func modJSEscape(ctx *Ctx, buf *any, val any, args []any) (err error) {
 	// Get count of encode iterations (cases: aa=, aaa=, AA=, AAA=, ...).
 	itr := printIterations(args)
 

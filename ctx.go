@@ -27,8 +27,8 @@ type Ctx struct {
 	buf   []byte
 	bufS  []string
 	bufI  int
-	bufX  interface{}
-	bufA  []interface{}
+	bufX  any
+	bufA  []any
 	bufLC []int64
 	bufMO bytebuf.ChainBuf
 	bufCB bytebuf.ChainBuf
@@ -67,7 +67,7 @@ type Ctx struct {
 // Context variable object.
 type ctxVar struct {
 	key string
-	val interface{}
+	val any
 	// Byte buffer need for special cases when value is a byte slice.
 	buf []byte
 	// Special case: var is counter.
@@ -80,7 +80,7 @@ type ctxVar struct {
 // Context key-value pair.
 type ctxKV struct {
 	k []byte
-	v interface{}
+	v any
 }
 
 var (
@@ -99,14 +99,14 @@ func NewCtx() *Ctx {
 		Buf1: make(bytebuf.ChainBuf, 0),
 		Buf2: make(bytebuf.ChainBuf, 0),
 		buf:  make([]byte, 0),
-		bufA: make([]interface{}, 0),
+		bufA: make([]any, 0),
 	}
 	return &ctx
 }
 
 // Set the variable to context.
 // Inspector ins should be correspond to variable val.
-func (c *Ctx) Set(key string, val interface{}, ins inspector.Inspector) {
+func (c *Ctx) Set(key string, val any, ins inspector.Inspector) {
 	for i := 0; i < c.ln; i++ {
 		if c.vars[i].key == key {
 			// Update existing variable.
@@ -134,7 +134,7 @@ func (c *Ctx) Set(key string, val interface{}, ins inspector.Inspector) {
 }
 
 // SetStatic sets static variable to context.
-func (c *Ctx) SetStatic(key string, val interface{}) {
+func (c *Ctx) SetStatic(key string, val any) {
 	ins, err := inspector.GetInspector("static")
 	if err != nil {
 		c.Err = err
@@ -226,7 +226,7 @@ func (c *Ctx) SetCounter(key string, val int) {
 // Examples:
 // * user.Bio.Birthday
 // * staticVar
-func (c *Ctx) Get(path string) interface{} {
+func (c *Ctx) Get(path string) any {
 	return c.get(fastconv.S2B(path))
 }
 
@@ -251,13 +251,13 @@ func (c *Ctx) I18n(locale string, db *i18n.DB) {
 }
 
 // BufModOut buffers mod output bytes.
-func (c *Ctx) BufModOut(buf *interface{}, p []byte) {
+func (c *Ctx) BufModOut(buf *any, p []byte) {
 	c.bufMO.Reset().Write(p)
 	*buf = &c.bufMO
 }
 
 // BufModStrOut buffers mod output string.
-func (c *Ctx) BufModStrOut(buf *interface{}, s string) {
+func (c *Ctx) BufModStrOut(buf *any, s string) {
 	c.bufMO.Reset().WriteStr(s)
 	*buf = &c.bufMO
 }
@@ -306,7 +306,7 @@ func (c *Ctx) Reset() {
 // Internal getter.
 //
 // See Ctx.Get().
-func (c *Ctx) get(path []byte) interface{} {
+func (c *Ctx) get(path []byte) any {
 	// Reset error to avoid catching errors from previous nodes.
 	c.Err = nil
 

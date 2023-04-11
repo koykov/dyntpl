@@ -227,7 +227,7 @@ Sub-template will use parent template's context to access the data.
 
 Modifiers is a special functions that may perform modifications over the data during print. These function have signature:
 ```go
-func(ctx *Ctx, buf *interface{}, val interface{}, args []interface{}) error
+func(ctx *Ctx, buf *any, val any, args []any) error
 ```
 and should be registered using function `dyntpl.RegisterModFn()`. See [init.go](init.go) for examples.
 See [mod.go](mod.go) for explanation of arguments.
@@ -240,7 +240,7 @@ You may specify a sequence of modifiers: `{%= var0|roundPrec(4)|default(1) %}`.
 
 If you want to make a condition more complex than simple condition, you may declare a special function with signature:
 ```go
-func(ctx *Ctx, args []interface{}) bool
+func(ctx *Ctx, args []any) bool
 ```
 and register it using function `dyntpl.RegisterCondFn()`. See [init.go](init.go) for examples.
 See [cond.go](cond.go) for explanation of arguments.

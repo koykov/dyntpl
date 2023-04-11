@@ -1,7 +1,7 @@
 package dyntpl
 
 // EmptyCheckFn describes empty check helper func signature.
-type EmptyCheckFn func(ctx *Ctx, val interface{}) bool
+type EmptyCheckFn func(ctx *Ctx, val any) bool
 
 var (
 	// Registry of empty check helpers.
@@ -26,7 +26,7 @@ func GetEmptyCheckFn(name string) *EmptyCheckFn {
 // EmptyCheck tries to apply all known helpers over the val.
 //
 // First acceptable helper will break next attempts.
-func EmptyCheck(ctx *Ctx, val interface{}) bool {
+func EmptyCheck(ctx *Ctx, val any) bool {
 	if val == nil {
 		return true
 	}
