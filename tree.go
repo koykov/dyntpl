@@ -87,7 +87,11 @@ func (t *Tree) hrHelper(buf *bytebuf.ChainBuf, nodes []Node, indent []byte, dept
 				t.attrB(buf, "right", node.condR)
 			}
 			if len(node.condHlp) > 0 {
-				t.attrB(buf, "helper", node.condHlp)
+				fnKey := "helper"
+				if len(node.condL) > 0 && node.condOp != 0 {
+					fnKey = "mod"
+				}
+				t.attrB(buf, fnKey, node.condHlp)
 				if len(node.condHlpArg) > 0 {
 					for j, a := range node.condHlpArg {
 						pfx := "arg"

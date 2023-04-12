@@ -29,6 +29,8 @@ func TestParser(t *testing.T) {
 	t.Run("conditionNested", func(t *testing.T) { testParser(t) })
 	t.Run("conditionOK", func(t *testing.T) { testParser(t) })
 	t.Run("conditionNotOK", func(t *testing.T) { testParser(t) })
+	t.Run("conditionLen", func(t *testing.T) { testParser(t) })
+	t.Run("conditionCap", func(t *testing.T) { testParser(t) })
 	t.Run("loop", func(t *testing.T) { testParser(t) })
 	t.Run("loopSeparator", func(t *testing.T) { testParser(t) })
 	t.Run("loopBreak", func(t *testing.T) { testParser(t) })

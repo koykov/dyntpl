@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+	<node type="raw" val="foo"/>
+	<node type="cond" left="len(x)" op=">" right="0" mod="len" arg0="x">
+		<nodes>
+			<node type="true">
+				<nodes>
+					<node type="raw" val="true"/>
+				</nodes>
+			</node>
+		</nodes>
+	</node>
+	<node type="raw" val="bar"/>
+</nodes>
