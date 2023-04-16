@@ -59,7 +59,7 @@ func Render(key string, ctx *Ctx) ([]byte, error) {
 // RenderFallback renders template using one of keys: key or fallback key.
 //
 // See WriteFallback().
-// Using this func you can handle cases when some objects has custom templates and all other should use default templates.
+// Using this func you can handle cases when some objects have custom templates and all other should use default templates.
 // Example:
 // template registry:
 // * tplUser
@@ -216,7 +216,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			return
 		}
 		if raw == nil || raw == "" {
-			// Variable doesn't exists or empty. Do nothing.
+			// Variable doesn't exist or empty. Do nothing.
 			return
 		}
 		// Convert modified data to bytes array.
@@ -382,8 +382,9 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 	case TypeCond:
 		// Condition node evaluates condition expressions.
 		var r bool
-		if len(node.condHlp) > 0 {
-			// Condition helper caught.
+		switch {
+		case len(node.condHlp) > 0 && node.condLC == lcNone:
+			// Condition helper caught (no LC case).
 			fn := GetCondFn(fastconv.B2S(node.condHlp))
 			if fn == nil {
 				err = ErrCondHlpNotFound
@@ -403,7 +404,14 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			}
 			// Call condition helper func.
 			r = (*fn)(ctx, ctx.bufA)
-		} else {
+		case len(node.condHlp) > 0 && node.condLC > lcNone:
+			// Condition helper in LC mode.
+			if len(node.condHlpArg) == 0 {
+				err = ErrModNoArgs
+				return
+			}
+			r = ctx.cmpLC(node.condLC, node.condHlpArg[0].val, node.condOp, node.condR)
+		default:
 			r, err = t.nodeCmp(&node, ctx)
 		}
 		if ctx.Err != nil {
@@ -522,7 +530,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 							// Left side is static.
 							r = ctx.cmp(ch.caseR, ch.caseOp.Swap(), ch.caseL)
 						} else {
-							// Both sides isn't static.
+							// Both sides aren't static.
 							ctx.get(ch.caseR)
 							if ctx.Err == nil {
 								if err = ctx.BufAcc.StakeOut().WriteX(ctx.bufX).Error(); err != nil {
@@ -601,7 +609,7 @@ func (t *Tpl) nodeCmp(node *Node, ctx *Ctx) (r bool, err error) {
 		return
 	}
 	if sr {
-		// Right side is static. This is a prefer case
+		// Right side is static. This is preferred case
 		r = ctx.cmp(node.condL, node.condOp, node.condR)
 	} else if sl {
 		// Left side is static.
@@ -609,7 +617,7 @@ func (t *Tpl) nodeCmp(node *Node, ctx *Ctx) (r bool, err error) {
 		// therefore it inverts condition to {% if item.Weight < 10 %}...
 		r = ctx.cmp(node.condR, node.condOp.Swap(), node.condL)
 	} else {
-		// Both sides isn't static. This is a bad case, since need to inspect variables twice.
+		// Both sides aren't static. This is a bad case, since need to inspect variables twice.
 		ctx.get(node.condR)
 		if ctx.Err == nil {
 			if err = ctx.BufAcc.StakeOut().WriteX(ctx.bufX).Error(); err != nil {

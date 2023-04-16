@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+	<node type="cond" left="cap(obj.Payload)" op="==" right="0" helper="cap" lc="cap" arg0="obj.Payload">
+		<nodes>
+			<node type="true">
+				<nodes>
+					<node type="raw" val="bad request"/>
+				</nodes>
+			</node>
+		</nodes>
+	</node>
+</nodes>
