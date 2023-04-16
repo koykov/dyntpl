@@ -6,6 +6,8 @@ type Type int
 // Op is a type of the operation in conditions and loops.
 type Op int
 
+type lc int
+
 const (
 	TypeRaw       Type = 0
 	TypeTpl       Type = 1
@@ -44,6 +46,10 @@ const (
 	OpLtq Op = 6
 	OpInc Op = 7
 	OpDec Op = 8
+
+	lcNone lc = 0
+	lcLen  lc = 1
+	lcCap  lc = 2
 )
 
 // String view of the type.
@@ -131,5 +137,18 @@ func (o Op) Swap() Op {
 		return OpGtq
 	default:
 		return o
+	}
+}
+
+func (lc lc) String() string {
+	switch lc {
+	case lcLen:
+		return "len"
+	case lcCap:
+		return "cap"
+	case lcNone:
+		fallthrough
+	default:
+		return ""
 	}
 }

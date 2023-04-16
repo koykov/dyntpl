@@ -388,13 +388,40 @@ func (ctx *Ctx) cmp(path []byte, cond Op, right []byte) bool {
 	return false
 }
 
-// Compare two static values.
-func (ctx *Ctx) cpmStatic(v any, cond Op, right []byte) (r bool) {
-	ins := inspector.StaticInspector{}
-	if err := ins.Compare(v, inspector.Op(cond), fastconv.B2S(right), &r); err != nil {
-		r = false
+func (ctx *Ctx) cmpLC(lc lc, path []byte, cond Op, right []byte) bool {
+	ctx.Err = nil
+	if ctx.chQB {
+		path = ctx.replaceQB(path)
 	}
-	return
+
+	ctx.bufS = ctx.bufS[:0]
+	ctx.bufS = bytealg.AppendSplitStr(ctx.bufS, fastconv.B2S(path), ".", -1)
+	if len(ctx.bufS) == 0 {
+		return false
+	}
+
+	for i, v := range ctx.vars {
+		if i == ctx.ln {
+			break
+		}
+		if v.key == ctx.bufS[0] {
+			switch lc {
+			case lcLen:
+				ctx.Err = v.ins.Length(v.val, &ctx.bufI, ctx.bufS[1:]...)
+			case lcCap:
+				ctx.Err = v.ins.Capacity(v.val, &ctx.bufI, ctx.bufS[1:]...)
+			default:
+				return false
+			}
+			if ctx.Err != nil {
+				return false
+			}
+			si := inspector.StaticInspector{}
+			ctx.Err = si.Compare(ctx.bufI, inspector.Op(cond), fastconv.B2S(right), &ctx.BufB)
+			return ctx.BufB
+		}
+	}
+	return false
 }
 
 // Range loop method to evaluate expressions like:

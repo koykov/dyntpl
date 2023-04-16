@@ -29,6 +29,7 @@ type Node struct {
 	condHlp        []byte
 	condHlpArg     []*arg
 	condIns        []byte
+	condLC         lc
 
 	loopKey       []byte
 	loopVal       []byte

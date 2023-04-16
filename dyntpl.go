@@ -382,7 +382,8 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 	case TypeCond:
 		// Condition node evaluates condition expressions.
 		var r bool
-		if len(node.condHlp) > 0 {
+		switch {
+		case len(node.condHlp) > 0 && node.condLC == lcNone:
 			// Condition helper caught.
 			fn := GetCondFn(fastconv.B2S(node.condHlp))
 			if fn == nil {
@@ -403,7 +404,13 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			}
 			// Call condition helper func.
 			r = (*fn)(ctx, ctx.bufA)
-		} else {
+		case len(node.condHlp) > 0 && node.condLC > lcNone:
+			if len(node.condHlpArg) == 0 {
+				err = ErrModNoArgs
+				return
+			}
+			r = ctx.cmpLC(node.condLC, node.condHlpArg[0].val, node.condOp, node.condR)
+		default:
 			r, err = t.nodeCmp(&node, ctx)
 		}
 		if ctx.Err != nil {

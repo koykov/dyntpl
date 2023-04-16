@@ -54,6 +54,8 @@ var (
 	ctxStatic  = []byte("static")
 	condElse   = []byte("else")
 	condEnd    = []byte("endif")
+	condLen    = []byte("len")
+	condCap    = []byte("cap")
 	loopEnd    = []byte("endfor")
 	loopBrk    = []byte("break")
 	loopLBrk   = []byte("lazybreak")
@@ -415,6 +417,12 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 				root.condHlp = m[1]
 				root.condHlpArg = p.extractArgs(m[2])
 				root.condL, root.condR, root.condStaticL, root.condStaticR, root.condOp = p.parseCondExpr(reCondExpr, t)
+				switch {
+				case bytes.Equal(root.condHlp, condLen):
+					root.condLC = lcLen
+				case bytes.Equal(root.condHlp, condCap):
+					root.condLC = lcCap
+				}
 				if len(split) > 0 {
 					nodeTrue := Node{typ: TypeCondTrue, child: split[0]}
 					root.child = append(root.child, nodeTrue)
