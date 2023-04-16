@@ -384,7 +384,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 		var r bool
 		switch {
 		case len(node.condHlp) > 0 && node.condLC == lcNone:
-			// Condition helper caught.
+			// Condition helper caught (no LC case).
 			fn := GetCondFn(fastconv.B2S(node.condHlp))
 			if fn == nil {
 				err = ErrCondHlpNotFound
@@ -405,6 +405,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			// Call condition helper func.
 			r = (*fn)(ctx, ctx.bufA)
 		case len(node.condHlp) > 0 && node.condLC > lcNone:
+			// Condition helper in LC mode.
 			if len(node.condHlpArg) == 0 {
 				err = ErrModNoArgs
 				return

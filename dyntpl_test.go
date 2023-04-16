@@ -8,6 +8,7 @@ import (
 func TestTpl(t *testing.T) {
 	t.Run("condition", func(t *testing.T) { testTpl(t) })
 	t.Run("conditionHelper", func(t *testing.T) { testTpl(t) })
+	t.Run("conditionLC", func(t *testing.T) { testTpl(t) })
 	t.Run("conditionNoStatic", func(t *testing.T) { testTpl(t) })
 	t.Run("conditionOK", func(t *testing.T) { testTpl(t) })
 	t.Run("conditionStr", func(t *testing.T) { testTpl(t) })
@@ -81,6 +82,7 @@ func testTplLC(t *testing.T) {
 func BenchmarkTpl(b *testing.B) {
 	b.Run("condition", func(b *testing.B) { benchTpl(b) })
 	b.Run("conditionHelper", func(b *testing.B) { benchTpl(b) })
+	b.Run("conditionLC", func(b *testing.B) { benchTpl(b) })
 	b.Run("conditionNoStatic", func(b *testing.B) { benchTpl(b) })
 	b.Run("conditionOK", func(b *testing.B) { benchTpl(b) })
 	b.Run("conditionStr", func(b *testing.B) { benchTpl(b) })

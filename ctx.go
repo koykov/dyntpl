@@ -417,6 +417,7 @@ func (ctx *Ctx) cmpLC(lc lc, path []byte, cond Op, right []byte) bool {
 				return false
 			}
 			si := inspector.StaticInspector{}
+			ctx.BufB = false
 			ctx.Err = si.Compare(ctx.bufI, inspector.Op(cond), fastconv.B2S(right), &ctx.BufB)
 			return ctx.BufB
 		}
