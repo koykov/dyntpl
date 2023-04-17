@@ -319,7 +319,7 @@ func (ctx *Ctx) get(path []byte) any {
 	// Split path to separate words using dot as separator.
 	// So, path user.Bio.Birthday will convert to []string{"user", "Bio", "Birthday"}
 	ctx.bufS = ctx.bufS[:0]
-	ctx.bufS = bytealg.AppendSplitStr(ctx.bufS, fastconv.B2S(path), ".", -1)
+	ctx.bufS = bytealg.AppendSplit(ctx.bufS, fastconv.B2S(path), ".", -1)
 	if len(ctx.bufS) == 0 {
 		return nil
 	}
@@ -362,7 +362,7 @@ func (ctx *Ctx) get(path []byte) any {
 func (ctx *Ctx) cmp(path []byte, cond Op, right []byte) bool {
 	// Split path.
 	ctx.bufS = ctx.bufS[:0]
-	ctx.bufS = bytealg.AppendSplitStr(ctx.bufS, fastconv.B2S(path), ".", -1)
+	ctx.bufS = bytealg.AppendSplit(ctx.bufS, fastconv.B2S(path), ".", -1)
 	if len(ctx.bufS) == 0 {
 		return false
 	}
@@ -395,7 +395,7 @@ func (ctx *Ctx) cmpLC(lc lc, path []byte, cond Op, right []byte) bool {
 	}
 
 	ctx.bufS = ctx.bufS[:0]
-	ctx.bufS = bytealg.AppendSplitStr(ctx.bufS, fastconv.B2S(path), ".", -1)
+	ctx.bufS = bytealg.AppendSplit(ctx.bufS, fastconv.B2S(path), ".", -1)
 	if len(ctx.bufS) == 0 {
 		return false
 	}
@@ -429,7 +429,7 @@ func (ctx *Ctx) cmpLC(lc lc, path []byte, cond Op, right []byte) bool {
 // {% for k, v := range user.History %}...{% endfor %}
 func (ctx *Ctx) rloop(path []byte, node Node, tpl *Tpl, w io.Writer) {
 	ctx.bufS = ctx.bufS[:0]
-	ctx.bufS = bytealg.AppendSplitStr(ctx.bufS, fastconv.B2S(path), ".", -1)
+	ctx.bufS = bytealg.AppendSplit(ctx.bufS, fastconv.B2S(path), ".", -1)
 	if len(ctx.bufS) == 0 {
 		return
 	}

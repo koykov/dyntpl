@@ -2,7 +2,6 @@ package dyntpl
 
 import (
 	"bytes"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -67,10 +66,10 @@ func init() {
 				st := stage{}
 				st.key = strings.Replace(filepath.Base(path), ".tpl", "", 1)
 
-				st.origin, _ = ioutil.ReadFile(path)
+				st.origin, _ = os.ReadFile(path)
 				tree, _ := Parse(st.origin, false)
 
-				st.expect, _ = ioutil.ReadFile(strings.Replace(path, ".tpl", ".txt", 1))
+				st.expect, _ = os.ReadFile(strings.Replace(path, ".tpl", ".txt", 1))
 				st.expect = bytealg.Trim(st.expect, []byte("\n"))
 				stages = append(stages, st)
 
@@ -86,15 +85,15 @@ func init() {
 			st.key = strings.Replace(filepath.Base(path), ".tpl", "", 1)
 			st.key = "parser/" + st.key
 
-			st.origin, _ = ioutil.ReadFile(path)
+			st.origin, _ = os.ReadFile(path)
 			tree, _ := Parse(st.origin, false)
 
-			if raw, err := ioutil.ReadFile(strings.Replace(path, ".tpl", ".xml", 1)); err == nil {
+			if raw, err := os.ReadFile(strings.Replace(path, ".tpl", ".xml", 1)); err == nil {
 				st.expect = raw
-			} else if raw, err := ioutil.ReadFile(strings.Replace(path, ".tpl", ".raw", 1)); err == nil {
+			} else if raw, err := os.ReadFile(strings.Replace(path, ".tpl", ".raw", 1)); err == nil {
 				st.raw = bytealg.Trim(raw, []byte("\n"))
-			} else if raw, err := ioutil.ReadFile(strings.Replace(path, ".tpl", ".err", 1)); err == nil {
-				st.err = bytealg.TrimStr(fastconv.B2S(raw), "\n")
+			} else if raw, err := os.ReadFile(strings.Replace(path, ".tpl", ".err", 1)); err == nil {
+				st.err = bytealg.Trim(fastconv.B2S(raw), "\n")
 			}
 			stages = append(stages, st)
 
