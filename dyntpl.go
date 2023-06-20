@@ -136,6 +136,10 @@ func render(w io.Writer, tpl *Tpl, ctx *Ctx) (err error) {
 		}
 	}
 
+	// Call defer functions consecutively.
+	// First failed function will stop that process and return error encountered.
+	err = ctx.defer_()
+
 	return
 }
 

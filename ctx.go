@@ -35,6 +35,9 @@ type Ctx struct {
 	// Range loop helper.
 	rl *RangeLoop
 
+	// Deferred functions pool.
+	dfr []func() error
+
 	// Break depth.
 	brkD int
 
@@ -262,6 +265,14 @@ func (ctx *Ctx) BufModStrOut(buf *any, s string) {
 	*buf = &ctx.bufMO
 }
 
+// Defer registers new deferred function.
+//
+// Function will call after finishing template.
+// todo: find a way how to avoid closure allocation.
+func (ctx *Ctx) Defer(fn func() error) {
+	ctx.dfr = append(ctx.dfr, fn)
+}
+
 // Reset the context.
 //
 // Made to use together with pools.
@@ -301,6 +312,8 @@ func (ctx *Ctx) Reset() {
 	if ctx.rl != nil {
 		ctx.rl.Reset()
 	}
+
+	ctx.dfr = ctx.dfr[:0]
 }
 
 // Internal getter.
@@ -658,4 +671,15 @@ func (ctx *Ctx) getKV() *ctxKV {
 		ctx.kvl++
 	}
 	return kv
+}
+
+func (ctx *Ctx) defer_() (err error) {
+	if len(ctx.dfr) > 0 {
+		for i := 0; i < len(ctx.dfr); i++ {
+			if err = ctx.dfr[i](); err != nil {
+				break
+			}
+		}
+	}
+	return
 }
