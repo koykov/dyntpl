@@ -20,6 +20,7 @@ func TestParser(t *testing.T) {
 	t.Run("modPrintMix", func(t *testing.T) { testParser(t) })
 	t.Run("ctxDot", func(t *testing.T) { testParser(t) })
 	t.Run("ctxDot1", func(t *testing.T) { testParser(t) })
+	t.Run("ctxQB", func(t *testing.T) { testParser(t) })
 	t.Run("ctxModDot", func(t *testing.T) { testParser(t) })
 	t.Run("ctxAsOK", func(t *testing.T) { testParser(t) })
 	t.Run("ctx", func(t *testing.T) { testParser(t) })

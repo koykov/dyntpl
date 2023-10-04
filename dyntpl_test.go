@@ -3,6 +3,8 @@ package dyntpl
 import (
 	"bytes"
 	"testing"
+
+	"github.com/koykov/inspector"
 )
 
 func TestTpl(t *testing.T) {
@@ -33,6 +35,33 @@ func TestTpl(t *testing.T) {
 	t.Run("switch", func(t *testing.T) { testTpl(t) })
 	t.Run("switchNoCondition", func(t *testing.T) { testTpl(t) })
 	t.Run("field404", func(t *testing.T) { testTpl(t) })
+	t.Run("strAnyMap", func(t *testing.T) {
+		key := getTBName(t)
+		st := getStage(key)
+		if st == nil {
+			t.Error("stage not found")
+			return
+		}
+		ctx := NewCtx()
+		ctx.Set("map_", map[string]any{
+			"x": map[string]any{
+				"y": map[string]any{
+					"z": []string{"my", "substrings"},
+				},
+			},
+		}, inspector.StringAnyMapInspector{})
+		result, err := Render(key, ctx)
+		if err != nil {
+			t.Error(err)
+		}
+		if len(st.expect) == 0 && len(result) != 0 {
+			t.Errorf("%s mismatch", key)
+			return
+		}
+		if !bytes.Equal(result, st.expect) {
+			t.Errorf("%s mismatch", key)
+		}
+	})
 }
 
 func testTpl(t *testing.T) {
@@ -107,6 +136,41 @@ func BenchmarkTpl(b *testing.B) {
 	b.Run("switch", func(b *testing.B) { benchTpl(b) })
 	b.Run("switchNoCondition", func(b *testing.B) { benchTpl(b) })
 	b.Run("field404", func(b *testing.B) { benchTpl(b) })
+	b.Run("strAnyMap", func(b *testing.B) {
+		key := getTBName(b)
+		st := getStage(key)
+		if st == nil {
+			b.Error("stage not found")
+			return
+		}
+		map_ := map[string]any{
+			"x": map[string]any{
+				"y": map[string]any{
+					"z": []string{"my", "substrings"},
+				},
+			},
+		}
+		var buf_ bytes.Buffer
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			ctx := AcquireCtx()
+			ctx.Set("map_", map_, inspector.StringAnyMapInspector{})
+			err := Write(&buf_, key, ctx)
+			if err != nil {
+				b.Error(err)
+			}
+			result := buf_.Bytes()
+			if len(st.expect) == 0 && len(result) != 0 {
+				b.Errorf("%s mismatch", key)
+				return
+			}
+			if !bytes.Equal(result, st.expect) {
+				b.Errorf("%s mismatch", key)
+			}
+			ReleaseCtx(ctx)
+			buf_.Reset()
+		}
+	})
 }
 
 func benchTpl(b *testing.B) {
