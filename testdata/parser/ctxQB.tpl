@@ -1,0 +1,12 @@
+{% ctx m = user.Perm.(map[string]any) %}
+{% ctx m = user.Perm as map[string]any %}
+{% ctx m = user.Perm.(stringAnyMap) %}
+{% ctx m = user.Perm as stringAnyMap %}
+{% ctx hist = user.Hist.([]string) %}
+{% ctx hist = user.Hist as []string %}
+{% ctx hist = user.Hist.(strings) %}
+{% ctx hist = user.Hist as strings %}
+{% ctx hist = user.Hist.([][]byte) %}
+{% ctx hist = user.Hist as [][]byte %}
+{% ctx hist = user.Hist.(bytes) %}
+{% ctx hist = user.Hist as bytes %}

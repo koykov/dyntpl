@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+	<node type="ctx" var="m" src="user.Perm" ins="map[string]any"/>
+	<node type="ctx" var="m" src="user.Perm" ins="map[string]any"/>
+	<node type="ctx" var="m" src="user.Perm" ins="stringAnyMap"/>
+	<node type="ctx" var="m" src="user.Perm" ins="stringAnyMap"/>
+	<node type="ctx" var="hist" src="user.Hist" ins="[]string"/>
+	<node type="ctx" var="hist" src="user.Hist" ins="[]string"/>
+	<node type="ctx" var="hist" src="user.Hist" ins="strings"/>
+	<node type="ctx" var="hist" src="user.Hist" ins="strings"/>
+	<node type="ctx" var="hist" src="user.Hist" ins="[][]byte"/>
+	<node type="ctx" var="hist" src="user.Hist" ins="[][]byte"/>
+	<node type="ctx" var="hist" src="user.Hist" ins="bytes"/>
+	<node type="ctx" var="hist" src="user.Hist" ins="bytes"/>
+</nodes>

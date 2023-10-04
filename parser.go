@@ -108,8 +108,8 @@ var (
 	reMod      = regexp.MustCompile(`([^(]+)\(*([^)]*)\)*`)
 
 	// Regexp to parse context instruction.
-	reCtxAs  = regexp.MustCompile(`(?:context|ctx) (\w+),*\s*(\w*)\s*=\s*([\w\s.,|()"'\[\]]+) as (\w*)`)
-	reCtxDot = regexp.MustCompile(`(?:context|ctx) (\w+),*\s*(\w*)\s*=\s*([\w\s.,|()"'\[\]]+)\.\((\w*)\)`)
+	reCtxAs  = regexp.MustCompile(`(?:context|ctx) (\w+),*\s*(\w*)\s*=\s*([\w\s.,|()"'\[\]]+) as ([\[\]\*\w]*)` + "")
+	reCtxDot = regexp.MustCompile(`(?:context|ctx) (\w+),*\s*(\w*)\s*=\s*([\w\s.,|()"'\[\]]+)\.\(([\[\]\*\w]*)\)` + "")
 	reCtx    = regexp.MustCompile(`(?:context|ctx) (\w+),*\s*(\w*)\s*=\s*([\w\s.,|()"'\[\]]+)`)
 	reCtxS0  = regexp.MustCompile(`(?:context|ctx) (\w+),*\s*(\w*)\s*=\s*"+([^"]+)"+`)
 	reCtxS1  = regexp.MustCompile(`(?:context|ctx) (\w+),*\s*(\w*)\s*=\s*'+([^']+)+'`)
