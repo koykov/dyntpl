@@ -21,4 +21,6 @@ var (
 	ErrBreakLoop     = errors.New("break loop")
 	ErrLBreakLoop    = errors.New("lazybreak loop")
 	ErrContLoop      = errors.New("continue loop")
+
+	ErrUnknownPool = errors.New("unknown pool")
 )

@@ -59,25 +59,9 @@ var (
 )
 
 func init() {
-	dirs := []string{"tpl", "mod", "i18n"}
-	for _, dir := range dirs {
-		_ = filepath.Walk("testdata/"+dir, func(path string, info os.FileInfo, err error) error {
-			if filepath.Ext(path) == ".tpl" {
-				st := stage{}
-				st.key = strings.Replace(filepath.Base(path), ".tpl", "", 1)
-
-				st.origin, _ = os.ReadFile(path)
-				tree, _ := Parse(st.origin, false)
-
-				st.expect, _ = os.ReadFile(strings.Replace(path, ".tpl", ".txt", 1))
-				st.expect = bytealg.Trim(st.expect, []byte("\n"))
-				stages = append(stages, st)
-
-				RegisterTplKey(st.key, tree)
-			}
-			return nil
-		})
-	}
+	registerTestStages("tpl")
+	registerTestStages("mod")
+	registerTestStages("i18n")
 
 	_ = filepath.Walk("testdata/parser", func(path string, info os.FileInfo, err error) error {
 		if filepath.Ext(path) == ".tpl" {
@@ -95,6 +79,25 @@ func init() {
 			} else if raw, err := os.ReadFile(strings.Replace(path, ".tpl", ".err", 1)); err == nil {
 				st.err = bytealg.Trim(fastconv.B2S(raw), "\n")
 			}
+			stages = append(stages, st)
+
+			RegisterTplKey(st.key, tree)
+		}
+		return nil
+	})
+}
+
+func registerTestStages(dir string) {
+	_ = filepath.Walk("testdata/"+dir, func(path string, info os.FileInfo, err error) error {
+		if filepath.Ext(path) == ".tpl" {
+			st := stage{}
+			st.key = strings.Replace(filepath.Base(path), ".tpl", "", 1)
+
+			st.origin, _ = os.ReadFile(path)
+			tree, _ := Parse(st.origin, false)
+
+			st.expect, _ = os.ReadFile(strings.Replace(path, ".tpl", ".txt", 1))
+			st.expect = bytealg.Trim(st.expect, []byte("\n"))
 			stages = append(stages, st)
 
 			RegisterTplKey(st.key, tree)
