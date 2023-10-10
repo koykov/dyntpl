@@ -73,7 +73,7 @@ func testTpl(t *testing.T) {
 	}
 
 	ctx := NewCtx()
-	ctx.Set("user", user, &ins)
+	ctx.Set("user", user, ins)
 	result, err := Render(key, ctx)
 	if err != nil {
 		t.Error(err)
@@ -96,7 +96,7 @@ func testTplLC(t *testing.T) {
 	}
 
 	ctx := NewCtx()
-	ctx.Set("user", user, &ins)
+	ctx.Set("user", user, ins)
 	ctx.SetStatic("begin", 0)
 	ctx.SetStatic("end", 3)
 	result, err := Render(key, ctx)
@@ -186,7 +186,7 @@ func benchTpl(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		ctx := AcquireCtx()
-		ctx.Set("user", user, &ins)
+		ctx.Set("user", user, ins)
 		buf.Reset()
 		err := Write(&buf, key, ctx)
 		if err != nil {
@@ -216,7 +216,7 @@ func benchTplLC(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		ctx := AcquireCtx()
 		buf.Reset()
-		ctx.Set("user", user, &ins)
+		ctx.Set("user", user, ins)
 		ctx.SetStatic("begin", 0)
 		ctx.SetStatic("end", 3)
 		err := Write(&buf, key, ctx)

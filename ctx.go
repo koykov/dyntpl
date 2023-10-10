@@ -38,6 +38,10 @@ type Ctx struct {
 	// Deferred functions pool.
 	dfr []func() error
 
+	// List of variables taken from ipools and registered to return back.
+	ipv  []ipoolVar
+	ipvl int
+
 	// Break depth.
 	brkD int
 
@@ -273,6 +277,22 @@ func (ctx *Ctx) Defer(fn func() error) {
 	ctx.dfr = append(ctx.dfr, fn)
 }
 
+// AcquireFrom receives new variable from given pool and register it to return batch after finish template processing.
+func (ctx *Ctx) AcquireFrom(pool string) (any, error) {
+	v, err := ipools_.acquire(pool)
+	if err != nil {
+		return nil, err
+	}
+	if ctx.ipvl < len(ctx.ipv) {
+		ctx.ipv[ctx.ipvl].key = pool
+		ctx.ipv[ctx.ipvl].val = v
+	} else {
+		ctx.ipv = append(ctx.ipv, ipoolVar{key: pool, val: v})
+	}
+	ctx.ipvl++
+	return v, nil
+}
+
 // Reset the context.
 //
 // Made to use together with pools.
@@ -314,6 +334,12 @@ func (ctx *Ctx) Reset() {
 	}
 
 	ctx.dfr = ctx.dfr[:0]
+
+	for i := 0; i < ctx.ipvl; i++ {
+		_ = ipools_.release(ctx.ipv[i].key, ctx.ipv[i].val)
+		ctx.ipv[i].key, ctx.ipv[i].val = "", nil
+	}
+	ctx.ipvl = 0
 }
 
 // Internal getter.
