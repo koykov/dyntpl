@@ -47,6 +47,9 @@ func init() {
 
 	// Register test modifiers.
 	RegisterModFn("testNameOf", "", modTestNameOf)
+	RegisterModFnNS("testns", "pack", "", func(_ *Ctx, _ *any, _ any, _ []any) error { return nil })
+	RegisterModFnNS("testns", "extract", "", func(_ *Ctx, _ *any, _ any, _ []any) error { return nil })
+	RegisterModFnNS("testns", "marshal", "", func(_ *Ctx, _ *any, _ any, _ []any) error { return nil })
 
 	// Register test condition-ok helpers.
 	RegisterCondOKFn("__testUserNextHistory999", testCondOK)

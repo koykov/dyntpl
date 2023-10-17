@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+	<node type="ctx" var="v0" src="x.y.z" ins="static">
+		<mods>
+			<mod name="testns::pack" arg0="a0" arg1="a1" sarg2="foobar"/>
+		</mods>
+	</node>
+	<node type="tpl" val="x.y.z">
+		<mods>
+			<mod name="testns::extract" sarg0="foobar" arg1="v1"/>
+			<mod name="testns::marshal"/>
+		</mods>
+	</node>
+	<node type="cond" helper="testns::allow" arg0="v0">
+		<nodes>
+			<node type="true">
+				<nodes>
+					<node type="raw" val="allowed!"/>
+				</nodes>
+			</node>
+		</nodes>
+	</node>
+	<node type="condOK" var="v" varOK="ok" helper="testns::filterVar" arg0="v1" left="ok">
+		<nodes>
+			<node type="true">
+				<nodes>
+					<node type="raw" val="filter ok"/>
+				</nodes>
+			</node>
+		</nodes>
+	</node>
+	<node type="switch">
+		<nodes>
+			<node type="case" helper="testns::firstCase" arg0="v0">
+				<nodes>
+					<node type="raw" val="first!"/>
+				</nodes>
+			</node>
+			<node type="case" helper="testns::secondCase" arg0="v0">
+				<nodes>
+					<node type="raw" val="second!"/>
+				</nodes>
+			</node>
+			<node type="def">
+				<nodes>
+					<node type="raw" val="all!"/>
+				</nodes>
+			</node>
+		</nodes>
+	</node>
+</nodes>

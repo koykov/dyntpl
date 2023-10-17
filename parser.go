@@ -35,16 +35,16 @@ type target map[int]int
 
 var (
 	// Byte constants.
-	empty      []byte
-	space      = []byte(" ")
-	spaceCBE   = []byte("} ")
-	comma      = []byte(",")
-	uscore     = []byte("_")
-	vline      = []byte("|")
-	colon      = []byte(":")
-	quotes     = []byte("\"'`")
-	ddquote    = []byte(`""`)
-	quote      = []byte("\"")
+	empty    []byte
+	space    = []byte(" ")
+	spaceCBE = []byte("} ")
+	comma    = []byte(",")
+	uscore   = []byte("_")
+	vline    = []byte("|")
+	colon    = []byte(":")
+	quotes   = []byte("\"'`")
+	ddquote  = []byte(`""`)
+	// quote      = []byte("\"")
 	noFmt      = []byte(" \t\n")
 	ctlExit    = []byte("exit")
 	ctlOpen    = []byte("{%")
@@ -108,9 +108,9 @@ var (
 	reMod      = regexp.MustCompile(`([^(]+)\(*([^)]*)\)*`)
 
 	// Regexp to parse context instruction.
-	reCtxAs  = regexp.MustCompile(`(?:context|ctx) (\w+),*\s*(\w*)\s*=\s*([\w\s.,|()"'\[\]]+) as ([\[\]\*\w]*)` + "")
-	reCtxDot = regexp.MustCompile(`(?:context|ctx) (\w+),*\s*(\w*)\s*=\s*([\w\s.,|()"'\[\]]+)\.\(([\[\]\*\w]*)\)` + "")
-	reCtx    = regexp.MustCompile(`(?:context|ctx) (\w+),*\s*(\w*)\s*=\s*([\w\s.,|()"'\[\]]+)`)
+	reCtxAs  = regexp.MustCompile(`(?:context|ctx) (\w+),*\s*(\w*)\s*=\s*([\w\s.,:|()"'\[\]]+) as ([\[\]\*\w]*)` + "")
+	reCtxDot = regexp.MustCompile(`(?:context|ctx) (\w+),*\s*(\w*)\s*=\s*([\w\s.,:|()"'\[\]]+)\.\(([\[\]\*\w]*)\)` + "")
+	reCtx    = regexp.MustCompile(`(?:context|ctx) (\w+),*\s*(\w*)\s*=\s*([\w\s.,:|()"'\[\]]+)`)
 	reCtxS0  = regexp.MustCompile(`(?:context|ctx) (\w+),*\s*(\w*)\s*=\s*"+([^"]+)"+`)
 	reCtxS1  = regexp.MustCompile(`(?:context|ctx) (\w+),*\s*(\w*)\s*=\s*'+([^']+)+'`)
 
@@ -128,7 +128,7 @@ var (
 	reCondOK      = regexp.MustCompile(`if (\w+),*\s*(\w*)\s*:*=\s*([^(]+)\(*([^)]*)\)(.*)\s*;\s*([!\w]+)`)
 	reCondAsOK    = regexp.MustCompile(`if (\w+),*\s*(\w*)\s*:*=\s*([^(]+)\(*([^)]*)\) as (\w*)\s*;\s*([!\w]+)`)
 	reCondDotOK   = regexp.MustCompile(`if (\w+),*\s*(\w*)\s*:*=\s*([^(]+)\(*([^)]*)\)\.\((\w*)\)\s*;\s*([!\w]+)`)
-	reCondExprOK  = regexp.MustCompile(`if .*;\s*([!\w]+)(.*)(.*)`)
+	reCondExprOK  = regexp.MustCompile(`if .*;\s*([!:\w]+)(.*)(.*)`)
 
 	// Regexp to parse loop instruction.
 	reLoop      = regexp.MustCompile(`for .*`)
