@@ -10,9 +10,17 @@ var (
 	condOKRegistry = map[string]CondOKFn{}
 )
 
-// RegisterCondOKFn registers new condition-OK helper in registry.
+// RegisterCondOKFn registers new condition-OK helper.
 func RegisterCondOKFn(name string, cond CondOKFn) {
 	condOKRegistry[name] = cond
+}
+
+// RegisterCondOKFnNS registers new condition-OK helper in given namespace.
+func RegisterCondOKFnNS(namespace, name string, cond CondOKFn) {
+	if len(namespace) > 0 {
+		name = namespace + "::" + name
+	}
+	RegisterCondOKFn(name, cond)
 }
 
 // GetCondOKFn returns condition-OK helper from the registry.
@@ -41,3 +49,5 @@ func testCondOK(ctx *Ctx, v *any, ok *bool, args []any) {
 		ctx.SetCounter("__testUserNextHistory999counter", c)
 	}
 }
+
+var _ = RegisterCondOKFnNS

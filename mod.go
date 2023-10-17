@@ -35,6 +35,18 @@ func RegisterModFn(name, alias string, mod ModFn) {
 	}
 }
 
+// RegisterModFnNS registers new mod function in given namespace.
+func RegisterModFnNS(namespace, name, alias string, mod ModFn) {
+	if len(namespace) == 0 {
+		RegisterModFn(name, alias, mod)
+	}
+	name = namespace + "::" + name
+	if len(alias) > 0 {
+		alias = namespace + "::" + alias
+	}
+	RegisterModFn(name, alias, mod)
+}
+
 // GetModFn gets modifier from the registry.
 func GetModFn(name string) *ModFn {
 	if fn, ok := modRegistry[name]; ok {

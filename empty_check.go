@@ -6,13 +6,19 @@ type EmptyCheckFn func(ctx *Ctx, val any) bool
 var (
 	// Registry of empty check helpers.
 	emptyCheckRegistry = map[string]EmptyCheckFn{}
-	// Suppress go vet warning.
-	_ = GetEmptyCheckFn
 )
 
 // RegisterEmptyCheckFn registers new empty check helper.
 func RegisterEmptyCheckFn(name string, cond EmptyCheckFn) {
 	emptyCheckRegistry[name] = cond
+}
+
+// RegisterEmptyCheckFnNS registers new empty check helper.
+func RegisterEmptyCheckFnNS(namespace, name string, cond EmptyCheckFn) {
+	if len(namespace) > 0 {
+		name = namespace + "::" + name
+	}
+	RegisterEmptyCheckFn(name, cond)
 }
 
 // GetEmptyCheckFn gets empty check helper from the registry.
@@ -37,3 +43,5 @@ func EmptyCheck(ctx *Ctx, val any) bool {
 	}
 	return false
 }
+
+var _, _ = GetEmptyCheckFn, RegisterEmptyCheckFnNS
