@@ -22,9 +22,9 @@ func RegisterEmptyCheckFnNS(namespace, name string, cond EmptyCheckFn) {
 }
 
 // GetEmptyCheckFn gets empty check helper from the registry.
-func GetEmptyCheckFn(name string) *EmptyCheckFn {
+func GetEmptyCheckFn(name string) EmptyCheckFn {
 	if fn, ok := emptyCheckRegistry[name]; ok {
-		return &fn
+		return fn
 	}
 	return nil
 }

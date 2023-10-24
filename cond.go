@@ -22,9 +22,9 @@ func RegisterCondFnNS(namespace, name string, cond CondFn) {
 }
 
 // GetCondFn returns condition helper from the registry.
-func GetCondFn(name string) *CondFn {
+func GetCondFn(name string) CondFn {
 	if fn, ok := condRegistry[name]; ok {
-		return &fn
+		return fn
 	}
 	return nil
 }

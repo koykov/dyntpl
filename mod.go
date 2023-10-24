@@ -18,7 +18,7 @@ type ModFn func(ctx *Ctx, buf *any, val any, args []any) error
 // Internal modifier representation.
 type mod struct {
 	id  []byte
-	fn  *ModFn
+	fn  ModFn
 	arg []*arg
 }
 
@@ -48,9 +48,9 @@ func RegisterModFnNS(namespace, name, alias string, mod ModFn) {
 }
 
 // GetModFn gets modifier from the registry.
-func GetModFn(name string) *ModFn {
+func GetModFn(name string) ModFn {
 	if fn, ok := modRegistry[name]; ok {
-		return &fn
+		return fn
 	}
 	return nil
 }

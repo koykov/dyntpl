@@ -24,9 +24,9 @@ func RegisterCondOKFnNS(namespace, name string, cond CondOKFn) {
 }
 
 // GetCondOKFn returns condition-OK helper from the registry.
-func GetCondOKFn(name string) *CondOKFn {
+func GetCondOKFn(name string) CondOKFn {
 	if fn, ok := condOKRegistry[name]; ok {
-		return &fn
+		return fn
 	}
 	return nil
 }

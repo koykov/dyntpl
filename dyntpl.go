@@ -183,25 +183,25 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 		}
 		// Process modifiers.
 		if len(node.mod) > 0 {
-			for _, mod := range node.mod {
+			for _, mod_ := range node.mod {
 				// Collect arguments to buffer.
 				ctx.bufA = ctx.bufA[:0]
-				if len(mod.arg) > 0 {
-					for _, arg := range mod.arg {
-						if len(arg.name) > 0 {
+				if len(mod_.arg) > 0 {
+					for _, arg_ := range mod_.arg {
+						if len(arg_.name) > 0 {
 							kv := ctx.getKV()
-							kv.k = arg.name
-							if arg.static {
-								kv.v = &arg.val
+							kv.k = arg_.name
+							if arg_.static {
+								kv.v = &arg_.val
 							} else {
-								kv.v = ctx.get(arg.val)
+								kv.v = ctx.get(arg_.val)
 							}
 							ctx.bufA = append(ctx.bufA, kv)
 						} else {
-							if arg.static {
-								ctx.bufA = append(ctx.bufA, &arg.val)
+							if arg_.static {
+								ctx.bufA = append(ctx.bufA, &arg_.val)
 							} else {
-								val := ctx.get(arg.val)
+								val := ctx.get(arg_.val)
 								ctx.bufA = append(ctx.bufA, val)
 							}
 						}
@@ -209,7 +209,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 				}
 				ctx.bufX = raw
 				// Call the modifier func.
-				ctx.Err = (*mod.fn)(ctx, &ctx.bufX, ctx.bufX, ctx.bufA)
+				ctx.Err = mod_.fn(ctx, &ctx.bufX, ctx.bufX, ctx.bufA)
 				if ctx.Err != nil {
 					break
 				}
@@ -257,25 +257,25 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			}
 			// Process modifiers.
 			if len(node.mod) > 0 {
-				for _, mod := range node.mod {
+				for _, mod_ := range node.mod {
 					// Collect arguments to buffer.
 					ctx.bufA = ctx.bufA[:0]
-					if len(mod.arg) > 0 {
-						for _, arg := range mod.arg {
-							if len(arg.name) > 0 {
+					if len(mod_.arg) > 0 {
+						for _, arg_ := range mod_.arg {
+							if len(arg_.name) > 0 {
 								kv := ctx.getKV()
-								kv.k = arg.name
-								if arg.static {
-									kv.v = &arg.val
+								kv.k = arg_.name
+								if arg_.static {
+									kv.v = &arg_.val
 								} else {
-									kv.v = ctx.get(arg.val)
+									kv.v = ctx.get(arg_.val)
 								}
 								ctx.bufA = append(ctx.bufA, kv)
 							} else {
-								if arg.static {
-									ctx.bufA = append(ctx.bufA, &arg.val)
+								if arg_.static {
+									ctx.bufA = append(ctx.bufA, &arg_.val)
 								} else {
-									val := ctx.get(arg.val)
+									val := ctx.get(arg_.val)
 									ctx.bufA = append(ctx.bufA, val)
 								}
 							}
@@ -283,7 +283,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 					}
 					ctx.bufX = raw
 					// Call the modifier func.
-					ctx.Err = (*mod.fn)(ctx, &ctx.bufX, ctx.bufX, ctx.bufA)
+					ctx.Err = mod_.fn(ctx, &ctx.bufX, ctx.bufX, ctx.bufA)
 					if ctx.Err != nil {
 						break
 					}
@@ -344,17 +344,17 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			// Prepare arguments list.
 			ctx.bufA = ctx.bufA[:0]
 			if len(node.condHlpArg) > 0 {
-				for _, arg := range node.condHlpArg {
-					if arg.static {
-						ctx.bufA = append(ctx.bufA, &arg.val)
+				for _, arg_ := range node.condHlpArg {
+					if arg_.static {
+						ctx.bufA = append(ctx.bufA, &arg_.val)
 					} else {
-						val := ctx.get(arg.val)
+						val := ctx.get(arg_.val)
 						ctx.bufA = append(ctx.bufA, val)
 					}
 				}
 			}
 			// Call condition-ok helper func.
-			(*fn)(ctx, &ctx.bufX, &ctx.BufB, ctx.bufA)
+			fn(ctx, &ctx.bufX, &ctx.BufB, ctx.bufA)
 			r = ctx.BufB
 			// Set var, ok to context.
 			lv, lr := fastconv.B2S(node.condOKL), fastconv.B2S(node.condOKR)
@@ -397,17 +397,17 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			// Prepare arguments list.
 			ctx.bufA = ctx.bufA[:0]
 			if len(node.condHlpArg) > 0 {
-				for _, arg := range node.condHlpArg {
-					if arg.static {
-						ctx.bufA = append(ctx.bufA, &arg.val)
+				for _, arg_ := range node.condHlpArg {
+					if arg_.static {
+						ctx.bufA = append(ctx.bufA, &arg_.val)
 					} else {
-						val := ctx.get(arg.val)
+						val := ctx.get(arg_.val)
 						ctx.bufA = append(ctx.bufA, val)
 					}
 				}
 			}
 			// Call condition helper func.
-			r = (*fn)(ctx, ctx.bufA)
+			r = fn(ctx, ctx.bufA)
 		case len(node.condHlp) > 0 && node.condLC > lcNone:
 			// Condition helper in LC mode.
 			if len(node.condHlpArg) == 0 {
@@ -509,17 +509,17 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 						// Prepare arguments list.
 						ctx.bufA = ctx.bufA[:0]
 						if len(ch.caseHlpArg) > 0 {
-							for _, arg := range ch.caseHlpArg {
-								if arg.static {
-									ctx.bufA = append(ctx.bufA, &arg.val)
+							for _, arg_ := range ch.caseHlpArg {
+								if arg_.static {
+									ctx.bufA = append(ctx.bufA, &arg_.val)
 								} else {
-									val := ctx.get(arg.val)
+									val := ctx.get(arg_.val)
 									ctx.bufA = append(ctx.bufA, val)
 								}
 							}
 						}
 						// Call condition helper func.
-						r = (*fn)(ctx, ctx.bufA)
+						r = fn(ctx, ctx.bufA)
 					} else {
 						sl := ch.caseStaticL
 						sr := ch.caseStaticR
