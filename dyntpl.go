@@ -84,7 +84,7 @@ func Write(w io.Writer, key string, ctx *Ctx) (err error) {
 		err = ErrTplNotFound
 		return
 	}
-	return render(w, tpl, ctx)
+	return write(w, tpl, ctx)
 }
 
 // WriteFallback writes template using fallback key logic and write result to writer object.
@@ -97,7 +97,7 @@ func WriteFallback(w io.Writer, key, fbKey string, ctx *Ctx) (err error) {
 		err = ErrTplNotFound
 		return
 	}
-	return render(w, tpl, ctx)
+	return write(w, tpl, ctx)
 }
 
 // RenderByID renders template with given ID according context.
@@ -119,14 +119,14 @@ func WriteByID(w io.Writer, id int, ctx *Ctx) (err error) {
 		err = ErrTplNotFound
 		return
 	}
-	return render(w, tpl, ctx)
+	return write(w, tpl, ctx)
 }
 
 // Internal renderer.
-func render(w io.Writer, tpl *Tpl, ctx *Ctx) (err error) {
+func write(w io.Writer, tpl *Tpl, ctx *Ctx) (err error) {
 	// Walk over root nodes in tree and evaluate them.
 	for _, node := range tpl.tree.nodes {
-		err = tpl.renderNode(w, node, ctx)
+		err = tpl.writeNode(w, node, ctx)
 		if err != nil {
 			if err == ErrInterrupt {
 				// Interrupt logic.
@@ -144,7 +144,7 @@ func render(w io.Writer, tpl *Tpl, ctx *Ctx) (err error) {
 }
 
 // General node renderer.
-func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
+func (t *Tpl) writeNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 	switch node.typ {
 	case TypeRaw:
 		if ctx.chJQ {
@@ -374,12 +374,12 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			if r {
 				// True case.
 				if len(node.child) > 0 {
-					err = t.renderNode(w, node.child[0], ctx)
+					err = t.writeNode(w, node.child[0], ctx)
 				}
 			} else {
 				// Else case.
 				if len(node.child) > 1 {
-					err = t.renderNode(w, node.child[1], ctx)
+					err = t.writeNode(w, node.child[1], ctx)
 				}
 			}
 		}
@@ -426,18 +426,18 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 		if r {
 			// True case.
 			if len(node.child) > 0 {
-				err = t.renderNode(w, node.child[0], ctx)
+				err = t.writeNode(w, node.child[0], ctx)
 			}
 		} else {
 			// Else case.
 			if len(node.child) > 1 {
-				err = t.renderNode(w, node.child[1], ctx)
+				err = t.writeNode(w, node.child[1], ctx)
 			}
 		}
 	case TypeCondTrue, TypeCondFalse, TypeCase, TypeDefault:
 		// Just walk over child nodes.
 		for _, ch := range node.child {
-			err = t.renderNode(w, ch, ctx)
+			err = t.writeNode(w, ch, ctx)
 			if err != nil {
 				return
 			}
@@ -491,7 +491,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 					}
 				}
 				if r {
-					err = t.renderNode(w, ch, ctx)
+					err = t.writeNode(w, ch, ctx)
 					break
 				}
 			}
@@ -549,7 +549,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 						return
 					}
 					if r {
-						err = t.renderNode(w, ch, ctx)
+						err = t.writeNode(w, ch, ctx)
 						break
 					}
 				}
@@ -558,7 +558,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 		if !r {
 			for _, ch := range node.child {
 				if ch.typ == TypeDefault {
-					err = t.renderNode(w, ch, ctx)
+					err = t.writeNode(w, ch, ctx)
 					break
 				}
 			}
@@ -568,7 +568,7 @@ func (t *Tpl) renderNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 		tpl := tplDB.getBKeys(node.tpl)
 		if tpl != nil {
 			w1 := ctx.getW()
-			if err = render(w1, tpl, ctx); err != nil {
+			if err = write(w1, tpl, ctx); err != nil {
 				return
 			}
 

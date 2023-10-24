@@ -583,7 +583,7 @@ func (ctx *Ctx) cloop(node Node, tpl *Tpl, w io.Writer) {
 		ctx.chQB = true
 		var err, lerr error
 		for _, ch := range node.child {
-			err = tpl.renderNode(w, ch, ctx)
+			err = tpl.writeNode(w, ch, ctx)
 			if err == ErrLBreakLoop {
 				lerr = err
 			}
