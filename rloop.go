@@ -62,7 +62,7 @@ func (rl *RangeLoop) Iterate() inspector.LoopCtl {
 	rl.cntr++
 	var err, lerr error
 	for _, ch := range rl.node.child {
-		err = rl.tpl.renderNode(rl.w, ch, rl.ctx)
+		err = rl.tpl.writeNode(rl.w, ch, rl.ctx)
 		if err == ErrLBreakLoop {
 			lerr = err
 		}
