@@ -39,6 +39,7 @@ func RegisterModFn(name, alias string, mod ModFn) {
 func RegisterModFnNS(namespace, name, alias string, mod ModFn) {
 	if len(namespace) == 0 {
 		RegisterModFn(name, alias, mod)
+		return
 	}
 	name = namespace + "::" + name
 	if len(alias) > 0 {
