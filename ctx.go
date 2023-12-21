@@ -50,7 +50,7 @@ type Ctx struct {
 	wl int
 
 	// List of internal KV pairs.
-	kv  []ctxKV
+	kv  []KV
 	kvl int
 
 	// i18n support.
@@ -61,6 +61,7 @@ type Ctx struct {
 	// External buffers to use in modifier and condition helpers.
 	BufAcc bytebuf.AccumulativeBuf
 	// todo remove as unused later
+	// DEPRECATED: use BufAcc instead.
 	Buf, Buf1, Buf2 bytebuf.ChainBuf
 
 	BufB bool
@@ -84,10 +85,10 @@ type ctxVar struct {
 	ins inspector.Inspector
 }
 
-// Context key-value pair.
-type ctxKV struct {
-	k []byte
-	v any
+// KV represents key-value pair.
+type KV struct {
+	K []byte
+	V any
 }
 
 var (
@@ -686,13 +687,13 @@ func (ctx *Ctx) getW() *bytes.Buffer {
 }
 
 // Get new or existing KV pair.
-func (ctx *Ctx) getKV() *ctxKV {
-	var kv *ctxKV
+func (ctx *Ctx) getKV() *KV {
+	var kv *KV
 	if ctx.kvl < len(ctx.kv) {
 		kv = &ctx.kv[ctx.kvl]
 		ctx.kvl++
 	} else {
-		ctx.kv = append(ctx.kv, ctxKV{})
+		ctx.kv = append(ctx.kv, KV{})
 		kv = &ctx.kv[len(ctx.kv)-1]
 		ctx.kvl++
 	}
