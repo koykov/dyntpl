@@ -66,9 +66,9 @@ func trans(ctx *Ctx, buf *any, args []any, plural bool) error {
 	if len(args) > 0 {
 		_ = args[len(args)-1]
 		for i := 0; i < len(args); i++ {
-			if kv, ok := args[i].(*ctxKV); ok {
-				ctx.BufAcc.StakeOut().WriteX(kv.v)
-				ctx.repl.AddKV(fastconv.B2S(kv.k), ctx.BufAcc.StakedString())
+			if kv, ok := args[i].(*KV); ok {
+				ctx.BufAcc.StakeOut().WriteX(kv.V)
+				ctx.repl.AddKV(fastconv.B2S(kv.K), ctx.BufAcc.StakedString())
 			}
 		}
 	}

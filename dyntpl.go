@@ -190,11 +190,11 @@ func (t *Tpl) writeNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 					for _, arg_ := range mod_.arg {
 						if len(arg_.name) > 0 {
 							kv := ctx.getKV()
-							kv.k = arg_.name
+							kv.K = arg_.name
 							if arg_.static {
-								kv.v = &arg_.val
+								kv.V = &arg_.val
 							} else {
-								kv.v = ctx.get(arg_.val)
+								kv.V = ctx.get(arg_.val)
 							}
 							ctx.bufA = append(ctx.bufA, kv)
 						} else {
@@ -264,11 +264,11 @@ func (t *Tpl) writeNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 						for _, arg_ := range mod_.arg {
 							if len(arg_.name) > 0 {
 								kv := ctx.getKV()
-								kv.k = arg_.name
+								kv.K = arg_.name
 								if arg_.static {
-									kv.v = &arg_.val
+									kv.V = &arg_.val
 								} else {
-									kv.v = ctx.get(arg_.val)
+									kv.V = ctx.get(arg_.val)
 								}
 								ctx.bufA = append(ctx.bufA, kv)
 							} else {
