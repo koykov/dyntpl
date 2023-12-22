@@ -4,7 +4,7 @@ package dyntpl
 type Global any
 
 var (
-	globIdx map[string]int
+	globIdx = map[string]int{}
 	globBuf []any
 )
 

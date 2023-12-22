@@ -16,6 +16,7 @@ import (
 // Ctx is a context object. Contains list of variables available to inspect.
 // In addition, has buffers to help develop new helpers without allocations.
 type Ctx struct {
+	localDB
 	// List of context variables and list len.
 	vars []ctxVar
 	ln   int
@@ -54,6 +55,7 @@ type Ctx struct {
 	kvl int
 
 	// i18n support.
+	// DEPRECATED: use local variable instead.
 	loc  string
 	i18n unsafe.Pointer
 	repl i18n.PlaceholderReplacer
@@ -298,6 +300,8 @@ func (ctx *Ctx) AcquireFrom(pool string) (any, error) {
 //
 // Made to use together with pools.
 func (ctx *Ctx) Reset() {
+	ctx.localDB.reset()
+
 	for i := 0; i < ctx.ln; i++ {
 		ctx.vars[i].cntrF = false
 		ctx.vars[i].val = nil
