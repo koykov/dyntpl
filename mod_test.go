@@ -7,6 +7,13 @@ import (
 
 type modArgs map[string]any
 
+func init() {
+	RegisterModFnNS("testns", "modCB", "", func(ctx *Ctx, _ *any, _ any, args []any) error {
+		ctx.SetStatic("testVar", args[0])
+		return nil
+	})
+}
+
 func TestMod(t *testing.T) {
 	t.Run("modDefault", func(t *testing.T) { testMod(t) })
 	t.Run("modDefaultStatic", func(t *testing.T) { testMod(t) })

@@ -18,6 +18,7 @@ func TestParser(t *testing.T) {
 	t.Run("modPrint", testParser)
 	t.Run("modPrintMulti", testParser)
 	t.Run("modPrintMix", testParser)
+	t.Run("modCallback", testParser)
 	t.Run("namespace", testParser)
 	t.Run("ctxDot", testParser)
 	t.Run("ctxDot1", testParser)

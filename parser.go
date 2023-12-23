@@ -103,6 +103,7 @@ var (
 	reTplP     = regexp.MustCompile(`^([jhqluacJfF.\d]*)=\s*(.*) (?:prefix|pfx) (.*)`)
 	reTplS     = regexp.MustCompile(`^([jhqluacJfF.\d]*)=\s*(.*) (?:suffix|sfx) (.*)`)
 	reTpl      = regexp.MustCompile(`^([jhqluacJfF.\d]*)=\s*(.*)`)
+	reTplCB    = regexp.MustCompile(`^([^(\s]+)\(([^)]*)\)`)
 	reModPfxF  = regexp.MustCompile(`([fF]+)\.*(\d*).*`)
 	reModNoVar = regexp.MustCompile(`([^(]+)\(([^)]*)\)`)
 	reMod      = regexp.MustCompile(`([^(]+)\(*([^)]*)\)*`)
@@ -261,7 +262,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 	up = false
 	t := bytealg.Trim(ctl, ctlTrim)
 	// Check tpl (print) structure.
-	if reTplPS.Match(t) || reTplP.Match(t) || reTplS.Match(t) || reTpl.Match(t) {
+	if reTplPS.Match(t) || reTplP.Match(t) || reTplS.Match(t) || reTpl.Match(t) || reTplCB.Match(t) {
 		// Sequentially check print structure from the complex to the simplest.
 		root.typ = TypeTpl
 		if m := reTplPS.FindSubmatch(t); m != nil {
@@ -279,6 +280,8 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 			root.suffix = m[3]
 		} else if m := reTpl.FindSubmatch(t); m != nil {
 			// Simple tpl found.
+			root.raw, root.mod = p.extractMods(bytealg.Trim(m[2], ctlTrimAll), m[1])
+		} else if m := reTplCB.FindSubmatch(t); m != nil {
 			root.raw, root.mod = p.extractMods(bytealg.Trim(m[2], ctlTrimAll), m[1])
 		} else {
 			root.raw, root.mod = p.extractMods(bytealg.Trim(t, ctlTrimAll), nil)
