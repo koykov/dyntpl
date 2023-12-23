@@ -1,0 +1,1 @@
+{% testns::modCB("foo") %}{%= testVar %}
