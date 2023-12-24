@@ -6,6 +6,7 @@ type Local any
 type localDB struct {
 	idx map[string]int
 	buf []Local
+	ln  int
 }
 
 func (l *localDB) init() {
@@ -21,8 +22,14 @@ func (l *localDB) SetLocal(name string, val Local) {
 		l.buf[idx] = val
 		return
 	}
-	l.buf = append(l.buf, val)
-	l.idx[name] = len(l.buf) - 1
+	if l.ln < len(l.buf) {
+		l.buf[l.ln] = val
+		l.idx[name] = l.ln
+	} else {
+		l.buf = append(l.buf, val)
+		l.idx[name] = len(l.buf) - 1
+	}
+	l.ln++
 }
 
 // GetLocal returns local variable from ctx.
@@ -43,7 +50,7 @@ func (l *localDB) WriteLocal(dst *Local, name string) {
 }
 
 func (l *localDB) reset() {
-	l.buf = l.buf[:0]
+	l.ln = 0
 	for k := range l.idx {
 		delete(l.idx, k)
 	}
