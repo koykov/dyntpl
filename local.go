@@ -17,6 +17,10 @@ func (l *localDB) init() {
 // SetLocal registers new local variable.
 func (l *localDB) SetLocal(name string, val Local) {
 	l.init()
+	if idx, ok := l.idx[name]; ok && idx >= 0 && idx < len(l.buf) {
+		l.buf[idx] = val
+		return
+	}
 	l.buf = append(l.buf, val)
 	l.idx[name] = len(l.buf) - 1
 }
