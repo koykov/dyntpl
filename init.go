@@ -50,6 +50,10 @@ func init() {
 	RegisterModFnNS("testns", "pack", "", func(_ *Ctx, _ *any, _ any, _ []any) error { return nil })
 	RegisterModFnNS("testns", "extract", "", func(_ *Ctx, _ *any, _ any, _ []any) error { return nil })
 	RegisterModFnNS("testns", "marshal", "", func(_ *Ctx, _ *any, _ any, _ []any) error { return nil })
+	RegisterModFnNS("testns", "modCB", "", func(ctx *Ctx, _ *any, _ any, args []any) error {
+		ctx.SetStatic("testVar", args[0])
+		return nil
+	})
 
 	// Register test condition-ok helpers.
 	RegisterCondOKFn("__testUserNextHistory999", testCondOK)

@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <nodes>
-	<node type="tpl" val="&quot;foo&quot;"/>
+	<node type="tpl">
+		<mods>
+			<mod name="testns::modCB" sarg0="foo"/>
+		</mods>
+	</node>
 	<node type="tpl" val="testVar"/>
 </nodes>

@@ -282,7 +282,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 			// Simple tpl found.
 			root.raw, root.mod = p.extractMods(bytealg.Trim(m[2], ctlTrimAll), m[1])
 		} else if m := reTplCB.FindSubmatch(t); m != nil {
-			root.raw, root.mod = p.extractMods(bytealg.Trim(m[2], ctlTrimAll), m[1])
+			root.raw, root.mod = p.extractMods(bytealg.Trim(m[0], ctlTrimAll), m[1])
 		} else {
 			root.raw, root.mod = p.extractMods(bytealg.Trim(t, ctlTrimAll), nil)
 		}
