@@ -16,7 +16,6 @@ import (
 // Ctx is a context object. Contains list of variables available to inspect.
 // In addition, has buffers to help develop new helpers without allocations.
 type Ctx struct {
-	localDB
 	// List of context variables and list len.
 	vars []ctxVar
 	ln   int
@@ -70,6 +69,7 @@ type Ctx struct {
 	BufI int64
 	BufU uint64
 	BufF float64
+	BufX any
 
 	Err error
 }
@@ -300,8 +300,6 @@ func (ctx *Ctx) AcquireFrom(pool string) (any, error) {
 //
 // Made to use together with pools.
 func (ctx *Ctx) Reset() {
-	ctx.localDB.reset()
-
 	for i := 0; i < ctx.ln; i++ {
 		ctx.vars[i].cntrF = false
 		ctx.vars[i].val = nil
@@ -322,6 +320,7 @@ func (ctx *Ctx) Reset() {
 
 	ctx.Err = nil
 	ctx.bufX = nil
+	ctx.BufX = nil
 	ctx.chQB, ctx.chJQ, ctx.chHE, ctx.chUE = false, false, false, false
 	ctx.bufS = ctx.bufS[:0]
 	ctx.bufCB.Reset()
