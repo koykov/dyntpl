@@ -1,1 +1,0 @@
-<h1>{%= t("messages.welcome", "", {"!user": user.Name}) %}</h1>

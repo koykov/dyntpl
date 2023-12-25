@@ -1,1 +1,0 @@
-<div>Multithreading support: yes</div>

@@ -33,7 +33,6 @@ const (
 	TypeUrlEnc    Type = 21
 	TypeEndUrlEnc Type = 22
 	TypeInclude   Type = 23
-	TypeLocale    Type = 24
 	TypeExit      Type = 99
 
 	// Must be in sync with inspector.Op type.
@@ -91,8 +90,6 @@ func (typ Type) String() string {
 		return "div"
 	case TypeInclude:
 		return "inc"
-	case TypeLocale:
-		return "locale"
 	case TypeExit:
 		return "exit"
 	default:
