@@ -116,13 +116,13 @@ func NewCtx() *Ctx {
 
 // Set the variable to context.
 // Inspector ins should be corresponded to variable val.
-func (ctx *Ctx) Set(key string, val any, ins inspector.Inspector) {
+func (ctx *Ctx) Set(key string, val any, ins inspector.Inspector) *Ctx {
 	for i := 0; i < ctx.ln; i++ {
 		if ctx.vars[i].key == key {
 			// Update existing variable.
 			ctx.vars[i].val = val
 			ctx.vars[i].ins = ins
-			return
+			return ctx
 		}
 	}
 	// Add new variable.
@@ -141,33 +141,35 @@ func (ctx *Ctx) Set(key string, val any, ins inspector.Inspector) {
 	}
 	// Increase variables count.
 	ctx.ln++
+	return ctx
 }
 
 // SetStatic sets static variable to context.
-func (ctx *Ctx) SetStatic(key string, val any) {
+func (ctx *Ctx) SetStatic(key string, val any) *Ctx {
 	ins, err := inspector.GetInspector("static")
 	if err != nil {
 		ctx.Err = err
-		return
+		return ctx
 	}
 	ctx.Set(key, val, ins)
+	return ctx
 }
 
 // SetBytes sets bytes as static variable.
 //
 // See Ctx.Set().
 // This is a special case to improve speed.
-func (ctx *Ctx) SetBytes(key string, val []byte) {
+func (ctx *Ctx) SetBytes(key string, val []byte) *Ctx {
 	ins, err := inspector.GetInspector("static")
 	if err != nil {
 		ctx.Err = err
-		return
+		return ctx
 	}
 	for i := 0; i < ctx.ln; i++ {
 		if ctx.vars[i].key == key {
 			ctx.vars[i].buf = append(ctx.vars[i].buf[:0], val...)
 			ctx.vars[i].ins = ins
-			return
+			return ctx
 		}
 	}
 	if ctx.ln < len(ctx.vars) {
@@ -183,22 +185,24 @@ func (ctx *Ctx) SetBytes(key string, val []byte) {
 		ctx.vars = append(ctx.vars, v)
 	}
 	ctx.ln++
+	return ctx
 }
 
 // SetString sets string as static variable.
-func (ctx *Ctx) SetString(key, val string) {
+func (ctx *Ctx) SetString(key, val string) *Ctx {
 	ctx.SetBytes(key, fastconv.S2B(val))
+	return ctx
 }
 
 // SetCounter sets int counter as static variable.
 //
 // See Ctx.Set().
 // This is a special case to support counters.
-func (ctx *Ctx) SetCounter(key string, val int) {
+func (ctx *Ctx) SetCounter(key string, val int) *Ctx {
 	ins, err := inspector.GetInspector("static")
 	if err != nil {
 		ctx.Err = err
-		return
+		return ctx
 	}
 	for i := 0; i < ctx.ln; i++ {
 		if ctx.vars[i].key == key {
@@ -207,7 +211,7 @@ func (ctx *Ctx) SetCounter(key string, val int) {
 			ctx.vars[i].ins = ins
 			ctx.vars[i].val = nil
 			ctx.vars[i].buf = ctx.vars[i].buf[:0]
-			return
+			return ctx
 		}
 	}
 	if ctx.ln < len(ctx.vars) {
@@ -227,6 +231,7 @@ func (ctx *Ctx) SetCounter(key string, val int) {
 		ctx.vars = append(ctx.vars, v)
 	}
 	ctx.ln++
+	return ctx
 }
 
 // Get arbitrary value from the context by path.
@@ -253,6 +258,7 @@ func (ctx *Ctx) GetCounter(key string) int {
 }
 
 // I18n sets i18n locale and database.
+// DEPRECATED: avoid to use.
 func (ctx *Ctx) I18n(locale string, db *i18n.DB) {
 	ctx.loc = locale
 	if db != nil {
