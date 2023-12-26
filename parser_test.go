@@ -43,7 +43,6 @@ func TestParser(t *testing.T) {
 	t.Run("switchNoConditionWithHelper", testParser)
 	t.Run("include", testParser)
 	t.Run("includeDot", testParser)
-	t.Run("locale", testParser)
 }
 
 func testParser(t *testing.T) {

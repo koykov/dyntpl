@@ -267,20 +267,19 @@ JSON-escape printing prefix.
 
 `{% end/htmlescape %}` and `{% end/urlencode %}` works the same.
 
-## I18n
+## Extensions
 
-Internationalization support provides by [i18n](https://github.com/koykov/i18n) package.
+Dyntpl's features may be extended by including modules to the project. Currently supported modules:
+* [dyntpl_vector](https://github.com/koykov/dyntpl_vector) provide support of vector parsers inside the templates.
+* [dyntpl_i18n](https://github.com/koykov/dyntpl_i18n) provide support of i18n features.
 
-I18n must be enabled on context level using method `ctx.I18n()` before start templating.
+To enable necessary module just import it to the project, eg:
+```go
+import (
+	_ "https://github.com/koykov/dyntpl_vector"
+)
+```
+and vector's [features](https://github.com/koykov/dyntpl_vector) will be available inside templates. 
 
-For simple translate use function `template` or shorthand `t`:
-```
-{%= t("key", "default value", {"!placeholder0": "replacement", "!placeholder1": object.Label, ...}) %}
-```
-You may omit default value and replacements, only first argument is required.
-
-For plural translation use function `translatePlural` or shorthand `tp`:
-```
-{%= tp("key", "default value", 15, {...}) %}
-```
-Third argument is a count for a plural formula. It's required as a `key` argument.
+Feel free to develop your own extensions. Strongly recommend to register new modifiers using namespaces, like
+[this](https://github.com/koykov/dyntpl_vector/blob/master/init.go#L12).

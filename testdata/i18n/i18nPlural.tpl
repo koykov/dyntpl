@@ -1,1 +1,0 @@
-<div>Multithreading support: {%= tp("pc.cpu", "N/D", cores) %}</div>

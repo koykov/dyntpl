@@ -146,9 +146,6 @@ var (
 	// Regexp to parse include instruction.
 	reInc = regexp.MustCompile(`(?:include|\.) (.*)`)
 
-	// Regexp to parse locale instruction.
-	reLoc = regexp.MustCompile(`(?:locale|loc) "([\w\-]+)"`)
-
 	crc64Tab = crc64.MakeTable(crc64.ISO)
 
 	// Suppress go vet warning.
@@ -674,15 +671,6 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 	if m := reInc.FindSubmatch(t); m != nil {
 		root.typ = TypeInclude
 		root.tpl = bytes.Split(m[1], space)
-		nodes = addNode(nodes, *root)
-		offset = pos + len(ctl)
-		return nodes, offset, up, err
-	}
-
-	// Check locale.
-	if m := reLoc.FindSubmatch(t); m != nil {
-		root.typ = TypeLocale
-		root.loc = m[1]
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
 		return nodes, offset, up, err

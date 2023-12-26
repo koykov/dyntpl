@@ -4,12 +4,10 @@ import (
 	"bytes"
 	"io"
 	"strconv"
-	"unsafe"
 
 	"github.com/koykov/bytealg"
 	"github.com/koykov/bytebuf"
 	"github.com/koykov/fastconv"
-	"github.com/koykov/i18n"
 	"github.com/koykov/inspector"
 )
 
@@ -52,12 +50,6 @@ type Ctx struct {
 	// List of internal KV pairs.
 	kv  []KV
 	kvl int
-
-	// i18n support.
-	// DEPRECATED: use local variable instead.
-	loc  string
-	i18n unsafe.Pointer
-	repl i18n.PlaceholderReplacer
 
 	// External buffers to use in modifier and condition helpers.
 	BufAcc bytebuf.AccumulativeBuf
@@ -257,15 +249,6 @@ func (ctx *Ctx) GetCounter(key string) int {
 	return 0
 }
 
-// I18n sets i18n locale and database.
-// DEPRECATED: avoid to use.
-func (ctx *Ctx) I18n(locale string, db *i18n.DB) {
-	ctx.loc = locale
-	if db != nil {
-		ctx.i18n = unsafe.Pointer(db)
-	}
-}
-
 // BufModOut buffers mod output bytes.
 func (ctx *Ctx) BufModOut(buf *any, p []byte) {
 	ctx.bufMO.Reset().Write(p)
@@ -319,10 +302,6 @@ func (ctx *Ctx) Reset() {
 	ctx.wl = 0
 
 	ctx.kvl = 0
-
-	ctx.loc = ""
-	ctx.i18n = nil
-	ctx.repl.Reset()
 
 	ctx.Err = nil
 	ctx.bufX = nil
