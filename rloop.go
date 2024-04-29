@@ -3,7 +3,7 @@ package dyntpl
 import (
 	"io"
 
-	"github.com/koykov/fastconv"
+	"github.com/koykov/byteconv"
 	"github.com/koykov/inspector"
 )
 
@@ -42,12 +42,12 @@ func (rl *RangeLoop) RequireKey() bool {
 
 // SetKey saves key to the context.
 func (rl *RangeLoop) SetKey(val any, ins inspector.Inspector) {
-	rl.ctx.Set(fastconv.B2S(rl.node.loopKey), val, ins)
+	rl.ctx.Set(byteconv.B2S(rl.node.loopKey), val, ins)
 }
 
 // SetVal saves value to the context.
 func (rl *RangeLoop) SetVal(val any, ins inspector.Inspector) {
-	rl.ctx.Set(fastconv.B2S(rl.node.loopVal), val, ins)
+	rl.ctx.Set(byteconv.B2S(rl.node.loopVal), val, ins)
 }
 
 // Iterate performs the iteration.

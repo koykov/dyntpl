@@ -7,7 +7,7 @@ import (
 
 	"github.com/koykov/bytealg"
 	"github.com/koykov/bytebuf"
-	"github.com/koykov/fastconv"
+	"github.com/koykov/byteconv"
 	"github.com/koykov/inspector"
 )
 
@@ -182,7 +182,7 @@ func (ctx *Ctx) SetBytes(key string, val []byte) *Ctx {
 
 // SetString sets string as static variable.
 func (ctx *Ctx) SetString(key, val string) *Ctx {
-	ctx.SetBytes(key, fastconv.S2B(val))
+	ctx.SetBytes(key, byteconv.S2B(val))
 	return ctx
 }
 
@@ -234,7 +234,7 @@ func (ctx *Ctx) SetCounter(key string, val int) *Ctx {
 // * user.Bio.Birthday
 // * staticVar
 func (ctx *Ctx) Get(path string) any {
-	return ctx.get(fastconv.S2B(path))
+	return ctx.get(byteconv.S2B(path))
 }
 
 // GetCounter gets int counter value.
@@ -347,7 +347,7 @@ func (ctx *Ctx) get(path []byte) any {
 	// Split path to separate words using dot as separator.
 	// So, path user.Bio.Birthday will convert to []string{"user", "Bio", "Birthday"}
 	ctx.bufS = ctx.bufS[:0]
-	ctx.bufS = bytealg.AppendSplit(ctx.bufS, fastconv.B2S(path), ".", -1)
+	ctx.bufS = bytealg.AppendSplit(ctx.bufS, byteconv.B2S(path), ".", -1)
 	if len(ctx.bufS) == 0 {
 		return nil
 	}
@@ -390,7 +390,7 @@ func (ctx *Ctx) get(path []byte) any {
 func (ctx *Ctx) cmp(path []byte, cond Op, right []byte) bool {
 	// Split path.
 	ctx.bufS = ctx.bufS[:0]
-	ctx.bufS = bytealg.AppendSplit(ctx.bufS, fastconv.B2S(path), ".", -1)
+	ctx.bufS = bytealg.AppendSplit(ctx.bufS, byteconv.B2S(path), ".", -1)
 	if len(ctx.bufS) == 0 {
 		return false
 	}
@@ -402,9 +402,9 @@ func (ctx *Ctx) cmp(path []byte, cond Op, right []byte) bool {
 		if v.key == ctx.bufS[0] {
 			// Compare var with right value using inspector.
 			if v.cntrF {
-				ctx.Err = v.ins.Compare(v.cntr, inspector.Op(cond), fastconv.B2S(right), &ctx.BufB, ctx.bufS[1:]...)
+				ctx.Err = v.ins.Compare(v.cntr, inspector.Op(cond), byteconv.B2S(right), &ctx.BufB, ctx.bufS[1:]...)
 			} else {
-				ctx.Err = v.ins.Compare(v.val, inspector.Op(cond), fastconv.B2S(right), &ctx.BufB, ctx.bufS[1:]...)
+				ctx.Err = v.ins.Compare(v.val, inspector.Op(cond), byteconv.B2S(right), &ctx.BufB, ctx.bufS[1:]...)
 			}
 			if ctx.Err != nil {
 				return false
@@ -423,7 +423,7 @@ func (ctx *Ctx) cmpLC(lc lc, path []byte, cond Op, right []byte) bool {
 	}
 
 	ctx.bufS = ctx.bufS[:0]
-	ctx.bufS = bytealg.AppendSplit(ctx.bufS, fastconv.B2S(path), ".", -1)
+	ctx.bufS = bytealg.AppendSplit(ctx.bufS, byteconv.B2S(path), ".", -1)
 	if len(ctx.bufS) == 0 {
 		return false
 	}
@@ -446,7 +446,7 @@ func (ctx *Ctx) cmpLC(lc lc, path []byte, cond Op, right []byte) bool {
 			}
 			si := inspector.StaticInspector{}
 			ctx.BufB = false
-			ctx.Err = si.Compare(ctx.bufI, inspector.Op(cond), fastconv.B2S(right), &ctx.BufB)
+			ctx.Err = si.Compare(ctx.bufI, inspector.Op(cond), byteconv.B2S(right), &ctx.BufB)
 			return ctx.BufB
 		}
 	}
@@ -457,7 +457,7 @@ func (ctx *Ctx) cmpLC(lc lc, path []byte, cond Op, right []byte) bool {
 // {% for k, v := range user.History %}...{% endfor %}
 func (ctx *Ctx) rloop(path []byte, node Node, tpl *Tpl, w io.Writer) {
 	ctx.bufS = ctx.bufS[:0]
-	ctx.bufS = bytealg.AppendSplit(ctx.bufS, fastconv.B2S(path), ".", -1)
+	ctx.bufS = bytealg.AppendSplit(ctx.bufS, byteconv.B2S(path), ".", -1)
 	if len(ctx.bufS) == 0 {
 		return
 	}
@@ -561,7 +561,7 @@ func (ctx *Ctx) cloop(node Node, tpl *Tpl, w io.Writer) {
 		}
 
 		// Set/update counter var.
-		ctx.SetStatic(fastconv.B2S(node.loopCnt), &ctx.bufLC[idxLC])
+		ctx.SetStatic(byteconv.B2S(node.loopCnt), &ctx.bufLC[idxLC])
 
 		// Write separator.
 		if cntr > 0 && len(node.loopSep) > 0 {
@@ -614,7 +614,7 @@ func (ctx *Ctx) cloop(node Node, tpl *Tpl, w io.Writer) {
 // Converts initial and final values of the counter to static int values.
 func (ctx *Ctx) cloopRange(static bool, b []byte) (r int64) {
 	if static {
-		r, ctx.Err = strconv.ParseInt(fastconv.B2S(b), 0, 0)
+		r, ctx.Err = strconv.ParseInt(byteconv.B2S(b), 0, 0)
 		if ctx.Err != nil {
 			return
 		}

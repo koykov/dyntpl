@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/koykov/bytebuf"
-	"github.com/koykov/fastconv"
+	"github.com/koykov/byteconv"
 )
 
 type intConverter interface {
@@ -211,11 +211,11 @@ func if2int(raw any) (r int64, ok bool) {
 		r = int64(*raw.(*uint64))
 	case []byte:
 		if len(raw.([]byte)) > 0 {
-			r, _ = strconv.ParseInt(fastconv.B2S(raw.([]byte)), 0, 0)
+			r, _ = strconv.ParseInt(byteconv.B2S(raw.([]byte)), 0, 0)
 		}
 	case *[]byte:
 		if len(*raw.(*[]byte)) > 0 {
-			r, _ = strconv.ParseInt(fastconv.B2S(*raw.(*[]byte)), 0, 0)
+			r, _ = strconv.ParseInt(byteconv.B2S(*raw.(*[]byte)), 0, 0)
 		}
 	case string:
 		if len(raw.(string)) > 0 {

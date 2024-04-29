@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"io"
 
-	"github.com/koykov/fastconv"
+	"github.com/koykov/byteconv"
 )
 
 // Tpl is a main template object.
@@ -242,10 +242,10 @@ func (t *Tpl) writeNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 
 		// It's a speed improvement trick.
 		if node.ctxSrcStatic {
-			ctx.SetBytes(fastconv.B2S(node.ctxVar), node.ctxSrc)
+			ctx.SetBytes(byteconv.B2S(node.ctxVar), node.ctxSrc)
 		} else {
 			// Get the inspector.
-			ins, err := GetInspector(fastconv.B2S(node.ctxVar), fastconv.B2S(node.ctxIns))
+			ins, err := GetInspector(byteconv.B2S(node.ctxVar), byteconv.B2S(node.ctxIns))
 			if err != nil {
 				return err
 			}
@@ -296,7 +296,7 @@ func (t *Tpl) writeNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			}
 			empty := raw == nil || raw == ""
 			if len(node.ctxOK) > 0 {
-				ctx.SetStatic(fastconv.B2S(node.ctxOK), !empty)
+				ctx.SetStatic(byteconv.B2S(node.ctxOK), !empty)
 			}
 
 			if empty {
@@ -306,14 +306,14 @@ func (t *Tpl) writeNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 
 			if b, ok := ConvBytes(raw); ok && len(b) > 0 {
 				// Set byte array as bytes variable if possible.
-				ctx.SetBytes(fastconv.B2S(node.ctxVar), b)
+				ctx.SetBytes(byteconv.B2S(node.ctxVar), b)
 			} else {
-				ctx.Set(fastconv.B2S(node.ctxVar), raw, ins)
+				ctx.Set(byteconv.B2S(node.ctxVar), raw, ins)
 			}
 		}
 	case TypeCounter:
 		if node.cntrInitF {
-			ctx.SetCounter(fastconv.B2S(node.cntrVar), node.cntrInit)
+			ctx.SetCounter(byteconv.B2S(node.cntrVar), node.cntrInit)
 		} else {
 			raw := ctx.get(node.cntrVar)
 			if ctx.Err != nil {
@@ -329,14 +329,14 @@ func (t *Tpl) writeNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			} else {
 				cntr -= node.cntrOpArg
 			}
-			ctx.SetCounter(fastconv.B2S(node.cntrVar), cntr)
+			ctx.SetCounter(byteconv.B2S(node.cntrVar), cntr)
 		}
 	case TypeCondOK:
 		// Condition-OK node evaluates expressions like if-ok with helper.
 		var r bool
 		// Check condition-OK helper (mandatory at all).
 		if len(node.condHlp) > 0 {
-			fn := GetCondOKFn(fastconv.B2S(node.condHlp))
+			fn := GetCondOKFn(byteconv.B2S(node.condHlp))
 			if fn == nil {
 				err = ErrCondHlpNotFound
 				return
@@ -357,8 +357,8 @@ func (t *Tpl) writeNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			fn(ctx, &ctx.bufX, &ctx.BufB, ctx.bufA)
 			r = ctx.BufB
 			// Set var, ok to context.
-			lv, lr := fastconv.B2S(node.condOKL), fastconv.B2S(node.condOKR)
-			ins, err := GetInspector(lv, fastconv.B2S(node.condIns))
+			lv, lr := byteconv.B2S(node.condOKL), byteconv.B2S(node.condOKR)
+			ins, err := GetInspector(lv, byteconv.B2S(node.condIns))
 			if err != nil {
 				return err
 			}
@@ -389,7 +389,7 @@ func (t *Tpl) writeNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 		switch {
 		case len(node.condHlp) > 0 && node.condLC == lcNone:
 			// Condition helper caught (no LC case).
-			fn := GetCondFn(fastconv.B2S(node.condHlp))
+			fn := GetCondFn(byteconv.B2S(node.condHlp))
 			if fn == nil {
 				err = ErrCondHlpNotFound
 				return
@@ -501,7 +501,7 @@ func (t *Tpl) writeNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 				if ch.typ == TypeCase {
 					if len(ch.caseHlp) > 0 {
 						// Case condition helper caught.
-						fn := GetCondFn(fastconv.B2S(ch.caseHlp))
+						fn := GetCondFn(byteconv.B2S(ch.caseHlp))
 						if fn == nil {
 							err = ErrCondHlpNotFound
 							return
