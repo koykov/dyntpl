@@ -9,7 +9,7 @@ import (
 	"strconv"
 
 	"github.com/koykov/bytealg"
-	"github.com/koykov/fastconv"
+	"github.com/koykov/byteconv"
 )
 
 const (
@@ -316,7 +316,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 		if len(m) > 4 && len(m[4]) > 0 {
 			root.ctxIns = m[4]
 		} else {
-			if _, ok := GetInsByVarName(fastconv.B2S(root.ctxVar)); !ok {
+			if _, ok := GetInsByVarName(byteconv.B2S(root.ctxVar)); !ok {
 				root.ctxIns = ctxStatic
 			}
 		}
@@ -532,7 +532,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 	// Check loop lazy break (including lazybreak N).
 	if m := reLoopLBrk.FindSubmatch(t); m != nil {
 		root.typ = TypeLBreak
-		if i, _ := strconv.ParseInt(fastconv.B2S(m[1]), 10, 64); i > 0 {
+		if i, _ := strconv.ParseInt(byteconv.B2S(m[1]), 10, 64); i > 0 {
 			root.loopBrkD = int(i)
 		}
 		nodes = addNode(nodes, *root)
@@ -547,7 +547,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 	// Check loop break (including break N).
 	if m := reLoopBrk.FindSubmatch(t); m != nil {
 		root.typ = TypeBreak
-		if i, _ := strconv.ParseInt(fastconv.B2S(m[1]), 10, 64); i > 0 {
+		if i, _ := strconv.ParseInt(byteconv.B2S(m[1]), 10, 64); i > 0 {
 			root.loopBrkD = int(i)
 		}
 		nodes = addNode(nodes, *root)
@@ -759,7 +759,7 @@ func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
 		}
 		for i := idx; i < len(chunks); i++ {
 			if m := reMod.FindSubmatch(chunks[i]); m != nil {
-				fn := GetModFn(fastconv.B2S(m[1]))
+				fn := GetModFn(byteconv.B2S(m[1]))
 				if fn == nil {
 					continue
 				}

@@ -3,7 +3,7 @@ package dyntpl
 import (
 	"strconv"
 
-	"github.com/koykov/fastconv"
+	"github.com/koykov/byteconv"
 )
 
 // ModFn describes signature of the modifier functions.
@@ -61,7 +61,7 @@ func printIterations(args []any) int {
 	itr := 1
 	if len(args) > 0 {
 		if itrRaw, ok := args[0].(*[]byte); ok {
-			if itr64, err := strconv.ParseInt(fastconv.B2S(*itrRaw), 10, 64); err == nil {
+			if itr64, err := strconv.ParseInt(byteconv.B2S(*itrRaw), 10, 64); err == nil {
 				itr = int(itr64)
 			}
 		}

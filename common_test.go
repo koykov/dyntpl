@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/koykov/bytealg"
-	"github.com/koykov/fastconv"
+	"github.com/koykov/byteconv"
 	"github.com/koykov/inspector/testobj"
 	"github.com/koykov/inspector/testobj_ins"
 )
@@ -76,7 +76,7 @@ func init() {
 			} else if raw, err := os.ReadFile(strings.Replace(path, ".tpl", ".raw", 1)); err == nil {
 				st.raw = bytealg.Trim(raw, []byte("\n"))
 			} else if raw, err := os.ReadFile(strings.Replace(path, ".tpl", ".err", 1)); err == nil {
-				st.err = bytealg.Trim(fastconv.B2S(raw), "\n")
+				st.err = bytealg.Trim(byteconv.B2S(raw), "\n")
 			}
 			stages = append(stages, st)
 

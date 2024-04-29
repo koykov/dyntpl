@@ -4,7 +4,7 @@ import (
 	"bytes"
 
 	"github.com/koykov/bytebuf"
-	"github.com/koykov/fastconv"
+	"github.com/koykov/byteconv"
 )
 
 // Tree structure that represents parsed template as list of nodes with childrens.
@@ -252,7 +252,7 @@ func (t *Tree) attrB(buf *bytebuf.ChainBuf, key string, p []byte) {
 }
 
 func (t *Tree) attrS(buf *bytebuf.ChainBuf, key, s string) {
-	t.attrB(buf, key, fastconv.S2B(s))
+	t.attrB(buf, key, byteconv.S2B(s))
 }
 
 func (t *Tree) attrI(buf *bytebuf.ChainBuf, key string, i int) {

@@ -3,7 +3,7 @@ package dyntpl
 import (
 	"sync"
 
-	"github.com/koykov/fastconv"
+	"github.com/koykov/byteconv"
 )
 
 // Template database.
@@ -127,7 +127,7 @@ func (db *db) getBKeys(bkeys [][]byte) (tpl *Tpl) {
 	defer db.mux.RUnlock()
 	_ = bkeys[l-1]
 	for i := 0; i < l; i++ {
-		if idx, ok := db.idxKey[fastconv.B2S(bkeys[i])]; ok && idx >= 0 && idx < len(db.tpl) {
+		if idx, ok := db.idxKey[byteconv.B2S(bkeys[i])]; ok && idx >= 0 && idx < len(db.tpl) {
 			tpl = db.tpl[idx]
 			return
 		}
