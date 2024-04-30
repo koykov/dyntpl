@@ -1,7 +1,7 @@
 github.com/koykov/bytealg v1.0.4 h1:V73+6bzPyEME8qNvIGm1nFnwWQ9X1hE9y96OqEFtXak=
 github.com/koykov/bytealg v1.0.4/go.mod h1:hKrpKHsfJ7aeSOOcmSqGnEfC//2rfMmQt2OugvJxy9s=
-github.com/koykov/bytebuf v1.0.6 h1:hDN8k5wf2syPhbo9Thv6avcv0dwvD9UCzb1u/XjRAl4=
-github.com/koykov/bytebuf v1.0.6/go.mod h1:t7hgUDzQX1HxqPmRJuf2M9Z/mWIPFBSZKqFzZL5JgsQ=
+github.com/koykov/bytebuf v1.0.7-0.20240429203404-71299730839a h1:B4bjR4LpSfY1k92LfFDZE1Q+3NSMH1T+rn9kE6ksdpI=
+github.com/koykov/bytebuf v1.0.7-0.20240429203404-71299730839a/go.mod h1://Zo5bzO8yP27mZD/S9vgB/kpX2CH83ybRKObIDfrYQ=
 github.com/koykov/byteconv v1.0.0 h1:C8NThxj3Vcmv7f1h384Ti7F9zjVDnOy9AZj9KxTaYqM=
 github.com/koykov/byteconv v1.0.0/go.mod h1:viZknv/akQJrXOQS3bZu2U7TE+gjA03LFQpSsRExZR4=
 github.com/koykov/byteseq v1.0.1 h1:PbsGtxkUnvrqlwnjNxnRq5FDIvLXJg5CcN9yRuSQY7A=

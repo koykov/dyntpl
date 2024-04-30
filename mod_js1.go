@@ -21,9 +21,9 @@ func modJSEscape(ctx *Ctx, buf *any, val any, args []any) (err error) {
 		for _, r := range b {
 			switch r {
 			case '\\':
-				ctx.BufAcc.WriteStr("\\\\")
+				ctx.BufAcc.WriteString("\\\\")
 			case '/':
-				ctx.BufAcc.WriteStr("\\/")
+				ctx.BufAcc.WriteString("\\/")
 			case '\x08':
 				ctx.BufAcc.WriteByte('\b')
 			case '\x0C':
@@ -37,12 +37,12 @@ func modJSEscape(ctx *Ctx, buf *any, val any, args []any) (err error) {
 			default:
 				if r != ',' && r != '.' && r != '_' && (r < 'a' || r > 'z') && (r < 'A' || r > 'Z') && (r < '0' || r > '9') {
 					wr := func(r int32) {
-						ctx.BufAcc.WriteStr("\\u")
+						ctx.BufAcc.WriteString("\\u")
 						ctx.Buf = strconv.AppendInt(*ctx.Buf.Reset(), int64(r), 16)
 						if ctx.Buf.Len() == 1 {
-							ctx.BufAcc.WriteStr("000")
+							ctx.BufAcc.WriteString("000")
 						} else if ctx.Buf.Len() == 2 {
-							ctx.BufAcc.WriteStr("00")
+							ctx.BufAcc.WriteString("00")
 						} else if ctx.Buf.Len() == 3 {
 							ctx.BufAcc.WriteByte('0')
 						}

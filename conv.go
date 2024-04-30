@@ -99,10 +99,10 @@ func ConvBytes(val any) (b []byte, ok bool) {
 		b = val.([]byte)
 	case *[]byte:
 		b = *val.(*[]byte)
-	case bytebuf.ChainBuf:
-		b = val.(bytebuf.ChainBuf)
-	case *bytebuf.ChainBuf:
-		b = *val.(*bytebuf.ChainBuf)
+	case bytebuf.Chain:
+		b = val.(bytebuf.Chain)
+	case *bytebuf.Chain:
+		b = *val.(*bytebuf.Chain)
 	default:
 		ok = false
 	}
@@ -225,9 +225,9 @@ func if2int(raw any) (r int64, ok bool) {
 		if len(*raw.(*string)) > 0 {
 			r, _ = strconv.ParseInt(*raw.(*string), 0, 0)
 		}
-	case *bytebuf.ChainBuf:
-		if (*raw.(*bytebuf.ChainBuf)).Len() > 0 {
-			r, _ = strconv.ParseInt((*raw.(*bytebuf.ChainBuf)).String(), 0, 0)
+	case *bytebuf.Chain:
+		if (*raw.(*bytebuf.Chain)).Len() > 0 {
+			r, _ = strconv.ParseInt((*raw.(*bytebuf.Chain)).String(), 0, 0)
 		}
 	case intConverter:
 		if i, err := raw.(intConverter).Int(); err == nil {

@@ -74,7 +74,7 @@ func modJSONEscape(ctx *Ctx, buf *any, val any, args []any) error {
 }
 
 // Internal JSON escape helper.
-func jsonEscape(b []byte, buf *bytebuf.AccumulativeBuf) *bytebuf.AccumulativeBuf {
+func jsonEscape(b []byte, buf *bytebuf.Accumulative) *bytebuf.Accumulative {
 	var o int
 	l := len(b)
 	if l == 0 {

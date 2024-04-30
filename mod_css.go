@@ -19,18 +19,18 @@ func modCSSEscape(ctx *Ctx, buf *any, val any, args []any) (err error) {
 		for _, r := range b {
 			switch r {
 			case '\r':
-				ctx.BufAcc.WriteStr("\\D ")
+				ctx.BufAcc.WriteString("\\D ")
 			case '\n':
-				ctx.BufAcc.WriteStr("\\A ")
+				ctx.BufAcc.WriteString("\\A ")
 			case '\t':
-				ctx.BufAcc.WriteStr("\\9 ")
+				ctx.BufAcc.WriteString("\\9 ")
 			case 0:
-				ctx.BufAcc.WriteStr("\\0 ")
+				ctx.BufAcc.WriteString("\\0 ")
 			case ' ':
-				ctx.BufAcc.WriteStr("\\20 ")
+				ctx.BufAcc.WriteString("\\20 ")
 			default:
 				if (r < 'a' || r > 'z') && (r < 'A' || r > 'Z') && (r < '0' || r > '9') {
-					ctx.BufAcc.WriteStr("\\")
+					ctx.BufAcc.WriteString("\\")
 					ctx.Buf = strconv.AppendInt(*ctx.Buf.Reset(), int64(r), 16)
 					ctx.BufAcc.Write(ctx.Buf).WriteByte(' ')
 				} else {
