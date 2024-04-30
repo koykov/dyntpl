@@ -22,26 +22,26 @@ func modAttrEscape(ctx *Ctx, buf *any, val any, args []any) (err error) {
 		for _, r := range b {
 			switch r {
 			case '&':
-				ctx.BufAcc.WriteStr("&amp;")
+				ctx.BufAcc.WriteString("&amp;")
 			case '<':
-				ctx.BufAcc.WriteStr("&lt;")
+				ctx.BufAcc.WriteString("&lt;")
 			case '>':
-				ctx.BufAcc.WriteStr("&gt;")
+				ctx.BufAcc.WriteString("&gt;")
 			case '"':
-				ctx.BufAcc.WriteStr("&quot;")
+				ctx.BufAcc.WriteString("&quot;")
 			default:
 				if r != ',' && r != '.' && r != '-' && r != '_' && (r < 'a' || r > 'z') && (r < 'A' || r > 'Z') && (r < '0' || r > '9') {
 					if (r < 0x1f && r != '\t' && r != '\n' && r != '\r') || (r >= 0x7f && r <= 0x9f) {
-						ctx.BufAcc.WriteStr("&#xFFFD;")
+						ctx.BufAcc.WriteString("&#xFFFD;")
 					} else if utf8.RuneLen(r) == 1 {
-						ctx.BufAcc.WriteStr("&#x")
+						ctx.BufAcc.WriteString("&#x")
 						ctx.Buf = strconv.AppendInt(*ctx.Buf.Reset(), int64(r), 16)
 						if ctx.Buf.Len() < 2 {
 							ctx.BufAcc.WriteByte('0')
 						}
 						ctx.BufAcc.Write(ctx.Buf).WriteByte(';')
 					} else {
-						ctx.BufAcc.WriteStr("&#x")
+						ctx.BufAcc.WriteString("&#x")
 						ctx.Buf = strconv.AppendInt(*ctx.Buf.Reset(), int64(r), 16)
 						if ctx.Buf.Len() < 4 {
 							ctx.BufAcc.WriteByte('0')

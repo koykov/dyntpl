@@ -25,28 +25,28 @@ var (
 	hrQR = []byte(`&quot;`)
 )
 
-// HumanReadable builds human readable view of the tree (currently in XML format).
+// HumanReadable builds human-readable view of the tree (currently in XML format).
 func (t *Tree) HumanReadable() []byte {
 	if len(t.nodes) == 0 {
 		return nil
 	}
-	var buf bytebuf.ChainBuf
+	var buf bytebuf.Chain
 	t.hrHelper(&buf, t.nodes, []byte("\t"), 0)
 	return buf.Bytes()
 }
 
-// Internal human readable helper.
-func (t *Tree) hrHelper(buf *bytebuf.ChainBuf, nodes []Node, indent []byte, depth int) {
+// Internal human-readable helper.
+func (t *Tree) hrHelper(buf *bytebuf.Chain, nodes []Node, indent []byte, depth int) {
 	if depth == 0 {
-		buf.WriteStr("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
+		buf.WriteString("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
 	} else {
 		buf.Write(bytes.Repeat(indent, depth))
 	}
-	buf.WriteStr("<nodes>\n")
+	buf.WriteString("<nodes>\n")
 	depth++
 	for _, node := range nodes {
 		buf.Write(bytes.Repeat(indent, depth))
-		buf.WriteStr(`<node type="`).WriteStr(node.typ.String()).WriteByte('"')
+		buf.WriteString(`<node type="`).WriteString(node.typ.String()).WriteByte('"')
 
 		if len(node.prefix) > 0 {
 			t.attrB(buf, "prefix", node.prefix)
@@ -97,7 +97,12 @@ func (t *Tree) hrHelper(buf *bytebuf.ChainBuf, nodes []Node, indent []byte, dept
 						if a.static {
 							pfx = "sarg"
 						}
-						buf.WriteByte(' ').WriteStr(pfx).WriteInt(int64(j)).WriteStr(`="`).Write(a.val).WriteByte('"')
+						buf.WriteByte(' ').
+							WriteString(pfx).
+							WriteInt(int64(j)).
+							WriteString(`="`).
+							Write(a.val).
+							WriteByte('"')
 					}
 				}
 			}
@@ -115,7 +120,12 @@ func (t *Tree) hrHelper(buf *bytebuf.ChainBuf, nodes []Node, indent []byte, dept
 						if a.static {
 							pfx = "sarg"
 						}
-						buf.WriteByte(' ').WriteStr(pfx).WriteInt(int64(j)).WriteStr(`="`).Write(a.val).WriteByte('"')
+						buf.WriteByte(' ').
+							WriteString(pfx).
+							WriteInt(int64(j)).
+							WriteString(`="`).
+							Write(a.val).
+							WriteByte('"')
 					}
 				}
 			}
@@ -177,14 +187,24 @@ func (t *Tree) hrHelper(buf *bytebuf.ChainBuf, nodes []Node, indent []byte, dept
 					if a.static {
 						pfx = "sarg"
 					}
-					buf.WriteByte(' ').WriteStr(pfx).WriteInt(int64(j)).WriteStr(`="`).Write(a.val).WriteByte('"')
+					buf.WriteByte(' ').
+						WriteString(pfx).
+						WriteInt(int64(j)).
+						WriteString(`="`).
+						Write(a.val).
+						WriteByte('"')
 				}
 			}
 		}
 
 		if len(node.tpl) > 0 {
 			for j, tpl := range node.tpl {
-				buf.WriteByte(' ').WriteStr("tpl").WriteInt(int64(j)).WriteStr(`="`).Write(tpl).WriteByte('"')
+				buf.WriteByte(' ').
+					WriteString("tpl").
+					WriteInt(int64(j)).
+					WriteString(`="`).
+					Write(tpl).
+					WriteByte('"')
 			}
 		}
 
@@ -202,14 +222,19 @@ func (t *Tree) hrHelper(buf *bytebuf.ChainBuf, nodes []Node, indent []byte, dept
 
 		if len(node.mod) > 0 {
 			depth++
-			buf.WriteByte('\n').Write(bytes.Repeat(indent, depth)).WriteStr("<mods>\n")
+			buf.WriteByte('\n').Write(bytes.Repeat(indent, depth)).WriteString("<mods>\n")
 			depth++
 			for _, mod := range node.mod {
-				buf.Write(bytes.Repeat(indent, depth)).WriteStr(`<mod name="`).Write(mod.id).WriteByte('"')
+				buf.Write(bytes.Repeat(indent, depth)).WriteString(`<mod name="`).Write(mod.id).WriteByte('"')
 				if len(mod.arg) > 0 {
 					for j, a := range mod.arg {
 						if len(a.name) > 0 {
-							buf.WriteByte(' ').WriteStr("key").WriteInt(int64(j)).WriteStr(`="`).Write(a.name).WriteByte('"')
+							buf.WriteByte(' ').
+								WriteString("key").
+								WriteInt(int64(j)).
+								WriteString(`="`).
+								Write(a.name).
+								WriteByte('"')
 						}
 
 						pfx := "arg"
@@ -220,13 +245,18 @@ func (t *Tree) hrHelper(buf *bytebuf.ChainBuf, nodes []Node, indent []byte, dept
 						if bytes.Contains(v, hrQ) {
 							v = bytes.ReplaceAll(v, hrQ, hrQR)
 						}
-						buf.WriteByte(' ').WriteStr(pfx).WriteInt(int64(j)).WriteStr(`="`).Write(v).WriteByte('"')
+						buf.WriteByte(' ').
+							WriteString(pfx).
+							WriteInt(int64(j)).
+							WriteString(`="`).
+							Write(v).
+							WriteByte('"')
 					}
 				}
-				buf.WriteStr("/>\n")
+				buf.WriteString("/>\n")
 			}
 			depth--
-			buf.Write(bytes.Repeat(indent, depth)).WriteStr("</mods>\n")
+			buf.Write(bytes.Repeat(indent, depth)).WriteString("</mods>\n")
 			depth--
 		}
 
@@ -235,26 +265,34 @@ func (t *Tree) hrHelper(buf *bytebuf.ChainBuf, nodes []Node, indent []byte, dept
 			t.hrHelper(buf, node.child, indent, depth+1)
 		}
 		if len(node.mod) > 0 || len(node.child) > 0 {
-			buf.Write(bytes.Repeat(indent, depth)).WriteStr("</node>\n")
+			buf.Write(bytes.Repeat(indent, depth)).WriteString("</node>\n")
 		} else {
-			buf.WriteStr("/>\n")
+			buf.WriteString("/>\n")
 		}
 	}
 	depth--
 	if depth > 0 {
 		buf.Write(bytes.Repeat(indent, depth))
 	}
-	buf.WriteStr("</nodes>\n")
+	buf.WriteString("</nodes>\n")
 }
 
-func (t *Tree) attrB(buf *bytebuf.ChainBuf, key string, p []byte) {
-	buf.WriteByte(' ').WriteStr(key).WriteStr(`="`).Write(bytes.ReplaceAll(p, hrQ, hrQR)).WriteByte('"')
+func (t *Tree) attrB(buf *bytebuf.Chain, key string, p []byte) {
+	buf.WriteByte(' ').
+		WriteString(key).
+		WriteString(`="`).
+		Write(bytes.ReplaceAll(p, hrQ, hrQR)).
+		WriteByte('"')
 }
 
-func (t *Tree) attrS(buf *bytebuf.ChainBuf, key, s string) {
+func (t *Tree) attrS(buf *bytebuf.Chain, key, s string) {
 	t.attrB(buf, key, byteconv.S2B(s))
 }
 
-func (t *Tree) attrI(buf *bytebuf.ChainBuf, key string, i int) {
-	buf.WriteByte(' ').WriteStr(key).WriteStr(`="`).WriteInt(int64(i)).WriteByte('"')
+func (t *Tree) attrI(buf *bytebuf.Chain, key string, i int) {
+	buf.WriteByte(' ').
+		WriteString(key).
+		WriteString(`="`).
+		WriteInt(int64(i)).
+		WriteByte('"')
 }

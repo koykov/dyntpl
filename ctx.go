@@ -28,8 +28,8 @@ type Ctx struct {
 	bufX  any
 	bufA  []any
 	bufLC []int64
-	bufMO bytebuf.ChainBuf
-	bufCB bytebuf.ChainBuf
+	bufMO bytebuf.Chain
+	bufCB bytebuf.Chain
 	// Range loop helper.
 	rl *RangeLoop
 
@@ -52,10 +52,10 @@ type Ctx struct {
 	kvl int
 
 	// External buffers to use in modifier and condition helpers.
-	BufAcc bytebuf.AccumulativeBuf
+	BufAcc bytebuf.Accumulative
 	// todo remove as unused later
 	// DEPRECATED: use BufAcc instead.
-	Buf, Buf1, Buf2 bytebuf.ChainBuf
+	Buf, Buf1, Buf2 bytebuf.Chain
 
 	BufB bool
 	BufI int64
@@ -97,9 +97,9 @@ func NewCtx() *Ctx {
 	ctx := Ctx{
 		vars: make([]ctxVar, 0),
 		bufS: make([]string, 0),
-		Buf:  make(bytebuf.ChainBuf, 0),
-		Buf1: make(bytebuf.ChainBuf, 0),
-		Buf2: make(bytebuf.ChainBuf, 0),
+		Buf:  make(bytebuf.Chain, 0),
+		Buf1: make(bytebuf.Chain, 0),
+		Buf2: make(bytebuf.Chain, 0),
 		buf:  make([]byte, 0),
 		bufA: make([]any, 0),
 	}
@@ -257,7 +257,7 @@ func (ctx *Ctx) BufModOut(buf *any, p []byte) {
 
 // BufModStrOut buffers mod output string.
 func (ctx *Ctx) BufModStrOut(buf *any, s string) {
-	ctx.bufMO.Reset().WriteStr(s)
+	ctx.bufMO.Reset().WriteString(s)
 	*buf = &ctx.bufMO
 }
 

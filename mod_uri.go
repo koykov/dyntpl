@@ -24,7 +24,7 @@ func modLinkEscape(ctx *Ctx, buf *any, val any, args []any) (err error) {
 		_ = b[l-1]
 		for i := 0; i < l; i++ {
 			if b[i] == '"' {
-				ctx.BufAcc.WriteStr(`\"`)
+				ctx.BufAcc.WriteString(`\"`)
 			} else if b[i] == ' ' {
 				ctx.BufAcc.WriteByte('+')
 			} else {
