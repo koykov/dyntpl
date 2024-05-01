@@ -125,7 +125,8 @@ func WriteByID(w io.Writer, id int, ctx *Ctx) (err error) {
 // Internal renderer.
 func write(w io.Writer, tpl *Tpl, ctx *Ctx) (err error) {
 	// Walk over root nodes in tree and evaluate them.
-	for _, node := range tpl.tree.nodes {
+	for i := 0; i < len(tpl.tree.nodes); i++ {
+		node := &tpl.tree.nodes[i]
 		err = tpl.writeNode(w, node, ctx)
 		if err != nil {
 			if err == ErrInterrupt {
@@ -144,7 +145,7 @@ func write(w io.Writer, tpl *Tpl, ctx *Ctx) (err error) {
 }
 
 // General node renderer.
-func (t *Tpl) writeNode(w io.Writer, node Node, ctx *Ctx) (err error) {
+func (t *Tpl) writeNode(w io.Writer, node *Node, ctx *Ctx) (err error) {
 	switch node.typ {
 	case TypeRaw:
 		if ctx.chJQ {
@@ -368,18 +369,18 @@ func (t *Tpl) writeNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 
 			// Check extended condition (eg: !ok).
 			if len(node.condR) > 0 {
-				r, err = t.nodeCmp(&node, ctx)
+				r, err = t.nodeCmp(node, ctx)
 			}
 			// Evaluate condition.
 			if r {
 				// True case.
 				if len(node.child) > 0 {
-					err = t.writeNode(w, node.child[0], ctx)
+					err = t.writeNode(w, &node.child[0], ctx)
 				}
 			} else {
 				// Else case.
 				if len(node.child) > 1 {
-					err = t.writeNode(w, node.child[1], ctx)
+					err = t.writeNode(w, &node.child[1], ctx)
 				}
 			}
 		}
@@ -416,7 +417,7 @@ func (t *Tpl) writeNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			}
 			r = ctx.cmpLC(node.condLC, node.condHlpArg[0].val, node.condOp, node.condR)
 		default:
-			r, err = t.nodeCmp(&node, ctx)
+			r, err = t.nodeCmp(node, ctx)
 		}
 		if ctx.Err != nil {
 			err = ctx.Err
@@ -426,17 +427,18 @@ func (t *Tpl) writeNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 		if r {
 			// True case.
 			if len(node.child) > 0 {
-				err = t.writeNode(w, node.child[0], ctx)
+				err = t.writeNode(w, &node.child[0], ctx)
 			}
 		} else {
 			// Else case.
 			if len(node.child) > 1 {
-				err = t.writeNode(w, node.child[1], ctx)
+				err = t.writeNode(w, &node.child[1], ctx)
 			}
 		}
 	case TypeCondTrue, TypeCondFalse, TypeCase, TypeDefault:
 		// Just walk over child nodes.
-		for _, ch := range node.child {
+		for i := 0; i < len(node.child); i++ {
+			ch := &node.child[i]
 			err = t.writeNode(w, ch, ctx)
 			if err != nil {
 				return
@@ -476,7 +478,8 @@ func (t *Tpl) writeNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 		r := false
 		if len(node.switchArg) > 0 {
 			// Classic switch case.
-			for _, ch := range node.child {
+			for i := 0; i < len(node.child); i++ {
+				ch := &node.child[i]
 				if ch.typ == TypeCase {
 					if ch.caseStaticL {
 						r = ctx.cmp(node.switchArg, OpEq, ch.caseL)
@@ -497,7 +500,8 @@ func (t *Tpl) writeNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			}
 		} else {
 			// Switch without condition case.
-			for _, ch := range node.child {
+			for i := 0; i < len(node.child); i++ {
+				ch := &node.child[i]
 				if ch.typ == TypeCase {
 					if len(ch.caseHlp) > 0 {
 						// Case condition helper caught.
@@ -556,7 +560,8 @@ func (t *Tpl) writeNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			}
 		}
 		if !r {
-			for _, ch := range node.child {
+			for i := 0; i < len(node.child); i++ {
+				ch := &node.child[i]
 				if ch.typ == TypeDefault {
 					err = t.writeNode(w, ch, ctx)
 					break
