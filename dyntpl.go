@@ -183,12 +183,16 @@ func (t *Tpl) writeNode(w io.Writer, node *Node, ctx *Ctx) (err error) {
 			return
 		}
 		// Process modifiers.
-		if len(node.mod) > 0 {
-			for _, mod_ := range node.mod {
+		if n := len(node.mod); n > 0 {
+			_ = node.mod[n-1]
+			for i := 0; i < n; i++ {
+				mod_ := &node.mod[i]
 				// Collect arguments to buffer.
 				ctx.bufA = ctx.bufA[:0]
-				if len(mod_.arg) > 0 {
-					for _, arg_ := range mod_.arg {
+				if m := len(mod_.arg); m > 0 {
+					_ = mod_.arg[m-1]
+					for j := 0; j < m; j++ {
+						arg_ := mod_.arg[j]
 						if len(arg_.name) > 0 {
 							kv := ctx.getKV()
 							kv.K = arg_.name
@@ -257,12 +261,16 @@ func (t *Tpl) writeNode(w io.Writer, node *Node, ctx *Ctx) (err error) {
 				return err
 			}
 			// Process modifiers.
-			if len(node.mod) > 0 {
-				for _, mod_ := range node.mod {
+			if n := len(node.mod); n > 0 {
+				_ = node.mod[n-1]
+				for i := 0; i < n; i++ {
+					mod_ := &node.mod[i]
 					// Collect arguments to buffer.
 					ctx.bufA = ctx.bufA[:0]
-					if len(mod_.arg) > 0 {
-						for _, arg_ := range mod_.arg {
+					if m := len(mod_.arg); m > 0 {
+						_ = mod_.arg[m-1]
+						for j := 0; j < len(mod_.arg); j++ {
+							arg_ := mod_.arg[j]
 							if len(arg_.name) > 0 {
 								kv := ctx.getKV()
 								kv.K = arg_.name
@@ -344,8 +352,10 @@ func (t *Tpl) writeNode(w io.Writer, node *Node, ctx *Ctx) (err error) {
 			}
 			// Prepare arguments list.
 			ctx.bufA = ctx.bufA[:0]
-			if len(node.condHlpArg) > 0 {
-				for _, arg_ := range node.condHlpArg {
+			if n := len(node.condHlpArg); n > 0 {
+				_ = node.condHlpArg[n-1]
+				for i := 0; i < n; i++ {
+					arg_ := node.condHlpArg[i]
 					if arg_.static {
 						ctx.bufA = append(ctx.bufA, &arg_.val)
 					} else {
@@ -397,8 +407,10 @@ func (t *Tpl) writeNode(w io.Writer, node *Node, ctx *Ctx) (err error) {
 			}
 			// Prepare arguments list.
 			ctx.bufA = ctx.bufA[:0]
-			if len(node.condHlpArg) > 0 {
-				for _, arg_ := range node.condHlpArg {
+			if n := len(node.condHlpArg); n > 0 {
+				_ = node.condHlpArg[n-1]
+				for i := 0; i < len(node.condHlpArg); i++ {
+					arg_ := node.condHlpArg[i]
 					if arg_.static {
 						ctx.bufA = append(ctx.bufA, &arg_.val)
 					} else {
@@ -512,8 +524,10 @@ func (t *Tpl) writeNode(w io.Writer, node *Node, ctx *Ctx) (err error) {
 						}
 						// Prepare arguments list.
 						ctx.bufA = ctx.bufA[:0]
-						if len(ch.caseHlpArg) > 0 {
-							for _, arg_ := range ch.caseHlpArg {
+						if n := len(ch.caseHlpArg); n > 0 {
+							_ = node.caseHlpArg[n]
+							for j := 0; j < n; j++ {
+								arg_ := node.condHlpArg[j]
 								if arg_.static {
 									ctx.bufA = append(ctx.bufA, &arg_.val)
 								} else {

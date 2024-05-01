@@ -353,11 +353,8 @@ func (ctx *Ctx) get(path []byte) any {
 	}
 
 	// Look for first path chunk in vars.
-	for i, v := range ctx.vars {
-		if i == ctx.ln {
-			// Vars limit reached, exit.
-			break
-		}
+	for i := 0; i < ctx.ln; i++ {
+		v := &ctx.vars[i]
 		if v.key == ctx.bufS[0] {
 			// Var found.
 			if v.val == nil && len(v.buf) > 0 {
@@ -395,10 +392,8 @@ func (ctx *Ctx) cmp(path []byte, cond Op, right []byte) bool {
 		return false
 	}
 
-	for i, v := range ctx.vars {
-		if i == ctx.ln {
-			break
-		}
+	for i := 0; i < ctx.ln; i++ {
+		v := &ctx.vars[i]
 		if v.key == ctx.bufS[0] {
 			// Compare var with right value using inspector.
 			if v.cntrF {
@@ -428,10 +423,8 @@ func (ctx *Ctx) cmpLC(lc lc, path []byte, cond Op, right []byte) bool {
 		return false
 	}
 
-	for i, v := range ctx.vars {
-		if i == ctx.ln {
-			break
-		}
+	for i := 0; i < ctx.ln; i++ {
+		v := &ctx.vars[i]
 		if v.key == ctx.bufS[0] {
 			switch lc {
 			case lcLen:
@@ -461,10 +454,8 @@ func (ctx *Ctx) rloop(path []byte, node *Node, tpl *Tpl, w io.Writer) {
 	if len(ctx.bufS) == 0 {
 		return
 	}
-	for i, v := range ctx.vars {
-		if i == ctx.ln {
-			break
-		}
+	for i := 0; i < ctx.ln; i++ {
+		v := &ctx.vars[i]
 		if v.key == ctx.bufS[0] {
 			// Look for free-range loop object in single-ordered list, see RangeLoop.
 			var rl *RangeLoop
