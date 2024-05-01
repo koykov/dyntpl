@@ -17,7 +17,7 @@ const (
 type RangeLoop struct {
 	cntr int
 	stat uint
-	node Node
+	node *Node
 	tpl  *Tpl
 	ctx  *Ctx
 	next *RangeLoop
@@ -25,7 +25,7 @@ type RangeLoop struct {
 }
 
 // NewRangeLoop makes new RL.
-func NewRangeLoop(node Node, tpl *Tpl, ctx *Ctx, w io.Writer) *RangeLoop {
+func NewRangeLoop(node *Node, tpl *Tpl, ctx *Ctx, w io.Writer) *RangeLoop {
 	rl := RangeLoop{
 		node: node,
 		tpl:  tpl,
@@ -61,7 +61,8 @@ func (rl *RangeLoop) Iterate() inspector.LoopCtl {
 	}
 	rl.cntr++
 	var err, lerr error
-	for _, ch := range rl.node.child {
+	for i := 0; i < len(rl.node.child); i++ {
+		ch := &rl.node.child[i]
 		err = rl.tpl.writeNode(rl.w, ch, rl.ctx)
 		if err == ErrLBreakLoop {
 			lerr = err

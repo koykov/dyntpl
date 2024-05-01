@@ -125,7 +125,8 @@ func WriteByID(w io.Writer, id int, ctx *Ctx) (err error) {
 // Internal renderer.
 func write(w io.Writer, tpl *Tpl, ctx *Ctx) (err error) {
 	// Walk over root nodes in tree and evaluate them.
-	for _, node := range tpl.tree.nodes {
+	for i := 0; i < len(tpl.tree.nodes); i++ {
+		node := &tpl.tree.nodes[i]
 		err = tpl.writeNode(w, node, ctx)
 		if err != nil {
 			if err == ErrInterrupt {
@@ -144,7 +145,7 @@ func write(w io.Writer, tpl *Tpl, ctx *Ctx) (err error) {
 }
 
 // General node renderer.
-func (t *Tpl) writeNode(w io.Writer, node Node, ctx *Ctx) (err error) {
+func (t *Tpl) writeNode(w io.Writer, node *Node, ctx *Ctx) (err error) {
 	switch node.typ {
 	case TypeRaw:
 		if ctx.chJQ {
@@ -182,12 +183,16 @@ func (t *Tpl) writeNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			return
 		}
 		// Process modifiers.
-		if len(node.mod) > 0 {
-			for _, mod_ := range node.mod {
+		if n := len(node.mod); n > 0 {
+			_ = node.mod[n-1]
+			for i := 0; i < n; i++ {
+				mod_ := &node.mod[i]
 				// Collect arguments to buffer.
 				ctx.bufA = ctx.bufA[:0]
-				if len(mod_.arg) > 0 {
-					for _, arg_ := range mod_.arg {
+				if m := len(mod_.arg); m > 0 {
+					_ = mod_.arg[m-1]
+					for j := 0; j < m; j++ {
+						arg_ := mod_.arg[j]
 						if len(arg_.name) > 0 {
 							kv := ctx.getKV()
 							kv.K = arg_.name
@@ -256,12 +261,16 @@ func (t *Tpl) writeNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 				return err
 			}
 			// Process modifiers.
-			if len(node.mod) > 0 {
-				for _, mod_ := range node.mod {
+			if n := len(node.mod); n > 0 {
+				_ = node.mod[n-1]
+				for i := 0; i < n; i++ {
+					mod_ := &node.mod[i]
 					// Collect arguments to buffer.
 					ctx.bufA = ctx.bufA[:0]
-					if len(mod_.arg) > 0 {
-						for _, arg_ := range mod_.arg {
+					if m := len(mod_.arg); m > 0 {
+						_ = mod_.arg[m-1]
+						for j := 0; j < len(mod_.arg); j++ {
+							arg_ := mod_.arg[j]
 							if len(arg_.name) > 0 {
 								kv := ctx.getKV()
 								kv.K = arg_.name
@@ -343,8 +352,10 @@ func (t *Tpl) writeNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			}
 			// Prepare arguments list.
 			ctx.bufA = ctx.bufA[:0]
-			if len(node.condHlpArg) > 0 {
-				for _, arg_ := range node.condHlpArg {
+			if n := len(node.condHlpArg); n > 0 {
+				_ = node.condHlpArg[n-1]
+				for i := 0; i < n; i++ {
+					arg_ := node.condHlpArg[i]
 					if arg_.static {
 						ctx.bufA = append(ctx.bufA, &arg_.val)
 					} else {
@@ -368,18 +379,18 @@ func (t *Tpl) writeNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 
 			// Check extended condition (eg: !ok).
 			if len(node.condR) > 0 {
-				r, err = t.nodeCmp(&node, ctx)
+				r, err = t.nodeCmp(node, ctx)
 			}
 			// Evaluate condition.
 			if r {
 				// True case.
 				if len(node.child) > 0 {
-					err = t.writeNode(w, node.child[0], ctx)
+					err = t.writeNode(w, &node.child[0], ctx)
 				}
 			} else {
 				// Else case.
 				if len(node.child) > 1 {
-					err = t.writeNode(w, node.child[1], ctx)
+					err = t.writeNode(w, &node.child[1], ctx)
 				}
 			}
 		}
@@ -396,8 +407,10 @@ func (t *Tpl) writeNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			}
 			// Prepare arguments list.
 			ctx.bufA = ctx.bufA[:0]
-			if len(node.condHlpArg) > 0 {
-				for _, arg_ := range node.condHlpArg {
+			if n := len(node.condHlpArg); n > 0 {
+				_ = node.condHlpArg[n-1]
+				for i := 0; i < len(node.condHlpArg); i++ {
+					arg_ := node.condHlpArg[i]
 					if arg_.static {
 						ctx.bufA = append(ctx.bufA, &arg_.val)
 					} else {
@@ -416,7 +429,7 @@ func (t *Tpl) writeNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			}
 			r = ctx.cmpLC(node.condLC, node.condHlpArg[0].val, node.condOp, node.condR)
 		default:
-			r, err = t.nodeCmp(&node, ctx)
+			r, err = t.nodeCmp(node, ctx)
 		}
 		if ctx.Err != nil {
 			err = ctx.Err
@@ -426,17 +439,18 @@ func (t *Tpl) writeNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 		if r {
 			// True case.
 			if len(node.child) > 0 {
-				err = t.writeNode(w, node.child[0], ctx)
+				err = t.writeNode(w, &node.child[0], ctx)
 			}
 		} else {
 			// Else case.
 			if len(node.child) > 1 {
-				err = t.writeNode(w, node.child[1], ctx)
+				err = t.writeNode(w, &node.child[1], ctx)
 			}
 		}
 	case TypeCondTrue, TypeCondFalse, TypeCase, TypeDefault:
 		// Just walk over child nodes.
-		for _, ch := range node.child {
+		for i := 0; i < len(node.child); i++ {
+			ch := &node.child[i]
 			err = t.writeNode(w, ch, ctx)
 			if err != nil {
 				return
@@ -476,7 +490,8 @@ func (t *Tpl) writeNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 		r := false
 		if len(node.switchArg) > 0 {
 			// Classic switch case.
-			for _, ch := range node.child {
+			for i := 0; i < len(node.child); i++ {
+				ch := &node.child[i]
 				if ch.typ == TypeCase {
 					if ch.caseStaticL {
 						r = ctx.cmp(node.switchArg, OpEq, ch.caseL)
@@ -497,7 +512,8 @@ func (t *Tpl) writeNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			}
 		} else {
 			// Switch without condition case.
-			for _, ch := range node.child {
+			for i := 0; i < len(node.child); i++ {
+				ch := &node.child[i]
 				if ch.typ == TypeCase {
 					if len(ch.caseHlp) > 0 {
 						// Case condition helper caught.
@@ -508,8 +524,10 @@ func (t *Tpl) writeNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 						}
 						// Prepare arguments list.
 						ctx.bufA = ctx.bufA[:0]
-						if len(ch.caseHlpArg) > 0 {
-							for _, arg_ := range ch.caseHlpArg {
+						if n := len(ch.caseHlpArg); n > 0 {
+							_ = node.caseHlpArg[n]
+							for j := 0; j < n; j++ {
+								arg_ := node.condHlpArg[j]
 								if arg_.static {
 									ctx.bufA = append(ctx.bufA, &arg_.val)
 								} else {
@@ -556,7 +574,8 @@ func (t *Tpl) writeNode(w io.Writer, node Node, ctx *Ctx) (err error) {
 			}
 		}
 		if !r {
-			for _, ch := range node.child {
+			for i := 0; i < len(node.child); i++ {
+				ch := &node.child[i]
 				if ch.typ == TypeDefault {
 					err = t.writeNode(w, ch, ctx)
 					break

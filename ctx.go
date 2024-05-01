@@ -347,17 +347,14 @@ func (ctx *Ctx) get(path []byte) any {
 	// Split path to separate words using dot as separator.
 	// So, path user.Bio.Birthday will convert to []string{"user", "Bio", "Birthday"}
 	ctx.bufS = ctx.bufS[:0]
-	ctx.bufS = bytealg.AppendSplit(ctx.bufS, byteconv.B2S(path), ".", -1)
+	ctx.bufS = bytealg.AppendSplitString(ctx.bufS, byteconv.B2S(path), ".", -1)
 	if len(ctx.bufS) == 0 {
 		return nil
 	}
 
 	// Look for first path chunk in vars.
-	for i, v := range ctx.vars {
-		if i == ctx.ln {
-			// Vars limit reached, exit.
-			break
-		}
+	for i := 0; i < ctx.ln; i++ {
+		v := &ctx.vars[i]
 		if v.key == ctx.bufS[0] {
 			// Var found.
 			if v.val == nil && len(v.buf) > 0 {
@@ -390,15 +387,13 @@ func (ctx *Ctx) get(path []byte) any {
 func (ctx *Ctx) cmp(path []byte, cond Op, right []byte) bool {
 	// Split path.
 	ctx.bufS = ctx.bufS[:0]
-	ctx.bufS = bytealg.AppendSplit(ctx.bufS, byteconv.B2S(path), ".", -1)
+	ctx.bufS = bytealg.AppendSplitString(ctx.bufS, byteconv.B2S(path), ".", -1)
 	if len(ctx.bufS) == 0 {
 		return false
 	}
 
-	for i, v := range ctx.vars {
-		if i == ctx.ln {
-			break
-		}
+	for i := 0; i < ctx.ln; i++ {
+		v := &ctx.vars[i]
 		if v.key == ctx.bufS[0] {
 			// Compare var with right value using inspector.
 			if v.cntrF {
@@ -423,15 +418,13 @@ func (ctx *Ctx) cmpLC(lc lc, path []byte, cond Op, right []byte) bool {
 	}
 
 	ctx.bufS = ctx.bufS[:0]
-	ctx.bufS = bytealg.AppendSplit(ctx.bufS, byteconv.B2S(path), ".", -1)
+	ctx.bufS = bytealg.AppendSplitString(ctx.bufS, byteconv.B2S(path), ".", -1)
 	if len(ctx.bufS) == 0 {
 		return false
 	}
 
-	for i, v := range ctx.vars {
-		if i == ctx.ln {
-			break
-		}
+	for i := 0; i < ctx.ln; i++ {
+		v := &ctx.vars[i]
 		if v.key == ctx.bufS[0] {
 			switch lc {
 			case lcLen:
@@ -455,16 +448,14 @@ func (ctx *Ctx) cmpLC(lc lc, path []byte, cond Op, right []byte) bool {
 
 // Range loop method to evaluate expressions like:
 // {% for k, v := range user.History %}...{% endfor %}
-func (ctx *Ctx) rloop(path []byte, node Node, tpl *Tpl, w io.Writer) {
+func (ctx *Ctx) rloop(path []byte, node *Node, tpl *Tpl, w io.Writer) {
 	ctx.bufS = ctx.bufS[:0]
-	ctx.bufS = bytealg.AppendSplit(ctx.bufS, byteconv.B2S(path), ".", -1)
+	ctx.bufS = bytealg.AppendSplitString(ctx.bufS, byteconv.B2S(path), ".", -1)
 	if len(ctx.bufS) == 0 {
 		return
 	}
-	for i, v := range ctx.vars {
-		if i == ctx.ln {
-			break
-		}
+	for i := 0; i < ctx.ln; i++ {
+		v := &ctx.vars[i]
 		if v.key == ctx.bufS[0] {
 			// Look for free-range loop object in single-ordered list, see RangeLoop.
 			var rl *RangeLoop
@@ -512,7 +503,7 @@ func (ctx *Ctx) rloop(path []byte, node Node, tpl *Tpl, w io.Writer) {
 
 // Counter loop method to evaluate expressions like:
 // {% for i:=0; i<10; i++ %}...{% endfor %}
-func (ctx *Ctx) cloop(node Node, tpl *Tpl, w io.Writer) {
+func (ctx *Ctx) cloop(node *Node, tpl *Tpl, w io.Writer) {
 	var (
 		cnt, lim  int64
 		cntr      int
@@ -571,7 +562,8 @@ func (ctx *Ctx) cloop(node Node, tpl *Tpl, w io.Writer) {
 		// Loop over child nodes with square brackets check in paths.
 		ctx.chQB = true
 		var err, lerr error
-		for _, ch := range node.child {
+		for i := 0; i < len(node.child); i++ {
+			ch := &node.child[i]
 			err = tpl.writeNode(w, ch, ctx)
 			if err == ErrLBreakLoop {
 				lerr = err
