@@ -10,6 +10,10 @@ import (
 	"strconv"
 )
 
+func init() {
+	inspector.RegisterInspector("BenchRow", BenchRowInspector{})
+}
+
 type BenchRowInspector struct {
 	inspector.BaseInspector
 }

@@ -10,6 +10,10 @@ import (
 	"strconv"
 )
 
+func init() {
+	inspector.RegisterInspector("MarshalData", MarshalDataInspector{})
+}
+
 type MarshalDataInspector struct {
 	inspector.BaseInspector
 }
