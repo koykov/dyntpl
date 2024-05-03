@@ -1,9 +1,5 @@
 package dyntpl
 
-import (
-	"strconv"
-)
-
 // JS escape.
 func modJSEscape(ctx *Ctx, buf *any, val any, args []any) (err error) {
 	// Get count of encode iterations (cases: aa=, aaa=, AA=, AAA=, ...).
@@ -37,16 +33,13 @@ func modJSEscape(ctx *Ctx, buf *any, val any, args []any) (err error) {
 			default:
 				if r != ',' && r != '.' && r != '_' && (r < 'a' || r > 'z') && (r < 'A' || r > 'Z') && (r < '0' || r > '9') {
 					wr := func(r int32) {
-						ctx.BufAcc.WriteString("\\u")
-						ctx.Buf = strconv.AppendInt(*ctx.Buf.Reset(), int64(r), 16)
-						if ctx.Buf.Len() == 1 {
-							ctx.BufAcc.WriteString("000")
-						} else if ctx.Buf.Len() == 2 {
-							ctx.BufAcc.WriteString("00")
-						} else if ctx.Buf.Len() == 3 {
-							ctx.BufAcc.WriteByte('0')
-						}
-						ctx.BufAcc.Write(ctx.Buf)
+						ctx.BufAcc.WriteString("\\u0000")
+						off := ctx.BufAcc.Len()
+						ctx.BufAcc.WriteIntBase(int64(r), 16)
+						delta := ctx.BufAcc.Len() - off
+						hex := ctx.BufAcc.Bytes()[ctx.BufAcc.Len()-delta:]
+						ctx.BufAcc.Reduce(delta * 2)
+						ctx.BufAcc.Write(hex)
 					}
 					if r < 0x10000 {
 						wr(r)

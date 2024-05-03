@@ -1,7 +1,6 @@
 package dyntpl
 
 import (
-	"strconv"
 	"unicode/utf8"
 )
 
@@ -34,19 +33,33 @@ func modAttrEscape(ctx *Ctx, buf *any, val any, args []any) (err error) {
 					if (r < 0x1f && r != '\t' && r != '\n' && r != '\r') || (r >= 0x7f && r <= 0x9f) {
 						ctx.BufAcc.WriteString("&#xFFFD;")
 					} else if utf8.RuneLen(r) == 1 {
-						ctx.BufAcc.WriteString("&#x")
-						ctx.Buf = strconv.AppendInt(*ctx.Buf.Reset(), int64(r), 16)
-						if ctx.Buf.Len() < 2 {
-							ctx.BufAcc.WriteByte('0')
+						ctx.BufAcc.WriteString("&#x00")
+						off := ctx.BufAcc.Len()
+						ctx.BufAcc.WriteIntBase(int64(r), 16)
+						delta := ctx.BufAcc.Len() - off
+						hex := ctx.BufAcc.Bytes()[ctx.BufAcc.Len()-delta:]
+						if delta < 2 {
+							delta *= 2
+						} else {
+							delta += 2
 						}
-						ctx.BufAcc.Write(ctx.Buf).WriteByte(';')
+						ctx.BufAcc.Reduce(delta)
+						ctx.BufAcc.Write(hex)
+						ctx.BufAcc.WriteByte(';')
 					} else {
-						ctx.BufAcc.WriteString("&#x")
-						ctx.Buf = strconv.AppendInt(*ctx.Buf.Reset(), int64(r), 16)
-						if ctx.Buf.Len() < 4 {
-							ctx.BufAcc.WriteByte('0')
+						ctx.BufAcc.WriteString("&#x0000")
+						off := ctx.BufAcc.Len()
+						ctx.BufAcc.WriteIntBase(int64(r), 16)
+						delta := ctx.BufAcc.Len() - off
+						hex := ctx.BufAcc.Bytes()[ctx.BufAcc.Len()-delta:]
+						if delta < 4 {
+							delta *= 2
+						} else {
+							delta += 4
 						}
-						ctx.BufAcc.Write(ctx.Buf).WriteByte(';')
+						ctx.BufAcc.Reduce(delta)
+						ctx.BufAcc.Write(hex)
+						ctx.BufAcc.WriteByte(';')
 					}
 				} else {
 					ctx.BufAcc.WriteByte(byte(r))
