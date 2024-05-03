@@ -1,7 +1,5 @@
 package dyntpl
 
-import "strconv"
-
 // CSS escape.
 func modCSSEscape(ctx *Ctx, buf *any, val any, args []any) (err error) {
 	// Get count of encode iterations (cases: aa=, aaa=, AA=, AAA=, ...).
@@ -31,8 +29,7 @@ func modCSSEscape(ctx *Ctx, buf *any, val any, args []any) (err error) {
 			default:
 				if (r < 'a' || r > 'z') && (r < 'A' || r > 'Z') && (r < '0' || r > '9') {
 					ctx.BufAcc.WriteString("\\")
-					ctx.Buf = strconv.AppendInt(*ctx.Buf.Reset(), int64(r), 16)
-					ctx.BufAcc.Write(ctx.Buf).WriteByte(' ')
+					ctx.BufAcc.WriteIntBase(int64(r), 16).WriteByte(' ')
 				} else {
 					ctx.BufAcc.WriteByte(byte(r))
 				}
