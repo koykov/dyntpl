@@ -26,6 +26,12 @@ func init() {
 	RegisterModFn("floor", "floor", modFloor)
 	RegisterModFn("floorPrec", "floorp", modFloorPrec)
 
+	// Register time modifiers.
+	RegisterModFn("now", "", modNow)
+	RegisterModFnNS("time", "now", "", modNow)
+	RegisterModFn("date", "", modDate)
+	RegisterModFnNS("time", "date", "", modDate)
+
 	// Register builtin condition helpers.
 	RegisterCondFn("lenEq0", condLenEq0)
 	RegisterCondFn("lenGt0", condLenGt0)
