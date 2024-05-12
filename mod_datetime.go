@@ -23,7 +23,7 @@ func modNow(ctx *Ctx, buf *any, _ any, args []any) (err error) {
 func modDate(ctx *Ctx, buf *any, val any, args []any) (err error) {
 	format := clock.Layout
 	if len(args) > 0 {
-		format = args[0].(string)
+		format = ctx.BufAcc.StakeOut().WriteX(args[0]).StakedString()
 	}
 	var dt time.Time
 	switch x := val.(type) {

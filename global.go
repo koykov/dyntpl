@@ -9,6 +9,8 @@ var (
 )
 
 // RegisterGlobal registers new global variable.
+//
+// Caution! Globals registered after template parsing will take no effect.
 func RegisterGlobal(name, alias string, val Global) {
 	globBuf = append(globBuf, val)
 	globIdx[name] = len(globBuf) - 1

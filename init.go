@@ -1,6 +1,9 @@
 package dyntpl
 
-import "github.com/koykov/inspector/testobj_ins"
+import (
+	"github.com/koykov/clock"
+	"github.com/koykov/inspector/testobj_ins"
+)
 
 func init() {
 	// Register simple builtin modifiers.
@@ -46,6 +49,24 @@ func init() {
 	RegisterEmptyCheckFn("str", EmptyCheckStr)
 	RegisterEmptyCheckFn("str_slice", EmptyCheckStrSlice)
 	RegisterEmptyCheckFn("bool", EmptyCheckBool)
+
+	// Register datetime layouts.
+	RegisterGlobalNS("time", "dateLayout", "", clock.Layout)
+	RegisterGlobalNS("time", "dateANSIC", "", clock.ANSIC)
+	RegisterGlobalNS("time", "dateUnixDate", "", clock.UnixDate)
+	RegisterGlobalNS("time", "dateRubyDate", "", clock.RubyDate)
+	RegisterGlobalNS("time", "dateRFC822", "", clock.RFC822)
+	RegisterGlobalNS("time", "dateRFC822Z", "", clock.RFC822Z)
+	RegisterGlobalNS("time", "dateRFC850", "", clock.RFC850)
+	RegisterGlobalNS("time", "dateRFC1123", "", clock.RFC1123)
+	RegisterGlobalNS("time", "dateRFC1123Z", "", clock.RFC1123Z)
+	RegisterGlobalNS("time", "dateRFC3339", "", clock.RFC3339)
+	RegisterGlobalNS("time", "dateRFC3339Nano", "", clock.RFC3339Nano)
+	RegisterGlobalNS("time", "dateKitchen", "", clock.Kitchen)
+	RegisterGlobalNS("time", "dateStamp", "", clock.Stamp)
+	RegisterGlobalNS("time", "dateStampMilli", "", clock.StampMilli)
+	RegisterGlobalNS("time", "dateStampMicro", "", clock.StampMicro)
+	RegisterGlobalNS("time", "dateStampNano", "", clock.StampNano)
 
 	// Register test modifiers.
 	RegisterModFn("testNameOf", "", modTestNameOf)
