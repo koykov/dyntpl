@@ -29,6 +29,8 @@ func modDate(ctx *Ctx, buf *any, val any, args []any) (err error) {
 	switch x := val.(type) {
 	case time.Time:
 		dt = x
+	case *time.Time:
+		dt = *x
 	case int:
 	case int8:
 	case int16:
@@ -40,6 +42,17 @@ func modDate(ctx *Ctx, buf *any, val any, args []any) (err error) {
 	case uint32:
 	case uint64:
 		dt = time.Unix(int64(x), 0)
+	case *int:
+	case *int8:
+	case *int16:
+	case *int32:
+	case *int64:
+	case *uint:
+	case *uint8:
+	case *uint16:
+	case *uint32:
+	case *uint64:
+		dt = time.Unix(int64(*x), 0)
 	default:
 		return
 	}
