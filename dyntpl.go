@@ -203,7 +203,9 @@ func (t *Tpl) writeNode(w io.Writer, node *Node, ctx *Ctx) (err error) {
 							}
 							ctx.bufA = append(ctx.bufA, kv)
 						} else {
-							if arg_.static {
+							if arg_.global {
+								ctx.bufA = append(ctx.bufA, GetGlobal(byteconv.B2S(arg_.val)))
+							} else if arg_.static {
 								ctx.bufA = append(ctx.bufA, &arg_.val)
 							} else {
 								val := ctx.get(arg_.val)

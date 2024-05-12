@@ -18,6 +18,7 @@ type arg struct {
 	name   []byte
 	val    []byte
 	static bool
+	global bool
 }
 
 var (
