@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io"
 	"strconv"
+	"time"
 
 	"github.com/koykov/bytealg"
 	"github.com/koykov/bytebuf"
@@ -61,6 +62,7 @@ type Ctx struct {
 	BufI int64
 	BufU uint64
 	BufF float64
+	BufT time.Time
 	BufX any
 
 	Err error
@@ -329,6 +331,9 @@ func (ctx *Ctx) Reset() {
 		ctx.ipv[i].key, ctx.ipv[i].val = "", nil
 	}
 	ctx.ipvl = 0
+
+	ctx.BufB, ctx.BufI, ctx.BufU, ctx.BufF, ctx.BufX = false, 0, 0, 0, nil
+	ctx.BufT = time.Time{}
 }
 
 // Internal getter.

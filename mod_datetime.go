@@ -6,8 +6,17 @@ import (
 	"github.com/koykov/clock"
 )
 
-func modNow(_ *Ctx, buf *any, _ any, _ []any) (err error) {
-	*buf = time.Now()
+func modNow(ctx *Ctx, buf *any, _ any, args []any) (err error) {
+	if len(args) > 0 {
+		a := ctx.BufAcc.StakeOut().WriteX(args[0]).StakedString()
+		if a == "stuck" {
+			ctx.BufT = time.Date(2020, 2, 23, 0, 0, 0, 0, time.UTC) // dyntpl birthdate
+			*buf = &ctx.BufT
+			return
+		}
+	}
+	ctx.BufT = time.Now()
+	*buf = &ctx.BufT
 	return
 }
 
@@ -35,11 +44,8 @@ func modDate(ctx *Ctx, buf *any, val any, args []any) (err error) {
 		return
 	}
 
-	fmtb := ctx.BufAcc.StakeOut().GrowDelta(128).StakedBytes()
-	if fmtb, err = clock.AppendFormat(fmtb[:0], format, dt); err != nil {
-		return
-	}
-	ctx.BufModOut(buf, fmtb)
+	ctx.BufAcc.StakeOut().WriteTime(format, dt)
+	ctx.BufModOut(buf, ctx.BufAcc.StakedBytes())
 
 	return
 }

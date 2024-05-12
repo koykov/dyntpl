@@ -4,8 +4,9 @@ go 1.18
 
 require (
 	github.com/koykov/bytealg v1.0.4
-	github.com/koykov/bytebuf v1.0.7-0.20240503193542-261415d60eda
+	github.com/koykov/bytebuf v1.0.7-0.20240511211320-6e2d75541601
 	github.com/koykov/byteconv v1.0.0
+	github.com/koykov/clock v1.1.4-0.20240512200305-c0b60dafa534
 	github.com/koykov/inspector v1.4.6-0.20240425175915-3a3bff7b6afe
 )
 
