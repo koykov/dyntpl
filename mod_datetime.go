@@ -57,6 +57,14 @@ func modDate(ctx *Ctx, buf *any, val any, args []any) (err error) {
 		return
 	}
 
+	if len(args) > 1 {
+		if loc := ctx.BufAcc.StakeOut().WriteX(args[1]).StakedString(); len(loc) > 0 {
+			if lo, err1 := time.LoadLocation(loc); err1 == nil { // todo: improve allocs
+				dt.In(lo)
+			}
+		}
+	}
+
 	ctx.BufAcc.StakeOut().WriteTime(format, dt)
 	ctx.BufModOut(buf, ctx.BufAcc.StakedBytes())
 
