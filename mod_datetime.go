@@ -58,9 +58,9 @@ func modDate(ctx *Ctx, buf *any, val any, args []any) (err error) {
 	}
 
 	if len(args) > 1 {
-		if loc := ctx.BufAcc.StakeOut().WriteX(args[1]).StakedString(); len(loc) > 0 {
-			if lo, err1 := time.LoadLocation(loc); err1 == nil { // todo: improve allocs
-				dt.In(lo)
+		if locName := ctx.BufAcc.StakeOut().WriteX(args[1]).StakedString(); len(locName) > 0 {
+			if loc, err1 := clock.LoadLocation(locName); err1 == nil {
+				dt.In(loc)
 			}
 		}
 	}

@@ -16,6 +16,7 @@ var (
 	}
 
 	dtNative = time.Unix(0, 1233810057012345600)
+	dtTZ     = time.Date(1994, 9, 17, 20, 4, 26, 0, time.FixedZone("EST", -18000))
 )
 
 func TestModDatetime(t *testing.T) {
@@ -73,7 +74,7 @@ func TestModDatetime(t *testing.T) {
 	t.Run("dateStampMilli", func(t *testing.T) { testModWA(t, modArgs{"date": dtNative}) })
 	t.Run("dateStampMicro", func(t *testing.T) { testModWA(t, modArgs{"date": dtNative}) })
 	t.Run("dateStampNano", func(t *testing.T) { testModWA(t, modArgs{"date": dtNative}) })
-	t.Run("dateStampTZ", func(t *testing.T) { testModWA(t, modArgs{"date": dtNative}) })
+	t.Run("dateLayoutTZ", func(t *testing.T) { testModWA(t, modArgs{"date": dtTZ}) })
 }
 
 func BenchmarkModDatetime(b *testing.B) {
@@ -131,5 +132,5 @@ func BenchmarkModDatetime(b *testing.B) {
 	b.Run("dateStampMilli", func(b *testing.B) { benchModWA(b, modArgs{"date": dtNative}) })
 	b.Run("dateStampMicro", func(b *testing.B) { benchModWA(b, modArgs{"date": dtNative}) })
 	b.Run("dateStampNano", func(b *testing.B) { benchModWA(b, modArgs{"date": dtNative}) })
-	b.Run("dateStampTZ", func(b *testing.B) { benchModWA(b, modArgs{"date": dtNative}) })
+	b.Run("dateLayoutTZ", func(b *testing.B) { benchModWA(b, modArgs{"date": dtTZ}) })
 }

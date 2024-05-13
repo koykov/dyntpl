@@ -6,8 +6,8 @@ github.com/koykov/byteconv v1.0.0 h1:C8NThxj3Vcmv7f1h384Ti7F9zjVDnOy9AZj9KxTaYqM
 github.com/koykov/byteconv v1.0.0/go.mod h1:viZknv/akQJrXOQS3bZu2U7TE+gjA03LFQpSsRExZR4=
 github.com/koykov/byteseq v1.0.1 h1:PbsGtxkUnvrqlwnjNxnRq5FDIvLXJg5CcN9yRuSQY7A=
 github.com/koykov/byteseq v1.0.1/go.mod h1:JlIJ6P3/ocuGNRbTVyP0NVRS/ExofhOS8g7mtefjefw=
-github.com/koykov/clock v1.1.4-0.20240512200305-c0b60dafa534 h1:pRq01VwXB6ByamQugo/r0ax+N2605EuqQQjKk8jdL+0=
-github.com/koykov/clock v1.1.4-0.20240512200305-c0b60dafa534/go.mod h1:H/XAxPC4l701ilmBmg7zllqyysQS/BLWC9PjYSKNQsI=
+github.com/koykov/clock v1.1.4-0.20240513202807-a2f92dc1a82e h1:10Dq2DkjHSwc0HYgBWrI5QtI7rCBfyHrgUZpPHI8FBo=
+github.com/koykov/clock v1.1.4-0.20240513202807-a2f92dc1a82e/go.mod h1:H/XAxPC4l701ilmBmg7zllqyysQS/BLWC9PjYSKNQsI=
 github.com/koykov/entry v1.0.2 h1:6mZJUt4POGQHRPJ9Iw4GyIZJi9wj2lews3yRRNHfTY4=
 github.com/koykov/entry v1.0.2/go.mod h1:WmCy/YM0sPb4ETL9wYY0OJwO89KJ7qeQPGOwLUG4rZU=
 github.com/koykov/inspector v1.4.6-0.20240425175915-3a3bff7b6afe h1:+X5qs/tsuxjzKSHxOiv2aDULM4DP2x999IR437Ga+B0=
