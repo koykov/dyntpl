@@ -30,10 +30,10 @@ func init() {
 	RegisterModFn("floorPrec", "floorp", modFloorPrec)
 
 	// Register time modifiers.
-	RegisterModFn("now", "", modNow)
 	RegisterModFnNS("time", "now", "", modNow)
-	RegisterModFn("date", "", modDate)
 	RegisterModFnNS("time", "date", "", modDate)
+	RegisterModFnNS("time", "format", "fmt", modDate)
+	RegisterModFnNS("time", "add", "date_modify", modDateAdd)
 
 	// Register builtin condition helpers.
 	RegisterCondFn("lenEq0", condLenEq0)

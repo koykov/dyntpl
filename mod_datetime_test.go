@@ -17,6 +17,7 @@ var (
 
 	dtNative = time.Unix(0, 1233810057012345600)
 	dtTZ     = time.Date(1994, 9, 17, 20, 4, 26, 0, time.FixedZone("EST", -18000))
+	dtAdd    = time.Date(2012, 1, 21, 20, 4, 26, 555, time.UTC)
 )
 
 func TestModDatetime(t *testing.T) {
@@ -75,6 +76,8 @@ func TestModDatetime(t *testing.T) {
 	t.Run("dateStampMicro", func(t *testing.T) { testModWA(t, modArgs{"date": dtNative}) })
 	t.Run("dateStampNano", func(t *testing.T) { testModWA(t, modArgs{"date": dtNative}) })
 	t.Run("dateLayoutTZ", func(t *testing.T) { testModWA(t, modArgs{"date": dtTZ}) })
+
+	t.Run("addNS", func(t *testing.T) { testModWA(t, modArgs{"date": dtAdd}) })
 }
 
 func BenchmarkModDatetime(b *testing.B) {
