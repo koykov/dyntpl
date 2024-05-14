@@ -2,6 +2,7 @@ package dyntpl
 
 import (
 	"bytes"
+	"strings"
 
 	"github.com/koykov/bytebuf"
 	"github.com/koykov/byteconv"
@@ -213,7 +214,11 @@ func (t *Tree) hrHelper(buf *bytebuf.Chain, nodes []Node, indent []byte, depth i
 		}
 
 		if node.typ != TypeExit && node.typ != TypeBreak && node.typ != TypeLBreak && node.typ != TypeContinue && len(node.raw) > 0 {
-			t.attrB(buf, "val", node.raw)
+			raw := string(node.raw)
+			if raw == "\n" || raw == "\r" || raw == "\r\n" || raw == "\t" {
+				raw = strings.ReplaceAll(raw, "\\", "\\\\")
+			}
+			t.attrS(buf, "val", raw)
 		}
 
 		if len(node.mod) > 0 || len(node.child) > 0 {

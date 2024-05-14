@@ -33,10 +33,6 @@ const (
 	TypeUrlEnc    Type = 21
 	TypeEndUrlEnc Type = 22
 	TypeInclude   Type = 23
-	TypeNl        Type = 24
-	TypeCr        Type = 25
-	TypeCrlf      Type = 26
-	TypeTab       Type = 27
 	TypeExit      Type = 99
 
 	// Must be in sync with inspector.Op type.
@@ -94,14 +90,6 @@ func (typ Type) String() string {
 		return "div"
 	case TypeInclude:
 		return "inc"
-	case TypeNl:
-		return "nl"
-	case TypeCr:
-		return "cr"
-	case TypeCrlf:
-		return "crlf"
-	case TypeTab:
-		return "tab"
 	case TypeExit:
 		return "exit"
 	default:

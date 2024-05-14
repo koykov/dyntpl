@@ -69,6 +69,10 @@ var (
 	ue         = []byte("urlencode")
 	ueEnd      = []byte("endurlencode")
 	bTrue      = []byte("true")
+	nl         = []byte("\n")
+	cr         = []byte("\r")
+	crlf       = []byte("\r\n")
+	tab        = []byte("\t")
 	symEndl    = []byte("endl")
 	symNl      = []byte("nl")
 	symLf      = []byte("lf")
@@ -638,22 +642,26 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 	// Check control symbols.
 	switch {
 	case bytes.Equal(t, symEndl) || bytes.Equal(t, symNl) || bytes.Equal(t, symN) || bytes.Equal(t, symLf):
-		root.typ = TypeNl
+		root.typ = TypeRaw
+		root.raw = nl
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
 		return nodes, offset, up, err
 	case bytes.Equal(t, symCr) || bytes.Equal(t, symR):
-		root.typ = TypeCr
+		root.typ = TypeRaw
+		root.raw = cr
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
 		return nodes, offset, up, err
 	case bytes.Equal(t, symCrLn) || bytes.Equal(t, symRN):
-		root.typ = TypeCrlf
+		root.typ = TypeRaw
+		root.raw = crlf
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
 		return nodes, offset, up, err
 	case bytes.Equal(t, symTab) || bytes.Equal(t, symT):
-		root.typ = TypeTab
+		root.typ = TypeRaw
+		root.raw = tab
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
 		return nodes, offset, up, err
