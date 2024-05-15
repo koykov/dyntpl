@@ -69,6 +69,20 @@ var (
 	ue         = []byte("urlencode")
 	ueEnd      = []byte("endurlencode")
 	bTrue      = []byte("true")
+	nl         = []byte("\n")
+	cr         = []byte("\r")
+	crlf       = []byte("\r\n")
+	tab        = []byte("\t")
+	symEndl    = []byte("endl")
+	symNl      = []byte("nl")
+	symLf      = []byte("lf")
+	symN       = []byte(`\n`)
+	symCr      = []byte("cr")
+	symR       = []byte(`\r`)
+	symCrLn    = []byte("crlf")
+	symRN      = []byte(`\r\n`)
+	symTab     = []byte("tab")
+	symT       = []byte(`\t`)
 
 	// Print prefixes and replacements.
 	idJ   = []byte("jsonEscape")
@@ -620,6 +634,34 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 	// Check tpl interrupt.
 	if bytes.Equal(t, ctlExit) {
 		root.typ = TypeExit
+		nodes = addNode(nodes, *root)
+		offset = pos + len(ctl)
+		return nodes, offset, up, err
+	}
+
+	// Check control symbols.
+	switch {
+	case bytes.Equal(t, symEndl) || bytes.Equal(t, symNl) || bytes.Equal(t, symN) || bytes.Equal(t, symLf):
+		root.typ = TypeRaw
+		root.raw = nl
+		nodes = addNode(nodes, *root)
+		offset = pos + len(ctl)
+		return nodes, offset, up, err
+	case bytes.Equal(t, symCr) || bytes.Equal(t, symR):
+		root.typ = TypeRaw
+		root.raw = cr
+		nodes = addNode(nodes, *root)
+		offset = pos + len(ctl)
+		return nodes, offset, up, err
+	case bytes.Equal(t, symCrLn) || bytes.Equal(t, symRN):
+		root.typ = TypeRaw
+		root.raw = crlf
+		nodes = addNode(nodes, *root)
+		offset = pos + len(ctl)
+		return nodes, offset, up, err
+	case bytes.Equal(t, symTab) || bytes.Equal(t, symT):
+		root.typ = TypeRaw
+		root.raw = tab
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
 		return nodes, offset, up, err
