@@ -89,6 +89,7 @@ func TestModDatetime(t *testing.T) {
 	t.Run("addY", func(t *testing.T) { testModWA(t, modArgs{"date": dtAdd}) })
 	t.Run("addC", func(t *testing.T) { testModWA(t, modArgs{"date": dtAdd}) })
 	t.Run("addMIL", func(t *testing.T) { testModWA(t, modArgs{"date": dtAdd}) })
+	t.Run("addMixed", func(t *testing.T) { testModWA(t, modArgs{"date": dtAdd}) })
 }
 
 func BenchmarkModDatetime(b *testing.B) {
