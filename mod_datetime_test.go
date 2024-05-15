@@ -78,6 +78,17 @@ func TestModDatetime(t *testing.T) {
 	t.Run("dateLayoutTZ", func(t *testing.T) { testModWA(t, modArgs{"date": dtTZ}) })
 
 	t.Run("addNS", func(t *testing.T) { testModWA(t, modArgs{"date": dtAdd}) })
+	t.Run("addUS", func(t *testing.T) { testModWA(t, modArgs{"date": dtAdd}) })
+	t.Run("addMS", func(t *testing.T) { testModWA(t, modArgs{"date": dtAdd}) })
+	t.Run("addS", func(t *testing.T) { testModWA(t, modArgs{"date": dtAdd}) })
+	t.Run("addM", func(t *testing.T) { testModWA(t, modArgs{"date": dtAdd}) })
+	t.Run("addH", func(t *testing.T) { testModWA(t, modArgs{"date": dtAdd}) })
+	t.Run("addD", func(t *testing.T) { testModWA(t, modArgs{"date": dtAdd}) })
+	t.Run("addW", func(t *testing.T) { testModWA(t, modArgs{"date": dtAdd}) })
+	t.Run("addMM", func(t *testing.T) { testModWA(t, modArgs{"date": dtAdd}) })
+	t.Run("addY", func(t *testing.T) { testModWA(t, modArgs{"date": dtAdd}) })
+	t.Run("addC", func(t *testing.T) { testModWA(t, modArgs{"date": dtAdd}) })
+	t.Run("addMIL", func(t *testing.T) { testModWA(t, modArgs{"date": dtAdd}) })
 }
 
 func BenchmarkModDatetime(b *testing.B) {

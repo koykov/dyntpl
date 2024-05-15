@@ -31,8 +31,7 @@ func init() {
 
 	// Register time modifiers.
 	RegisterModFnNS("time", "now", "", modNow)
-	RegisterModFnNS("time", "date", "", modDate)
-	RegisterModFnNS("time", "format", "fmt", modDate)
+	RegisterModFnNS("time", "format", "date", modDate)
 	RegisterModFnNS("time", "add", "date_modify", modDateAdd)
 
 	// Register builtin condition helpers.
