@@ -23,6 +23,13 @@ type arg struct {
 var (
 	hrQ  = []byte(`"`)
 	hrQR = []byte(`&quot;`)
+
+	ctlRepl = map[string]string{
+		"\n":   "\\n",
+		"\r":   "\\r",
+		"\r\n": "\\r\\n",
+		"\t":   "\\t",
+	}
 )
 
 // HumanReadable builds human-readable view of the tree (currently in XML format).
@@ -213,7 +220,11 @@ func (t *Tree) hrHelper(buf *bytebuf.Chain, nodes []Node, indent []byte, depth i
 		}
 
 		if node.typ != TypeExit && node.typ != TypeBreak && node.typ != TypeLBreak && node.typ != TypeContinue && len(node.raw) > 0 {
-			t.attrB(buf, "val", node.raw)
+			raw := string(node.raw)
+			if repl, ok := ctlRepl[raw]; ok {
+				raw = repl
+			}
+			t.attrS(buf, "val", raw)
 		}
 
 		if len(node.mod) > 0 || len(node.child) > 0 {

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+	<node type="raw" val="foo"/>
+	<node type="raw" val="\n"/>
+	<node type="raw" val="bar"/>
+	<node type="raw" val="\n"/>
+	<node type="raw" val="asd"/>
+	<node type="raw" val="\n"/>
+	<node type="raw" val="fgh"/>
+	<node type="raw" val="\n"/>
+	<node type="raw" val="qwe"/>
+	<node type="raw" val="\r"/>
+	<node type="raw" val="rty"/>
+	<node type="raw" val="\r"/>
+	<node type="raw" val="zxc"/>
+	<node type="raw" val="\r\n"/>
+	<node type="raw" val="vbn"/>
+	<node type="raw" val="\r\n"/>
+	<node type="raw" val="\t"/>
+	<node type="raw" val="123"/>
+	<node type="raw" val="\t"/>
+	<node type="raw" val="456"/>
+</nodes>
