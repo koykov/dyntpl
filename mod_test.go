@@ -8,9 +8,9 @@ import (
 type modArgs map[string]any
 
 func TestMod(t *testing.T) {
-	t.Run("modDefault", func(t *testing.T) { testMod(t) })
-	t.Run("modDefaultStatic", func(t *testing.T) { testMod(t) })
-	t.Run("modDefault1", func(t *testing.T) { testMod(t) })
+	t.Run("modDefault", testMod)
+	t.Run("modDefaultStatic", testMod)
+	t.Run("modDefault1", testMod)
 	t.Run("modJSONEscape", func(t *testing.T) { testModWA(t, modArgs{"userName": `Foo"bar`}) })
 	t.Run("modJSONEscapeShort", func(t *testing.T) { testModWA(t, modArgs{"userName": `Foo"bar`}) })
 	t.Run("modJSONEscapeDbl", func(t *testing.T) {
@@ -86,9 +86,9 @@ func testModWA(t *testing.T, args modArgs) {
 }
 
 func BenchmarkMod(b *testing.B) {
-	b.Run("modDefault", func(b *testing.B) { benchMod(b) })
-	b.Run("modDefaultStatic", func(b *testing.B) { benchMod(b) })
-	b.Run("modDefault1", func(b *testing.B) { benchMod(b) })
+	b.Run("modDefault", benchMod)
+	b.Run("modDefaultStatic", benchMod)
+	b.Run("modDefault1", benchMod)
 	b.Run("modJSONEscape", func(b *testing.B) { benchModWA(b, modArgs{"userName": `Foo"bar`}) })
 	b.Run("modJSONEscapeShort", func(b *testing.B) { benchModWA(b, modArgs{"userName": `Foo"bar`}) })
 	b.Run("modJSONEscapeDbl", func(b *testing.B) {

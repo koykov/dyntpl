@@ -922,7 +922,7 @@ func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
 						mods = append(mods, mod{
 							id:  idf,
 							fn:  fn,
-							arg: []*arg{{nil, m[2], true}},
+							arg: []*arg{{nil, m[2], true, false}},
 						})
 					case byte(outmF):
 						// - {%F.<prec>= ... %} - Ceil rounded to precision float.
@@ -930,7 +930,7 @@ func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
 						mods = append(mods, mod{
 							id:  idF,
 							fn:  fn,
-							arg: []*arg{{nil, m[2], true}},
+							arg: []*arg{{nil, m[2], true, false}},
 						})
 					}
 					off += len(m[2]) + 2
@@ -997,6 +997,7 @@ func (p *Parser) extractArgs(raw []byte) []*arg {
 				if bytes.Equal(arg.val, ddquote) {
 					arg.val = arg.val[:0]
 				}
+				arg.global = GetGlobal(byteconv.B2S(arg.val)) != nil
 				r = append(r, &arg)
 			}
 			if a[len(a)-1] == '}' {
