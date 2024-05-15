@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <nodes>
 	<node type="raw" val="foo"/>
-	<node type="nl"/>
+	<node type="raw" val="\n"/>
 	<node type="raw" val="bar"/>
-	<node type="nl"/>
+	<node type="raw" val="\n"/>
 	<node type="raw" val="asd"/>
-	<node type="nl"/>
+	<node type="raw" val="\n"/>
 	<node type="raw" val="fgh"/>
-	<node type="nl"/>
+	<node type="raw" val="\n"/>
 	<node type="raw" val="qwe"/>
-	<node type="cr"/>
+	<node type="raw" val="\r"/>
 	<node type="raw" val="rty"/>
-	<node type="cr"/>
+	<node type="raw" val="\r"/>
 	<node type="raw" val="zxc"/>
-	<node type="crlf"/>
+	<node type="raw" val="\r\n"/>
 	<node type="raw" val="vbn"/>
-	<node type="crlf"/>
-	<node type="tab"/>
+	<node type="raw" val="\r\n"/>
+	<node type="raw" val="\t"/>
 	<node type="raw" val="123"/>
-	<node type="tab"/>
+	<node type="raw" val="\t"/>
 	<node type="raw" val="456"/>
 </nodes>
