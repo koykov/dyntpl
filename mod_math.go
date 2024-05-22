@@ -69,6 +69,49 @@ func modMathSub(ctx *Ctx, buf *any, val any, args []any) (err error) {
 	return
 }
 
+func modMathMul(ctx *Ctx, buf *any, val any, args []any) (err error) {
+	var (
+		f, d float64
+		ok   bool
+	)
+	if f, d, err, ok = mathConv2(val, args); !ok {
+		return
+	}
+	f *= d
+	ctx.BufF = f
+	*buf = &ctx.BufF
+	return
+}
+
+func modMathDiv(ctx *Ctx, buf *any, val any, args []any) (err error) {
+	var (
+		f, d float64
+		ok   bool
+	)
+	if f, d, err, ok = mathConv2(val, args); !ok {
+		return
+	}
+	f /= d
+	ctx.BufF = f
+	*buf = &ctx.BufF
+	return
+}
+
+func modMathMod(ctx *Ctx, buf *any, val any, args []any) (err error) {
+	var (
+		f, d float64
+		ok   bool
+	)
+	if f, d, err, ok = mathConv2(val, args); !ok {
+		return
+	}
+	f1, d1 := int64(f), int64(d)
+	f1 = f1 % d1
+	ctx.BufI = f1
+	*buf = &ctx.BufI
+	return
+}
+
 func mathConv2(val any, args []any) (float64, float64, error, bool) {
 	if len(args) == 0 {
 		return 0, 0, ErrModPoorArgs, false
