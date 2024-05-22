@@ -42,16 +42,11 @@ func modDec(ctx *Ctx, buf *any, val any, _ []any) (err error) {
 }
 
 func modMathAdd(ctx *Ctx, buf *any, val any, args []any) (err error) {
-	if len(args) == 0 {
-		err = ErrModPoorArgs
-		return
-	}
-	f, ok := floatConv(val)
-	if !ok {
-		return
-	}
-	d, ok := floatConv(args[0])
-	if !ok {
+	var (
+		f, d float64
+		ok   bool
+	)
+	if f, d, err, ok = mathConv2(val, args); !ok {
 		return
 	}
 	f += d
@@ -61,22 +56,32 @@ func modMathAdd(ctx *Ctx, buf *any, val any, args []any) (err error) {
 }
 
 func modMathSub(ctx *Ctx, buf *any, val any, args []any) (err error) {
-	if len(args) == 0 {
-		err = ErrModPoorArgs
-		return
-	}
-	f, ok := floatConv(val)
-	if !ok {
-		return
-	}
-	d, ok := floatConv(args[0])
-	if !ok {
+	var (
+		f, d float64
+		ok   bool
+	)
+	if f, d, err, ok = mathConv2(val, args); !ok {
 		return
 	}
 	f -= d
 	ctx.BufF = f
 	*buf = &ctx.BufF
 	return
+}
+
+func mathConv2(val any, args []any) (float64, float64, error, bool) {
+	if len(args) == 0 {
+		return 0, 0, ErrModPoorArgs, false
+	}
+	f, ok := floatConv(val)
+	if !ok {
+		return 0, 0, nil, false
+	}
+	d, ok := floatConv(args[0])
+	if !ok {
+		return 0, 0, nil, false
+	}
+	return f, d, nil, true
 }
 
 func floatConv(val any) (f float64, ok bool) {
