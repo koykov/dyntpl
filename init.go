@@ -43,9 +43,9 @@ func init() {
 	RegisterModFnNS("math", "mul", "", modMathMul)
 	RegisterModFnNS("math", "div", "", modMathDiv)
 	RegisterModFnNS("math", "mod", "", modMathMod)
-	// RegisterModFnNS("math", "sqrt", "", modMathSqrt)
-	// RegisterModFnNS("math", "radical", "rad", modMathRad)
-	// RegisterModFnNS("math", "exp", "", modMathExp)
+	RegisterModFnNS("math", "sqrt", "", modMathSqrt)
+	RegisterModFnNS("math", "radical", "rad", modMathRadical)
+	RegisterModFnNS("math", "exp", "", modMathExp)
 	// RegisterModFnNS("math", "log", "", modMathLog)
 	// RegisterModFnNS("math", "factorial", "fact", modMathFact)
 

@@ -11,6 +11,8 @@ func TestModMath(t *testing.T) {
 	t.Run("mul", func(t *testing.T) { testModWA(t, modArgs{"num": 10}) })
 	t.Run("div", func(t *testing.T) { testModWA(t, modArgs{"num": 10}) })
 	t.Run("mod", func(t *testing.T) { testModWA(t, modArgs{"num": 10}) })
+	t.Run("rad", func(t *testing.T) { testModWA(t, modArgs{"num": 8}) })
+	t.Run("exp", func(t *testing.T) { testModWA(t, modArgs{"num": 5}) })
 }
 
 func BenchmarkModMath(b *testing.B) {
@@ -22,4 +24,6 @@ func BenchmarkModMath(b *testing.B) {
 	b.Run("mul", func(b *testing.B) { benchModWA(b, modArgs{"num": 10}) })
 	b.Run("div", func(b *testing.B) { benchModWA(b, modArgs{"num": 10}) })
 	b.Run("mod", func(b *testing.B) { benchModWA(b, modArgs{"num": 10}) })
+	b.Run("rad", func(b *testing.B) { benchModWA(b, modArgs{"num": 8}) })
+	b.Run("exp", func(b *testing.B) { benchModWA(b, modArgs{"num": 5}) })
 }

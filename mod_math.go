@@ -1,6 +1,7 @@
 package dyntpl
 
 import (
+	"math"
 	"strconv"
 
 	"github.com/koykov/byteconv"
@@ -109,6 +110,58 @@ func modMathMod(ctx *Ctx, buf *any, val any, args []any) (err error) {
 	f1 = f1 % d1
 	ctx.BufI = f1
 	*buf = &ctx.BufI
+	return
+}
+
+func modMathSqrt(ctx *Ctx, buf *any, val any, _ []any) (err error) {
+	f, ok := floatConv(val)
+	if !ok {
+		return
+	}
+	f = math.Sqrt(f)
+	ctx.BufF = f
+	*buf = &ctx.BufF
+	return
+}
+
+func modMathRadical(ctx *Ctx, buf *any, val any, args []any) (err error) {
+	var (
+		f, d, eps float64
+		ok        bool
+	)
+	if f, d, err, ok = mathConv2(val, args); !ok {
+		return
+	}
+	eps = .000001
+	if len(args) > 2 {
+		if e, ok := floatConv(args[1]); ok {
+			eps = e
+		}
+	}
+
+	// Newton
+	root := f / d
+	rn := f
+	for math.Abs(root-rn) >= eps {
+		rn = f
+		for i := 1; i < int(d); i++ {
+			rn = rn / root
+		}
+		root = .5 * (rn + root)
+	}
+	ctx.BufF = root
+	*buf = &ctx.BufF
+	return
+}
+
+func modMathExp(ctx *Ctx, buf *any, val any, _ []any) (err error) {
+	f, ok := floatConv(val)
+	if !ok {
+		return
+	}
+	f = math.Exp(f)
+	ctx.BufF = f
+	*buf = &ctx.BufF
 	return
 }
 
