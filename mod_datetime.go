@@ -76,25 +76,43 @@ func dateConv(val any) (t time.Time, ok bool) {
 	case *time.Time:
 		t = *x
 	case int:
+		t = time.Unix(int64(x), 0)
 	case int8:
+		t = time.Unix(int64(x), 0)
 	case int16:
+		t = time.Unix(int64(x), 0)
 	case int32:
+		t = time.Unix(int64(x), 0)
 	case int64:
+		t = time.Unix(int64(x), 0)
 	case uint:
+		t = time.Unix(int64(x), 0)
 	case uint8:
+		t = time.Unix(int64(x), 0)
 	case uint16:
+		t = time.Unix(int64(x), 0)
 	case uint32:
+		t = time.Unix(int64(x), 0)
 	case uint64:
 		t = time.Unix(int64(x), 0)
 	case *int:
+		t = time.Unix(int64(*x), 0)
 	case *int8:
+		t = time.Unix(int64(*x), 0)
 	case *int16:
+		t = time.Unix(int64(*x), 0)
 	case *int32:
+		t = time.Unix(int64(*x), 0)
 	case *int64:
+		t = time.Unix(int64(*x), 0)
 	case *uint:
+		t = time.Unix(int64(*x), 0)
 	case *uint8:
+		t = time.Unix(int64(*x), 0)
 	case *uint16:
+		t = time.Unix(int64(*x), 0)
 	case *uint32:
+		t = time.Unix(int64(*x), 0)
 	case *uint64:
 		t = time.Unix(int64(*x), 0)
 	default:
