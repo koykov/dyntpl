@@ -13,6 +13,8 @@ func TestModMath(t *testing.T) {
 	t.Run("mod", func(t *testing.T) { testModWA(t, modArgs{"num": 10}) })
 	t.Run("rad", func(t *testing.T) { testModWA(t, modArgs{"num": 8}) })
 	t.Run("exp", func(t *testing.T) { testModWA(t, modArgs{"num": 5}) })
+	t.Run("log", func(t *testing.T) { testModWA(t, modArgs{"num": 6}) })
+	t.Run("fact", func(t *testing.T) { testModWA(t, modArgs{"num": 2}) })
 }
 
 func BenchmarkModMath(b *testing.B) {

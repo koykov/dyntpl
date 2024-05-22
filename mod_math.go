@@ -165,6 +165,34 @@ func modMathExp(ctx *Ctx, buf *any, val any, _ []any) (err error) {
 	return
 }
 
+func modMathLog(ctx *Ctx, buf *any, val any, _ []any) (err error) {
+	f, ok := floatConv(val)
+	if !ok {
+		return
+	}
+	f = math.Log(f)
+	ctx.BufF = f
+	*buf = &ctx.BufF
+	return
+}
+
+func modMathFact(ctx *Ctx, buf *any, val any, args []any) (err error) {
+	var (
+		f, d float64
+		ok   bool
+	)
+	if f, d, err, ok = mathConv2(val, args); !ok {
+		return
+	}
+	r := f
+	for i := 1; i < int(d); i++ {
+		r *= f
+	}
+	ctx.BufF = r
+	*buf = &ctx.BufF
+	return
+}
+
 func mathConv2(val any, args []any) (float64, float64, error, bool) {
 	if len(args) == 0 {
 		return 0, 0, ErrModPoorArgs, false
