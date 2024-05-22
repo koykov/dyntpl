@@ -28,4 +28,6 @@ func BenchmarkModMath(b *testing.B) {
 	b.Run("mod", func(b *testing.B) { benchModWA(b, modArgs{"num": 10}) })
 	b.Run("rad", func(b *testing.B) { benchModWA(b, modArgs{"num": 8}) })
 	b.Run("exp", func(b *testing.B) { benchModWA(b, modArgs{"num": 5}) })
+	b.Run("log", func(b *testing.B) { benchModWA(b, modArgs{"num": 6}) })
+	b.Run("fact", func(b *testing.B) { benchModWA(b, modArgs{"num": 2}) })
 }
