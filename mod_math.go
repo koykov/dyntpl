@@ -124,6 +124,17 @@ func modMathSqrt(ctx *Ctx, buf *any, val any, _ []any) (err error) {
 	return
 }
 
+func modMathCbrt(ctx *Ctx, buf *any, val any, _ []any) (err error) {
+	f, ok := floatConv(val)
+	if !ok {
+		return
+	}
+	f = math.Cbrt(f)
+	ctx.BufF = f
+	*buf = &ctx.BufF
+	return
+}
+
 func modMathRadical(ctx *Ctx, buf *any, val any, args []any) (err error) {
 	var (
 		f, d, eps float64
@@ -193,6 +204,39 @@ func modMathFact(ctx *Ctx, buf *any, val any, args []any) (err error) {
 	return
 }
 
+func modMathMax(ctx *Ctx, buf *any, _ any, args []any) (err error) {
+	var f, d float64
+	if f, d, err = mathConvArgs2(args); err != nil {
+		return
+	}
+	ctx.BufF = math.Max(f, d)
+	*buf = &ctx.BufF
+	return
+}
+
+func modMathMin(ctx *Ctx, buf *any, _ any, args []any) (err error) {
+	var f, d float64
+	if f, d, err = mathConvArgs2(args); err != nil {
+		return
+	}
+	ctx.BufF = math.Min(f, d)
+	*buf = &ctx.BufF
+	return
+}
+
+func modMathPow(ctx *Ctx, buf *any, val any, args []any) (err error) {
+	var (
+		f, d float64
+		ok   bool
+	)
+	if f, d, err, ok = mathConv2(val, args); !ok {
+		return
+	}
+	ctx.BufF = math.Pow(f, d)
+	*buf = &ctx.BufF
+	return
+}
+
 func mathConv2(val any, args []any) (float64, float64, error, bool) {
 	if len(args) == 0 {
 		return 0, 0, ErrModPoorArgs, false
@@ -206,6 +250,21 @@ func mathConv2(val any, args []any) (float64, float64, error, bool) {
 		return 0, 0, nil, false
 	}
 	return f, d, nil, true
+}
+
+func mathConvArgs2(args []any) (float64, float64, error) {
+	if len(args) < 2 {
+		return 0, 0, ErrModPoorArgs
+	}
+	d, ok := floatConv(args[0])
+	if !ok {
+		return 0, 0, nil
+	}
+	f, ok := floatConv(args[1])
+	if !ok {
+		return 0, 0, nil
+	}
+	return f, d, nil
 }
 
 func floatConv(val any) (f float64, ok bool) {

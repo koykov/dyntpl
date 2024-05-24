@@ -44,10 +44,14 @@ func init() {
 	RegisterModFnNS("math", "div", "", modMathDiv)
 	RegisterModFnNS("math", "mod", "", modMathMod)
 	RegisterModFnNS("math", "sqrt", "", modMathSqrt)
+	RegisterModFnNS("math", "cbrt", "", modMathCbrt)
 	RegisterModFnNS("math", "radical", "rad", modMathRadical)
 	RegisterModFnNS("math", "exp", "", modMathExp)
 	RegisterModFnNS("math", "log", "", modMathLog)
 	RegisterModFnNS("math", "factorial", "fact", modMathFact)
+	RegisterModFnNS("math", "max", "", modMathMax)
+	RegisterModFnNS("math", "min", "", modMathMin)
+	RegisterModFnNS("math", "pow", "", modMathPow)
 
 	// Register builtin condition helpers.
 	RegisterCondFn("lenEq0", condLenEq0)
