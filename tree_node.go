@@ -8,6 +8,7 @@ type Node struct {
 	raw    []byte
 	prefix []byte
 	suffix []byte
+	noesc  bool
 
 	ctxVar       []byte
 	ctxSrc       []byte
@@ -55,11 +56,9 @@ type Node struct {
 	caseHlpArg  []*arg
 
 	tpl [][]byte
-
 	loc []byte
 
-	mod []mod
-
+	mod   []mod
 	child []Node
 }
 

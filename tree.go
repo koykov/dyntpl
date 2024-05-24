@@ -228,6 +228,10 @@ func (t *Tree) hrHelper(buf *bytebuf.Chain, nodes []Node, indent []byte, depth i
 			t.attrS(buf, "val", raw)
 		}
 
+		if node.noesc {
+			t.attrS(buf, "noesc", "true")
+		}
+
 		if len(node.mod) > 0 || len(node.child) > 0 {
 			buf.WriteByte('>')
 		}
