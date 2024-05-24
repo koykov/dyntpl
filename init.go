@@ -34,6 +34,25 @@ func init() {
 	RegisterModFnNS("time", "format", "date", modDate)
 	RegisterModFnNS("time", "add", "date_modify", modDateAdd)
 
+	// Register math modifiers.
+	RegisterModFnNS("math", "abs", "", modAbs)
+	RegisterModFnNS("math", "inc", "", modInc)
+	RegisterModFnNS("math", "dec", "", modDec)
+	RegisterModFnNS("math", "add", "", modMathAdd)
+	RegisterModFnNS("math", "sub", "", modMathSub)
+	RegisterModFnNS("math", "mul", "", modMathMul)
+	RegisterModFnNS("math", "div", "", modMathDiv)
+	RegisterModFnNS("math", "mod", "", modMathMod)
+	RegisterModFnNS("math", "sqrt", "", modMathSqrt)
+	RegisterModFnNS("math", "cbrt", "", modMathCbrt)
+	RegisterModFnNS("math", "radical", "rad", modMathRadical)
+	RegisterModFnNS("math", "exp", "", modMathExp)
+	RegisterModFnNS("math", "log", "", modMathLog)
+	RegisterModFnNS("math", "factorial", "fact", modMathFact)
+	RegisterModFnNS("math", "max", "", modMathMax)
+	RegisterModFnNS("math", "min", "", modMathMin)
+	RegisterModFnNS("math", "pow", "", modMathPow)
+
 	// Register builtin condition helpers.
 	RegisterCondFn("lenEq0", condLenEq0)
 	RegisterCondFn("lenGt0", condLenGt0)
