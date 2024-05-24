@@ -20,6 +20,7 @@ func init() {
 	RegisterModFn("attrEscape", "ae", modAttrEscape)
 	RegisterModFn("cssEscape", "ce", modCSSEscape)
 	RegisterModFn("jsEscape", "jse", modJSEscape)
+	RegisterModFn("raw", "noesc", func(_ *Ctx, _ *any, _ any, _ []any) error { return nil })
 
 	// Register builtin round modifiers.
 	RegisterModFn("round", "round", modRound)

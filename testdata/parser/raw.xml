@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+	<node type="unk"/>
+	<node type="raw" val="foo"/>
+	<node type="tpl" val="name" noesc="true"/>
+	<node type="raw" val="bar"/>
+	<node type="unk"/>
+</nodes>

@@ -278,24 +278,24 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 		root.typ = TypeTpl
 		if m := reTplPS.FindSubmatch(t); m != nil {
 			// Tpl with prefix and suffix found.
-			root.raw, root.mod = p.extractMods(m[2], m[1])
+			root.raw, root.mod, root.noesc = p.extractMods(m[2], m[1])
 			root.prefix = m[3]
 			root.suffix = m[4]
 		} else if m := reTplP.FindSubmatch(t); m != nil {
 			// Tpl with prefix found.
-			root.raw, root.mod = p.extractMods(m[2], m[1])
+			root.raw, root.mod, root.noesc = p.extractMods(m[2], m[1])
 			root.prefix = m[3]
 		} else if m := reTplS.FindSubmatch(t); m != nil {
 			// Tpl with suffix found.
-			root.raw, root.mod = p.extractMods(m[2], m[1])
+			root.raw, root.mod, root.noesc = p.extractMods(m[2], m[1])
 			root.suffix = m[3]
 		} else if m := reTpl.FindSubmatch(t); m != nil {
 			// Simple tpl found.
-			root.raw, root.mod = p.extractMods(bytealg.Trim(m[2], ctlTrimAll), m[1])
+			root.raw, root.mod, root.noesc = p.extractMods(bytealg.Trim(m[2], ctlTrimAll), m[1])
 		} else if m := reTplCB.FindSubmatch(t); m != nil {
-			root.raw, root.mod = p.extractMods(bytealg.Trim(m[0], ctlTrimAll), m[1])
+			root.raw, root.mod, root.noesc = p.extractMods(bytealg.Trim(m[0], ctlTrimAll), m[1])
 		} else {
-			root.raw, root.mod = p.extractMods(bytealg.Trim(t, ctlTrimAll), nil)
+			root.raw, root.mod, root.noesc = p.extractMods(bytealg.Trim(t, ctlTrimAll), nil)
 		}
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
@@ -325,7 +325,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 			m = reCtx.FindSubmatch(t)
 		}
 		root.ctxVar, root.ctxOK = m[1], m[2]
-		root.ctxSrc, root.mod = p.extractMods(m[3], nil)
+		root.ctxSrc, root.mod, root.noesc = p.extractMods(m[3], nil)
 		root.ctxSrcStatic = isStatic(root.ctxSrc) || forceStatic
 		if len(m) > 4 && len(m[4]) > 0 {
 			root.ctxIns = m[4]
@@ -788,7 +788,8 @@ func (p *Parser) parseOp(src []byte) Op {
 }
 
 // Split print structure to value and mods list.
-func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
+func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod, bool) {
+	var noesc bool
 	hasVline := bytes.Contains(t, vline)
 	modNoVar := reModNoVar.Match(t) && !hasVline
 	if hasVline || modNoVar || len(outm) > 0 {
@@ -801,8 +802,12 @@ func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
 		}
 		for i := idx; i < len(chunks); i++ {
 			if m := reMod.FindSubmatch(chunks[i]); m != nil {
+				fnName := byteconv.B2S(m[1])
 				fn := GetModFn(byteconv.B2S(m[1]))
 				if fn == nil {
+					continue
+				}
+				if noesc = fnName == "raw" || fnName == "noesc"; noesc {
 					continue
 				}
 				args := p.extractArgs(m[2])
@@ -943,11 +948,11 @@ func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod) {
 		}
 
 		if modNoVar {
-			return nil, mods
+			return nil, mods, noesc
 		}
-		return chunks[0], mods
+		return chunks[0], mods, noesc
 	}
-	return t, nil
+	return t, nil, noesc
 }
 
 // Get list of arguments of modifier or helper, ex:
