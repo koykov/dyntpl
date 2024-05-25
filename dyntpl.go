@@ -182,6 +182,7 @@ func (t *Tpl) writeNode(w io.Writer, node *Node, ctx *Ctx) (err error) {
 			err = ctx.Err
 			return
 		}
+		ctx.noesc = node.noesc
 		// Process modifiers.
 		if n := len(node.mod); n > 0 {
 			_ = node.mod[n-1]
@@ -223,6 +224,7 @@ func (t *Tpl) writeNode(w io.Writer, node *Node, ctx *Ctx) (err error) {
 				raw = ctx.bufX
 			}
 		}
+		ctx.noesc = false
 		if ctx.Err != nil {
 			return
 		}

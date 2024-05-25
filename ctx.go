@@ -21,7 +21,7 @@ type Ctx struct {
 	// Check square brackets flag.
 	chQB bool
 	// Check json quote/escape/encode flags.
-	chJQ, chHE, chUE bool
+	chJQ, chHE, chUE, noesc bool
 	// Internal buffers.
 	buf   []byte
 	bufS  []string

@@ -17,6 +17,7 @@ func TestMod(t *testing.T) {
 		testModWA(t, modArgs{"valueWithQuotes": `He said: "welcome friend"`})
 	})
 	t.Run("modJSONQuoteShort", func(t *testing.T) { testModWA(t, modArgs{"userName": `Foo"bar`}) })
+	t.Run("modJSONQuoteNoesc", func(t *testing.T) { testModWA(t, modArgs{"userName": `Foo"bar`}) })
 	t.Run("modHtmlEscape", func(t *testing.T) {
 		testModWA(t, modArgs{
 			"title": `<h1>Go is an open source programming language that makes it easy to build <strong>simple<strong>, <strong>reliable</strong>, and <strong>efficient</strong> software.</h1>`,
@@ -95,6 +96,7 @@ func BenchmarkMod(b *testing.B) {
 		benchModWA(b, modArgs{"valueWithQuotes": `He said: "welcome friend"`})
 	})
 	b.Run("modJSONQuoteShort", func(b *testing.B) { benchModWA(b, modArgs{"userName": `Foo"bar`}) })
+	b.Run("modJSONQuoteNoesc", func(b *testing.B) { benchModWA(b, modArgs{"userName": `Foo"bar`}) })
 	b.Run("modHtmlEscape", func(b *testing.B) {
 		benchModWA(b, modArgs{
 			"title": `<h1>Go is an open source programming language that makes it easy to build <strong>simple<strong>, <strong>reliable</strong>, and <strong>efficient</strong> software.</h1>`,

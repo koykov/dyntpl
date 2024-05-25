@@ -62,7 +62,7 @@ func modJSONEscape(ctx *Ctx, buf *any, val any, args []any) error {
 		jsonEscape(b, &ctx.BufAcc)
 		b = ctx.BufAcc.StakedBytes()
 	}
-	if ctx.chJQ {
+	if ctx.chJQ && !ctx.noesc {
 		// Double escape when "jsonquote" bonds found.
 		ctx.BufAcc.StakeOut()
 		jsonEscape(b, &ctx.BufAcc)
