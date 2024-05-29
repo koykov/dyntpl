@@ -7,8 +7,8 @@ import (
 	"github.com/koykov/byteconv"
 )
 
-func modAbs(ctx *Ctx, buf *any, val any, _ []any) (err error) {
-	f, ok := floatConv(val)
+func modAbs(ctx *Ctx, buf *any, val any, args []any) (err error) {
+	f, ok := floatConvAny(val, args)
 	if !ok {
 		return
 	}
@@ -20,8 +20,8 @@ func modAbs(ctx *Ctx, buf *any, val any, _ []any) (err error) {
 	return
 }
 
-func modInc(ctx *Ctx, buf *any, val any, _ []any) (err error) {
-	f, ok := floatConv(val)
+func modInc(ctx *Ctx, buf *any, val any, args []any) (err error) {
+	f, ok := floatConvAny(val, args)
 	if !ok {
 		return
 	}
@@ -31,8 +31,8 @@ func modInc(ctx *Ctx, buf *any, val any, _ []any) (err error) {
 	return
 }
 
-func modDec(ctx *Ctx, buf *any, val any, _ []any) (err error) {
-	f, ok := floatConv(val)
+func modDec(ctx *Ctx, buf *any, val any, args []any) (err error) {
+	f, ok := floatConvAny(val, args)
 	if !ok {
 		return
 	}
@@ -265,6 +265,17 @@ func mathConvArgs2(args []any) (float64, float64, error) {
 		return 0, 0, nil
 	}
 	return f, d, nil
+}
+
+func floatConvAny(val any, args []any) (f float64, ok bool) {
+	if f, ok = floatConv(val); ok {
+		return
+	}
+	if len(args) == 0 {
+		return 0, false
+	}
+	f, ok = floatConv(args[0])
+	return
 }
 
 func floatConv(val any) (f float64, ok bool) {

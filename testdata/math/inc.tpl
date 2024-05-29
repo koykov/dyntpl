@@ -1,1 +1,1 @@
-{%= num|math::inc() %}
+{%= math::inc(num) %}
