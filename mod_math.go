@@ -243,6 +243,13 @@ func mathConv2(val any, args []any) (float64, float64, error, bool) {
 	}
 	f, ok := floatConv(val)
 	if !ok {
+		if len(args) >= 2 {
+			a0, ok0 := floatConv(args[0])
+			a1, ok1 := floatConv(args[1])
+			if ok0 && ok1 {
+				return a0, a1, nil, true
+			}
+		}
 		return 0, 0, nil, false
 	}
 	d, ok := floatConv(args[0])

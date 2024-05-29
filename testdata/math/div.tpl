@@ -1,1 +1,1 @@
-{%= num|math::div(5) %}
+{%= math::div(num, 5) %}
