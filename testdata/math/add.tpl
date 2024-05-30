@@ -1,1 +1,1 @@
-{%= num|math::add(5.345) %}
+{%= math::add(num, 5.345) %}
