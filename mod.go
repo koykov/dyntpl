@@ -15,6 +15,14 @@ import (
 // * args is a list of all arguments listed on modifier call.
 type ModFn func(ctx *Ctx, buf *any, val any, args []any) error
 
+type ModFnTuple struct {
+	id      string
+	desc    string
+	params  []string
+	example string
+	fn      ModFn
+}
+
 // Internal modifier representation.
 type mod struct {
 	id  []byte
@@ -24,15 +32,41 @@ type mod struct {
 
 var (
 	// Registry of modifiers.
-	modRegistry = map[string]ModFn{}
+	modRegistry = map[string]int{}
+	modBuf      []ModFnTuple
 )
 
+func (t *ModFnTuple) WithDescription(desc string) *ModFnTuple {
+	t.desc = desc
+	return t
+}
+
+func (t *ModFnTuple) WithParam(param string) *ModFnTuple {
+	t.params = append(t.params, param)
+	return t
+}
+
+func (t *ModFnTuple) WithExample(example string) *ModFnTuple {
+	t.example = example
+	return t
+}
+
 // RegisterModFn registers new modifier function.
-func RegisterModFn(name, alias string, mod ModFn) {
-	modRegistry[name] = mod
-	if len(alias) > 0 {
-		modRegistry[alias] = mod
+func RegisterModFn(name, alias string, mod ModFn) *ModFnTuple {
+	if idx, ok := modRegistry[name]; ok && idx >= 0 && idx < len(modBuf) {
+		return &modBuf[idx]
 	}
+	modBuf = append(modBuf, ModFnTuple{
+		id:   name,
+		desc: "",
+		fn:   mod,
+	})
+	idx := len(modBuf) - 1
+	modRegistry[name] = idx
+	if len(alias) > 0 {
+		modRegistry[alias] = idx
+	}
+	return &modBuf[idx]
 }
 
 // RegisterModFnNS registers new mod function in given namespace.
@@ -50,8 +84,8 @@ func RegisterModFnNS(namespace, name, alias string, mod ModFn) {
 
 // GetModFn gets modifier from the registry.
 func GetModFn(name string) ModFn {
-	if fn, ok := modRegistry[name]; ok {
-		return fn
+	if idx, ok := modRegistry[name]; ok && idx >= 0 && idx < len(modBuf) {
+		return modBuf[idx].fn
 	}
 	return nil
 }
