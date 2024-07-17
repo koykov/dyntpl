@@ -22,15 +22,32 @@ func init() {
 		WithExample(`{%= user.AllowSell|ifThenElse("<button>Sell</button>", "not available!") %}`)
 
 	// Register builtin escape/quote modifiers.
-	RegisterModFn("jsonEscape", "je", modJSONEscape)
-	RegisterModFn("jsonQuote", "jq", modJSONQuote)
-	RegisterModFn("htmlEscape", "he", modHTMLEscape)
-	RegisterModFn("linkEscape", "le", modLinkEscape)
-	RegisterModFn("urlEncode", "ue", modURLEncode)
-	RegisterModFn("attrEscape", "ae", modAttrEscape)
-	RegisterModFn("cssEscape", "ce", modCSSEscape)
-	RegisterModFn("jsEscape", "jse", modJSEscape)
-	RegisterModFn("raw", "noesc", func(_ *Ctx, _ *any, _ any, _ []any) error { return nil })
+	RegisterModFn("jsonEscape", "je", modJSONEscape).
+		WithDescription("Applies JSON escaping to printing value. May work together with `{% jsonquote %}...{% endjsonquote %}`.").
+		WithExample(`{"name":"{%= user.name|jsonEscape %}"} // {"name":"Foo\"bar"}`)
+	RegisterModFn("jsonQuote", "jq", modJSONQuote).
+		WithDescription("Applies JSON quotation to printing value.").
+		WithExample(`{"name":{%= user.name|jsonQuote %}} // {"name":"Foo\"bar"}`)
+	RegisterModFn("htmlEscape", "he", modHTMLEscape).
+		WithDescription("Applies HTML escaping to printing value.").
+		WithExample(`<span data-title="{%= title|htmlEscape %}">{%= text|he %}</span> // <span data-title="&lt;h1&gt;Go is an open source programming language that makes it easy to build &lt;strong&gt;simple&lt;strong&gt;, &lt;strong&gt;reliable&lt;/strong&gt;, and &lt;strong&gt;efficient&lt;/strong&gt; software.&lt;/h1&gt;">Show more &gt;</span>`)
+	RegisterModFn("linkEscape", "le", modLinkEscape).
+		WithDescription("Applies Link escaping to printing value.").
+		WithExample(`<a href="{%l= link %}"> // <a href="http://x.com/link-with-\"-and+space-symbol">`)
+	RegisterModFn("urlEncode", "ue", modURLEncode).
+		WithDescription("Applies URL encoding to printing value.").
+		WithExample(`<a href="https://redir.com/{%u= url %}">go to >>></a> // <a href="https://redir.com/https%3A%2F%2Fgolang.org%2Fsrc%2Fnet%2Furl%2Furl.go%23L100">go to >>></a>`)
+	RegisterModFn("attrEscape", "ae", modAttrEscape).
+		WithDescription("Applies Attribute escaping to printing value.").
+		WithExample(`<span font='{%a= var1 %}'> // <span font='foo&amp;&lt;&gt;&quot;&#x27;&#x60;&#x21;&#x40;&#x24;&#x25;&#x28;&#x29;&#x3d;&#x2b;&#x7b;&#x7d;&#x5b;&#x5d;&#x23;&#x3b;bar'>`)
+	RegisterModFn("cssEscape", "ce", modCSSEscape).
+		WithDescription("Applies CSS escaping to printing value.").
+		WithExample(`background-image:url({%c= var1|escape('css') %}); // background-image:url(\3c \3e \27 \22 \26 \100 \2c \2e \5f aAzZ09\20 \21 \1f600 );`)
+	RegisterModFn("jsEscape", "jse", modJSEscape).
+		WithDescription("Applies Javascript escaping to printing value.").
+		WithExample(`<script>{%J= var1 %}</script> // <script>\u003c\u003e\u0027\u0022\u0026\/,._aAzZ09\u0020\u0100\ud83d\ude00</script>`)
+	RegisterModFn("raw", "noesc", func(_ *Ctx, _ *any, _ any, _ []any) error { return nil }).
+		WithDescription("Reserved for further use: disable value escaping inside bound tags (`{% jsonescape %}...{% endjsonescape %}`, ...)")
 
 	// Register builtin round modifiers.
 	RegisterModFn("round", "round", modRound)

@@ -1,1 +1,1 @@
-<script>{%J= var1 %}<script>
+<script>{%J= var1 %}</script>
