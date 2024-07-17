@@ -47,15 +47,27 @@ func init() {
 		WithDescription("Applies Javascript escaping to printing value.").
 		WithExample(`<script>{%J= var1 %}</script> // <script>\u003c\u003e\u0027\u0022\u0026\/,._aAzZ09\u0020\u0100\ud83d\ude00</script>`)
 	RegisterModFn("raw", "noesc", func(_ *Ctx, _ *any, _ any, _ []any) error { return nil }).
-		WithDescription("Reserved for further use: disable value escaping inside bound tags (`{% jsonescape %}...{% endjsonescape %}`, ...)")
+		WithDescription("Disable value escaping/quoting inside bound tags (`{% jsonescape %}...{% endjsonescape %}`, ...)")
 
 	// Register builtin round modifiers.
-	RegisterModFn("round", "round", modRound)
-	RegisterModFn("roundPrec", "roundp", modRoundPrec)
-	RegisterModFn("ceil", "ceil", modCeil)
-	RegisterModFn("ceilPrec", "ceilp", modCeilPrec)
-	RegisterModFn("floor", "floor", modFloor)
-	RegisterModFn("floorPrec", "floorp", modFloorPrec)
+	RegisterModFn("round", "", modRound).
+		WithDescription("Modifier `round` returns the nearest integer, rounding half away from zero.")
+	RegisterModFn("roundPrec", "roundp", modRoundPrec).
+		WithDescription("Modifier `roundPrec` rounds value to given precision.").
+		WithExample(`// f = 3.1415
+{%= f|roundPrec(3) %} // 3.141`)
+	RegisterModFn("ceil", "", modCeil).
+		WithDescription("Modifier `ceil` returns the least integer value greater than or equal to x.")
+	RegisterModFn("ceilPrec", "ceilp", modCeilPrec).
+		WithDescription("Modifier `ceilPrec` rounds value to ceil value with given precision").
+		WithExample(`// f = 56.68734
+{% = f|ceilPrec(3) %} // 56.688`)
+	RegisterModFn("floor", "", modFloor).
+		WithDescription("Modifier `floor` returns the greatest integer value less than or equal to x.")
+	RegisterModFn("floorPrec", "floorp", modFloorPrec).
+		WithDescription("Modifier `floorPrec` rounds value to floor value with given precision").
+		WithExample(`// f = 20.214999
+{% = f|floorPrec(3) %} // 20.214`)
 
 	// Register time modifiers.
 	RegisterModFnNS("time", "now", "", modNow)
