@@ -17,6 +17,7 @@ type ModFn func(ctx *Ctx, buf *any, val any, args []any) error
 
 type ModFnTuple struct {
 	id      string
+	alias   string
 	desc    string
 	params  []string
 	example string
@@ -57,9 +58,9 @@ func RegisterModFn(name, alias string, mod ModFn) *ModFnTuple {
 		return &modBuf[idx]
 	}
 	modBuf = append(modBuf, ModFnTuple{
-		id:   name,
-		desc: "",
-		fn:   mod,
+		id:    name,
+		alias: alias,
+		fn:    mod,
 	})
 	idx := len(modBuf) - 1
 	modRegistry[name] = idx
