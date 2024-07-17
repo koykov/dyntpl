@@ -9,16 +9,16 @@ func init() {
 	// Register simple builtin modifiers.
 	RegisterModFn("default", "def", modDefault).
 		WithDescription("Modifier `default` returns the passed `arg` if the preceding value is undefined or empty, otherwise the value of the variable.").
-		WithParam("arg any").
+		WithParam("arg any", "").
 		WithExample(`{%= notExistingOrEmptyVar|default("N/D") %}"`)
 	RegisterModFn("ifThen", "if", modIfThen).
 		WithDescription("Modifier `ifThen` passes `arg` only if preceding condition is true.").
-		WithParam("arg any").
+		WithParam("arg any", "").
 		WithExample(`{%= obj.Active|ifThen("<button>Buy</button>") %}`)
 	RegisterModFn("ifThenElse", "ifel", modIfThenElse).
-		WithDescription("Modifier 'ifTheElse` passes `arg0` if preceding condition is true or `arg1` otherwise.").
-		WithParam("arg0 any").
-		WithParam("arg1 any").
+		WithDescription("Modifier `ifTheElse` passes `arg0` if preceding condition is true or `arg1` otherwise.").
+		WithParam("arg0 any", "").
+		WithParam("arg1 any", "").
 		WithExample(`{%= user.AllowSell|ifThenElse("<button>Sell</button>", "not available!") %}`)
 
 	// Register builtin escape/quote modifiers.

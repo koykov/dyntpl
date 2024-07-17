@@ -15,11 +15,16 @@ import (
 // * args is a list of all arguments listed on modifier call.
 type ModFn func(ctx *Ctx, buf *any, val any, args []any) error
 
-type ModFnTuple struct {
+type modFnParam struct {
+	param string
+	desc  string
+}
+
+type modFnTuple struct {
 	id      string
 	alias   string
 	desc    string
-	params  []string
+	params  []modFnParam
 	example string
 	fn      ModFn
 }
@@ -34,30 +39,33 @@ type mod struct {
 var (
 	// Registry of modifiers.
 	modRegistry = map[string]int{}
-	modBuf      []ModFnTuple
+	modBuf      []modFnTuple
 )
 
-func (t *ModFnTuple) WithDescription(desc string) *ModFnTuple {
+func (t *modFnTuple) WithDescription(desc string) *modFnTuple {
 	t.desc = desc
 	return t
 }
 
-func (t *ModFnTuple) WithParam(param string) *ModFnTuple {
-	t.params = append(t.params, param)
+func (t *modFnTuple) WithParam(param, desc string) *modFnTuple {
+	t.params = append(t.params, modFnParam{
+		param: param,
+		desc:  desc,
+	})
 	return t
 }
 
-func (t *ModFnTuple) WithExample(example string) *ModFnTuple {
+func (t *modFnTuple) WithExample(example string) *modFnTuple {
 	t.example = example
 	return t
 }
 
 // RegisterModFn registers new modifier function.
-func RegisterModFn(name, alias string, mod ModFn) *ModFnTuple {
+func RegisterModFn(name, alias string, mod ModFn) *modFnTuple {
 	if idx, ok := modRegistry[name]; ok && idx >= 0 && idx < len(modBuf) {
 		return &modBuf[idx]
 	}
-	modBuf = append(modBuf, ModFnTuple{
+	modBuf = append(modBuf, modFnTuple{
 		id:    name,
 		alias: alias,
 		fn:    mod,

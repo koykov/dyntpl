@@ -48,8 +48,12 @@ func writeDocgenMarkdown(w io.Writer) error {
 		if len(tuple.params) > 0 {
 			_, _ = w.Write([]byte("Params:\n"))
 			for j := 0; j < len(tuple.params); j++ {
-				param := tuple.params[j]
-				_, _ = w.Write([]byte("* " + param + "\n"))
+				param := &tuple.params[j]
+				_, _ = w.Write([]byte("* `" + param.param + "`"))
+				if len(param.desc) > 0 {
+					_, _ = w.Write([]byte(" " + param.desc))
+				}
+				_, _ = w.Write([]byte("\n"))
 			}
 			_, _ = w.Write([]byte("\n"))
 		}
