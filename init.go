@@ -70,9 +70,33 @@ func init() {
 {% = f|floorPrec(3) %} // 20.214`)
 
 	// Register time modifiers.
-	RegisterModFnNS("time", "now", "", modNow)
-	RegisterModFnNS("time", "format", "date", modDate)
-	RegisterModFnNS("time", "add", "date_modify", modDateAdd)
+	RegisterModFnNS("time", "now", "", modNow).
+		WithDescription("Returns the current local time.")
+	RegisterModFnNS("time", "format", "date", modDate).
+		WithParam("layout string", "See https://github.com/koykov/clock#format for possible patterns").
+		WithDescription("Modifier `time::format` returns a textual representation of the time value formatted according given layout.").
+		WithExample(`{%= date|time::date("%d %b %y %H:%M %z") %} // 05 Feb 09 07:00 +0200
+{%= date|time::date("%b %e %H:%M:%S.%N") %} // Feb  5 07:00:57.012345600`)
+	RegisterModFnNS("time", "add", "date_modify", modDateAdd).
+		WithParam("duration string", "Textual representation of duration you want to add to the datetime. Possible units:\n"+
+			"  * `nsec`, `ns`\n"+
+			"  * `usec`, `us`, `µs`\n"+
+			"  * `msec`, `ms`\n"+
+			"  * `seconds`, `second`, `sec`, `s`\n"+
+			"  * `minutes`, `minute`, `min`, `m`\n"+
+			"  * `hours`, `hour`, `hr`, `h`\n"+
+			"  * `days`, `day`, `d`\n"+
+			"  * `weeks`, `week`, `w`\n"+
+			"  * `months`, `month`, `M`\n"+
+			"  * `years`, `year`, `y`\n"+
+			"  * `century`, `cen`, `c`\n"+
+			"  * `millennium`, `mil`\n").
+		WithDescription("Modifier `time::add` returns time+duration.").
+		WithExample(`{%= date|time::add("+1 m")|time::date(time::StampNano) %}{% endl %}      // Jan 21 20:05:26.000000555
+{%= date|time::add("+1 min")|time::date(time::StampNano) %}{% endl %}	 // Jan 21 20:05:26.000000555
+{%= date|time::add("+1 minute")|time::date(time::StampNano) %}{% endl %} // Jan 21 20:05:26.000000555
+{%= date|time::add("+1 minutes")|time::date(time::StampNano) %}			 // Jan 21 20:05:26.000000555
+`)
 
 	// Register math modifiers.
 	RegisterModFnNS("math", "abs", "", modAbs)
