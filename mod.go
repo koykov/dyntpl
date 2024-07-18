@@ -22,36 +22,9 @@ type mod struct {
 	arg []*arg
 }
 
-type modFnParam struct {
-	param string
-	desc  string
-}
-
 type ModFnTuple struct {
-	id      string
-	alias   string
-	desc    string
-	params  []modFnParam
-	example string
-	fn      ModFn
-}
-
-func (t *ModFnTuple) WithDescription(desc string) *ModFnTuple {
-	t.desc = desc
-	return t
-}
-
-func (t *ModFnTuple) WithParam(param, desc string) *ModFnTuple {
-	t.params = append(t.params, modFnParam{
-		param: param,
-		desc:  desc,
-	})
-	return t
-}
-
-func (t *ModFnTuple) WithExample(example string) *ModFnTuple {
-	t.example = example
-	return t
+	docgen
+	fn ModFn
 }
 
 var (
@@ -66,9 +39,11 @@ func RegisterModFn(name, alias string, mod ModFn) *ModFnTuple {
 		return &modBuf[idx]
 	}
 	modBuf = append(modBuf, ModFnTuple{
-		id:    name,
-		alias: alias,
-		fn:    mod,
+		docgen: docgen{
+			name:  name,
+			alias: alias,
+		},
+		fn: mod,
 	})
 	idx := len(modBuf) - 1
 	modRegistry[name] = idx

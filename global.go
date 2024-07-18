@@ -4,18 +4,8 @@ package dyntpl
 type Global any
 
 type GlobalTuple struct {
-	id, typ, desc string
-	val           Global
-}
-
-func (t *GlobalTuple) WithType(typ string) *GlobalTuple {
-	t.typ = typ
-	return t
-}
-
-func (t *GlobalTuple) WithDescription(desc string) *GlobalTuple {
-	t.desc = desc
-	return t
+	docgen
+	val Global
 }
 
 var (
@@ -31,9 +21,8 @@ func RegisterGlobal(name, alias string, val Global) *GlobalTuple {
 		return &globBuf[idx]
 	}
 	globBuf = append(globBuf, GlobalTuple{
-		id:  name,
-		typ: "any",
-		val: val,
+		docgen: docgen{name: name, typ: "any"},
+		val:    val,
 	})
 	idx := len(globBuf) - 1
 	globIdx[name] = idx

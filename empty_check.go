@@ -4,13 +4,8 @@ package dyntpl
 type EmptyCheckFn func(ctx *Ctx, val any) bool
 
 type EmptyCheckTuple struct {
-	id, desc string
-	fn       EmptyCheckFn
-}
-
-func (t *EmptyCheckTuple) WithDescription(desc string) *EmptyCheckTuple {
-	t.desc = desc
-	return t
+	docgen
+	fn EmptyCheckFn
 }
 
 var (
@@ -25,8 +20,8 @@ func RegisterEmptyCheckFn(name string, cond EmptyCheckFn) *EmptyCheckTuple {
 		return &emptyCheckBuf[idx]
 	}
 	emptyCheckBuf = append(emptyCheckBuf, EmptyCheckTuple{
-		id: name,
-		fn: cond,
+		docgen: docgen{name: name},
+		fn:     cond,
 	})
 	idx := len(emptyCheckBuf) - 1
 	emptyCheckRegistry[name] = idx

@@ -4,28 +4,8 @@ package dyntpl
 type CondFn func(ctx *Ctx, args []any) bool
 
 type CondFnTuple struct {
-	id, desc, example string
-
-	params []modFnParam
-	fn     CondFn
-}
-
-func (t *CondFnTuple) WithDescription(desc string) *CondFnTuple {
-	t.desc = desc
-	return t
-}
-
-func (t *CondFnTuple) WithParam(param, desc string) *CondFnTuple {
-	t.params = append(t.params, modFnParam{
-		param: param,
-		desc:  desc,
-	})
-	return t
-}
-
-func (t *CondFnTuple) WithExample(example string) *CondFnTuple {
-	t.example = example
-	return t
+	docgen
+	fn CondFn
 }
 
 var (
@@ -40,8 +20,8 @@ func RegisterCondFn(name string, cond CondFn) *CondFnTuple {
 		return &condBuf[idx]
 	}
 	condBuf = append(condBuf, CondFnTuple{
-		id: name,
-		fn: cond,
+		docgen: docgen{name: name},
+		fn:     cond,
 	})
 	idx := len(condBuf) - 1
 	condRegistry[name] = idx

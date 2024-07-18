@@ -6,22 +6,8 @@ import "github.com/koykov/inspector/testobj"
 type CondOKFn func(ctx *Ctx, v *any, ok *bool, args []any)
 
 type CondOKTuple struct {
-	id, desc string
-	params   []modFnParam
-	fn       CondOKFn
-}
-
-func (t *CondOKTuple) WithParam(param, desc string) *CondOKTuple {
-	t.params = append(t.params, modFnParam{
-		param: param,
-		desc:  desc,
-	})
-	return t
-}
-
-func (t *CondOKTuple) WithDescription(desc string) *CondOKTuple {
-	t.desc = desc
-	return t
+	docgen
+	fn CondOKFn
 }
 
 var (
@@ -36,8 +22,8 @@ func RegisterCondOKFn(name string, cond CondOKFn) *CondOKTuple {
 		return &condOkBuf[idx]
 	}
 	condOkBuf = append(condOkBuf, CondOKTuple{
-		id: name,
-		fn: cond,
+		docgen: docgen{name: name},
+		fn:     cond,
 	})
 	idx := len(condOkBuf) - 1
 	condOKRegistry[name] = idx

@@ -39,7 +39,7 @@ func writeDocgenMarkdown(w io.Writer) error {
 	for i := 0; i < len(modBuf); i++ {
 		tuple := &modBuf[i]
 		_, _ = w.Write([]byte("### "))
-		_, _ = w.Write([]byte(tuple.id))
+		_, _ = w.Write([]byte(tuple.name))
 		_, _ = w.Write([]byte("\n"))
 		if len(tuple.alias) > 0 {
 			_, _ = w.Write([]byte("Alias: `" + tuple.alias + "`\n"))
@@ -49,7 +49,7 @@ func writeDocgenMarkdown(w io.Writer) error {
 			_, _ = w.Write([]byte("Params:\n"))
 			for j := 0; j < len(tuple.params); j++ {
 				param := &tuple.params[j]
-				_, _ = w.Write([]byte("* `" + param.param + "`"))
+				_, _ = w.Write([]byte("* `" + param.name + "`"))
 				if len(param.desc) > 0 {
 					_, _ = w.Write([]byte(" " + param.desc))
 				}
@@ -74,13 +74,13 @@ func writeDocgenMarkdown(w io.Writer) error {
 	for i := 0; i < len(condBuf); i++ {
 		tuple := &condBuf[i]
 		_, _ = w.Write([]byte("### "))
-		_, _ = w.Write([]byte(tuple.id))
+		_, _ = w.Write([]byte(tuple.name))
 		_, _ = w.Write([]byte("\n\n"))
 		if len(tuple.params) > 0 {
 			_, _ = w.Write([]byte("Params:\n"))
 			for j := 0; j < len(tuple.params); j++ {
 				param := &tuple.params[j]
-				_, _ = w.Write([]byte("* `" + param.param + "`"))
+				_, _ = w.Write([]byte("* `" + param.name + "`"))
 				if len(param.desc) > 0 {
 					_, _ = w.Write([]byte(" " + param.desc))
 				}
@@ -105,13 +105,13 @@ func writeDocgenMarkdown(w io.Writer) error {
 	for i := 0; i < len(condBuf); i++ {
 		tuple := &condBuf[i]
 		_, _ = w.Write([]byte("### "))
-		_, _ = w.Write([]byte(tuple.id))
+		_, _ = w.Write([]byte(tuple.name))
 		_, _ = w.Write([]byte("\n\n"))
 		if len(tuple.params) > 0 {
 			_, _ = w.Write([]byte("Params:\n"))
 			for j := 0; j < len(tuple.params); j++ {
 				param := &tuple.params[j]
-				_, _ = w.Write([]byte("* `" + param.param + "`"))
+				_, _ = w.Write([]byte("* `" + param.name + "`"))
 				if len(param.desc) > 0 {
 					_, _ = w.Write([]byte(" " + param.desc))
 				}
@@ -129,7 +129,7 @@ func writeDocgenMarkdown(w io.Writer) error {
 	_, _ = w.Write([]byte("## Empty checks\n\n"))
 	for i := 0; i < len(emptyCheckBuf); i++ {
 		tuple := &emptyCheckBuf[i]
-		_, _ = w.Write([]byte("* `" + tuple.id + "`"))
+		_, _ = w.Write([]byte("* `" + tuple.name + "`"))
 		if len(tuple.desc) > 0 {
 			_, _ = w.Write([]byte(" " + tuple.desc))
 		}
@@ -140,7 +140,7 @@ func writeDocgenMarkdown(w io.Writer) error {
 	_, _ = w.Write([]byte("## Global variables\n\n"))
 	for i := 0; i < len(globBuf); i++ {
 		tuple := &globBuf[i]
-		_, _ = w.Write([]byte("* `" + tuple.id + " " + tuple.typ + "`"))
+		_, _ = w.Write([]byte("* `" + tuple.name + " " + tuple.typ + "`"))
 		if len(tuple.desc) > 0 {
 			_, _ = w.Write([]byte(" "))
 			_, _ = w.Write([]byte(tuple.desc))
@@ -157,4 +157,37 @@ func writeDocgenHTML(w io.Writer) error {
 
 func writeDocgenJSON(w io.Writer) error {
 	return nil
+}
+
+type docgenParam struct {
+	name, desc string
+}
+
+type docgen struct {
+	name, alias, typ, desc, example string
+
+	params []docgenParam
+}
+
+func (t *docgen) WithDescription(desc string) *docgen {
+	t.desc = desc
+	return t
+}
+
+func (t *docgen) WithType(typ string) *docgen {
+	t.typ = typ
+	return t
+}
+
+func (t *docgen) WithParam(param, desc string) *docgen {
+	t.params = append(t.params, docgenParam{
+		name: param,
+		desc: desc,
+	})
+	return t
+}
+
+func (t *docgen) WithExample(example string) *docgen {
+	t.example = example
+	return t
 }
