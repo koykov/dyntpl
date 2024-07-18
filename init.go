@@ -207,9 +207,18 @@ func init() {
 {%= math::pow(num, 4) %} // 16`)
 
 	// Register builtin condition helpers.
-	RegisterCondFn("lenEq0", condLenEq0)
-	RegisterCondFn("lenGt0", condLenGt0)
-	RegisterCondFn("lenGtq0", condLenGtq0)
+	RegisterCondFn("lenEq0", condLenEq0).
+		WithParam("arg bytes", "Possible types: `string`, `[]byte`, `[]string`, `[][]byte`.").
+		WithDescription("Checks if length of `arg` equal to zero.\n" +
+			"DEPRECATED! Use native expression like `{% if len(arg) == 0 %}...{% endif %}`.")
+	RegisterCondFn("lenGt0", condLenGt0).
+		WithParam("arg bytes", "Possible types: `string`, `[]byte`, `[]string`, `[][]byte`.").
+		WithDescription("Checks if length of `arg` greater or equal to zero.\n" +
+			"DEPRECATED! Use native expression like `{% if len(arg) >= 0 %}...{% endif %}`.")
+	RegisterCondFn("lenGtq0", condLenGtq0).
+		WithParam("arg bytes", "Possible types: `string`, `[]byte`, `[]string`, `[][]byte`.").
+		WithDescription("Checks if length of `arg` less or equal to zero.\n" +
+			"DEPRECATED! Use native expression like `{% if len(arg) <= 0 %}...{% endif %}`.")
 
 	// Register builtin empty check helpers.
 	RegisterEmptyCheckFn("int", EmptyCheckInt)
