@@ -33,7 +33,7 @@ func init() {
 		WithExample(`<span data-title="{%= title|htmlEscape %}">{%= text|he %}</span> // <span data-title="&lt;h1&gt;Go is an open source programming language that makes it easy to build &lt;strong&gt;simple&lt;strong&gt;, &lt;strong&gt;reliable&lt;/strong&gt;, and &lt;strong&gt;efficient&lt;/strong&gt; software.&lt;/h1&gt;">Show more &gt;</span>`)
 	RegisterModFn("linkEscape", "le", modLinkEscape).
 		WithDescription("Applies Link escaping to printing value.").
-		WithExample(`<a href="{%l= link %}"> // <a href="http://x.com/link-with-\"-and+space-symbol">`)
+		WithExample(`<a href="{%l= link %}"> // <a href="https://x.com/link-with-\"-and+space-symbol">`)
 	RegisterModFn("urlEncode", "ue", modURLEncode).
 		WithDescription("Applies URL encoding to printing value.").
 		WithExample(`<a href="https://redir.com/{%u= url %}">go to >>></a> // <a href="https://redir.com/https%3A%2F%2Fgolang.org%2Fsrc%2Fnet%2Furl%2Furl.go%23L100">go to >>></a>`)
@@ -304,7 +304,8 @@ func init() {
 		WithDescription("Testing namespace stuff: don't use in production.")
 
 	// Register test condition-ok helpers.
-	RegisterCondOKFn("__testUserNextHistory999", testCondOK)
+	RegisterCondOKFn("__testUserNextHistory999", testCondOK).
+		WithDescription("Testing namespace stuff: don't use in production.")
 
 	// Register test variable-inspector pairs.
 	RegisterVarInsPair("__testFin999", &testobj_ins.TestFinanceInspector{})
