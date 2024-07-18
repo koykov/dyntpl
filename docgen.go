@@ -129,15 +129,13 @@ func writeDocgenMarkdown(w io.Writer) error {
 	_, _ = w.Write([]byte("## Empty checks\n\n"))
 	for i := 0; i < len(emptyCheckBuf); i++ {
 		tuple := &emptyCheckBuf[i]
-		_, _ = w.Write([]byte("### "))
-		_, _ = w.Write([]byte(tuple.id))
-		_, _ = w.Write([]byte("\n\n"))
-
+		_, _ = w.Write([]byte("* `" + tuple.id + "`"))
 		if len(tuple.desc) > 0 {
-			_, _ = w.Write([]byte(tuple.desc))
-			_, _ = w.Write([]byte("\n\n"))
+			_, _ = w.Write([]byte(" " + tuple.desc))
 		}
+		_, _ = w.Write([]byte("\n"))
 	}
+	_, _ = w.Write([]byte("\n"))
 
 	_, _ = w.Write([]byte("## Global variables\n\n"))
 	for i := 0; i < len(globBuf); i++ {
