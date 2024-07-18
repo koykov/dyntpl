@@ -10,12 +10,6 @@ type CondFnTuple struct {
 	fn     CondFn
 }
 
-var (
-	// Registry of condition helpers.
-	condRegistry = map[string]int{}
-	condBuf      []CondFnTuple
-)
-
 func (t *CondFnTuple) WithDescription(desc string) *CondFnTuple {
 	t.desc = desc
 	return t
@@ -33,6 +27,12 @@ func (t *CondFnTuple) WithExample(example string) *CondFnTuple {
 	t.example = example
 	return t
 }
+
+var (
+	// Registry of condition helpers.
+	condRegistry = map[string]int{}
+	condBuf      []CondFnTuple
+)
 
 // RegisterCondFn registers new condition helper.
 func RegisterCondFn(name string, cond CondFn) *CondFnTuple {

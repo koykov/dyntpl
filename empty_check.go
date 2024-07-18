@@ -3,14 +3,34 @@ package dyntpl
 // EmptyCheckFn describes empty check helper func signature.
 type EmptyCheckFn func(ctx *Ctx, val any) bool
 
+type EmptyCheckTuple struct {
+	id, desc string
+	fn       EmptyCheckFn
+}
+
+func (t *EmptyCheckTuple) WithDescription(desc string) *EmptyCheckTuple {
+	t.desc = desc
+	return t
+}
+
 var (
 	// Registry of empty check helpers.
-	emptyCheckRegistry = map[string]EmptyCheckFn{}
+	emptyCheckRegistry = map[string]int{}
+	emptyCheckBuf      []EmptyCheckTuple
 )
 
 // RegisterEmptyCheckFn registers new empty check helper.
-func RegisterEmptyCheckFn(name string, cond EmptyCheckFn) {
-	emptyCheckRegistry[name] = cond
+func RegisterEmptyCheckFn(name string, cond EmptyCheckFn) *EmptyCheckTuple {
+	if idx, ok := emptyCheckRegistry[name]; ok && idx >= 0 && idx < len(emptyCheckBuf) {
+		return &emptyCheckBuf[idx]
+	}
+	emptyCheckBuf = append(emptyCheckBuf, EmptyCheckTuple{
+		id: name,
+		fn: cond,
+	})
+	idx := len(emptyCheckBuf) - 1
+	emptyCheckRegistry[name] = idx
+	return &emptyCheckBuf[idx]
 }
 
 // RegisterEmptyCheckFnNS registers new empty check helper.
@@ -23,8 +43,8 @@ func RegisterEmptyCheckFnNS(namespace, name string, cond EmptyCheckFn) {
 
 // GetEmptyCheckFn gets empty check helper from the registry.
 func GetEmptyCheckFn(name string) EmptyCheckFn {
-	if fn, ok := emptyCheckRegistry[name]; ok {
-		return fn
+	if idx, ok := emptyCheckRegistry[name]; ok && idx >= 0 && idx < len(emptyCheckBuf) {
+		return emptyCheckBuf[idx].fn
 	}
 	return nil
 }
@@ -36,8 +56,8 @@ func EmptyCheck(ctx *Ctx, val any) bool {
 	if val == nil {
 		return true
 	}
-	for _, fn := range emptyCheckRegistry {
-		if fn(ctx, val) {
+	for i := 0; i < len(emptyCheckBuf); i++ {
+		if emptyCheckBuf[i].fn(ctx, val) {
 			return true
 		}
 	}

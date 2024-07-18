@@ -36,12 +36,6 @@ type mod struct {
 	arg []*arg
 }
 
-var (
-	// Registry of modifiers.
-	modRegistry = map[string]int{}
-	modBuf      []ModFnTuple
-)
-
 func (t *ModFnTuple) WithDescription(desc string) *ModFnTuple {
 	t.desc = desc
 	return t
@@ -59,6 +53,12 @@ func (t *ModFnTuple) WithExample(example string) *ModFnTuple {
 	t.example = example
 	return t
 }
+
+var (
+	// Registry of modifiers.
+	modRegistry = map[string]int{}
+	modBuf      []ModFnTuple
+)
 
 // RegisterModFn registers new modifier function.
 func RegisterModFn(name, alias string, mod ModFn) *ModFnTuple {

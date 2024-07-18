@@ -221,14 +221,22 @@ func init() {
 			"> **_NOTE:_** DEPRECATED! Use native expression like `{% if len(arg) <= 0 %}...{% endif %}`.")
 
 	// Register builtin empty check helpers.
-	RegisterEmptyCheckFn("int", EmptyCheckInt)
-	RegisterEmptyCheckFn("uint", EmptyCheckUint)
-	RegisterEmptyCheckFn("float", EmptyCheckFloat)
-	RegisterEmptyCheckFn("bytes", EmptyCheckBytes)
-	RegisterEmptyCheckFn("bytes_slice", EmptyCheckBytesSlice)
-	RegisterEmptyCheckFn("str", EmptyCheckStr)
-	RegisterEmptyCheckFn("str_slice", EmptyCheckStrSlice)
-	RegisterEmptyCheckFn("bool", EmptyCheckBool)
+	RegisterEmptyCheckFn("int", EmptyCheckInt).
+		WithDescription("Checks if value is integer and contains zero value.")
+	RegisterEmptyCheckFn("uint", EmptyCheckUint).
+		WithDescription("Checks if value is unsigned integer and contains zero value.")
+	RegisterEmptyCheckFn("float", EmptyCheckFloat).
+		WithDescription("Checks if value is float and contains zero value.")
+	RegisterEmptyCheckFn("bytes", EmptyCheckBytes).
+		WithDescription("Checks if value is byte slice (`[]byte`) and its length equals to zero.")
+	RegisterEmptyCheckFn("bytes_slice", EmptyCheckBytesSlice).
+		WithDescription("Checks if value is bytes matrix (`[][]byte`) and contains no rows.")
+	RegisterEmptyCheckFn("str", EmptyCheckStr).
+		WithDescription("Checks if value is string and its length equals to zero.")
+	RegisterEmptyCheckFn("str_slice", EmptyCheckStrSlice).
+		WithDescription("Checks if value is slice of strings and its contains n string.")
+	RegisterEmptyCheckFn("bool", EmptyCheckBool).
+		WithDescription("Checks if value is boolean and equals to false.")
 
 	// Register datetime layouts.
 	RegisterGlobalNS("time", "Layout", "", clock.Layout)
