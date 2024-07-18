@@ -308,5 +308,6 @@ func init() {
 		WithDescription("Testing namespace stuff: don't use in production.")
 
 	// Register test variable-inspector pairs.
-	RegisterVarInsPair("__testFin999", &testobj_ins.TestFinanceInspector{})
+	RegisterVarInsPair("__testFin999", &testobj_ins.TestFinanceInspector{}).
+		WithDescription("Testing stuff: don't use in production.")
 }
