@@ -99,23 +99,112 @@ func init() {
 `)
 
 	// Register math modifiers.
-	RegisterModFnNS("math", "abs", "", modAbs)
-	RegisterModFnNS("math", "inc", "", modInc)
-	RegisterModFnNS("math", "dec", "", modDec)
-	RegisterModFnNS("math", "add", "", modMathAdd)
-	RegisterModFnNS("math", "sub", "", modMathSub)
-	RegisterModFnNS("math", "mul", "", modMathMul)
-	RegisterModFnNS("math", "div", "", modMathDiv)
-	RegisterModFnNS("math", "mod", "", modMathMod)
-	RegisterModFnNS("math", "sqrt", "", modMathSqrt)
-	RegisterModFnNS("math", "cbrt", "", modMathCbrt)
-	RegisterModFnNS("math", "radical", "rad", modMathRadical)
-	RegisterModFnNS("math", "exp", "", modMathExp)
-	RegisterModFnNS("math", "log", "", modMathLog)
-	RegisterModFnNS("math", "factorial", "fact", modMathFact)
-	RegisterModFnNS("math", "max", "", modMathMax)
-	RegisterModFnNS("math", "min", "", modMathMin)
-	RegisterModFnNS("math", "pow", "", modMathPow)
+	RegisterModFnNS("math", "abs", "", modAbs).
+		WithParam("val float", "Not mandatory").
+		WithDescription("Returns absolute value.").
+		WithExample(`num = -123456
+{%= num|math::abs() %} // 123456
+{%= math::abs(num) %}  // 123456`)
+	RegisterModFnNS("math", "inc", "", modInc).
+		WithParam("val float", "Not mandatory").
+		WithDescription("Increments the value.").
+		WithExample(`num = 10
+{%= num|math::inc() %} // 11
+{%= math::inc(num) %}  // 11`)
+	RegisterModFnNS("math", "dec", "", modDec).
+		WithParam("val float", "Not mandatory").
+		WithDescription("Decrements the value.").
+		WithExample(`num = 10
+{%= num|math::dec() %} // 9
+{%= math::dec(num) %}  // 9`)
+	RegisterModFnNS("math", "add", "", modMathAdd).
+		WithParam("val float", "Not mandatory").
+		WithParam("arg float", "Value to add").
+		WithDescription("Adds `arg` to value.").
+		WithExample(`num = 555
+{%= num|math::add(5.345) %}  // 560.345
+{%= math::add(num, 5.345) %} // 560.345`)
+	RegisterModFnNS("math", "sub", "", modMathSub).
+		WithParam("val float", "Not mandatory").
+		WithParam("arg float", "Value to subtract").
+		WithDescription("Subtracts `arg` from value.").
+		WithExample(`num = 555
+{%= num|math::sub(5.345) %}  // 549.655
+{%= math::sub(num, 5.345) %} // 549.655`)
+	RegisterModFnNS("math", "mul", "", modMathMul).
+		WithParam("val float", "Not mandatory").
+		WithParam("arg float", "Value to multiply").
+		WithDescription("Multiplies value with `arg`.").
+		WithExample(`num = 10
+{%= num|math::mul(5.345) %}  // 100
+{%= math::mul(num, 5.345) %} // 100`)
+	RegisterModFnNS("math", "div", "", modMathDiv).
+		WithParam("val float", "Not mandatory").
+		WithParam("arg float", "Value to divide").
+		WithDescription("Divides value to `arg`.").
+		WithExample(`num = 10
+{%= num|math::div(5) %}  // 2
+{%= math::div(num, 5) %} // 2`)
+	RegisterModFnNS("math", "mod", "", modMathMod).
+		WithParam("val float", "Not mandatory").
+		WithParam("arg float", "Value to divide").
+		WithDescription("Modifier 'mod' implement modulus operator. Returns the remainder or signed remainder of a division, after value is divided by `arg`.").
+		WithExample(`num = 10
+{%= num|math::mod(3) %}  // 1
+{%= math::mod(num, 3) %} // 1`)
+	RegisterModFnNS("math", "sqrt", "", modMathSqrt).
+		WithParam("val float", "Not mandatory").
+		WithDescription("Modifier 'sqrt' returns square root of value (`√val`).").
+		WithExample(`num = 100
+{%= num|math::sqrt() %} // 10
+{%= math::sqrt(num) %}  // 10`)
+	RegisterModFnNS("math", "cbrt", "", modMathCbrt).
+		WithParam("val float", "Not mandatory").
+		WithDescription("Modifier 'sqrt' computes the cube root of value (∛val).").
+		WithExample(`num = 1000
+{%= num|math::cqrt() %} // 10
+{%= math::cqrt(num) %}  // 10`)
+	RegisterModFnNS("math", "radical", "rad", modMathRadical).
+		WithParam("val float", "Not mandatory").
+		WithParam("root float", "Root of value required").
+		WithDescription("Modifier 'radical' computes the radical (`root`-order root) of value.").
+		WithExample(`num = 16
+{%f.6= num|math::rad(4) %}  // 2
+{%f.6= math::rad(num, 4) %} // 2`)
+	RegisterModFnNS("math", "exp", "", modMathExp).
+		WithParam("val float", "Not mandatory").
+		WithDescription("Modifier 'exp' computes e**value, the base-e exponential of value.").
+		WithExample(`num = 5
+{%f.6= num|math::exp() %} // 148.4131591025766
+{%f.6= math::exp(num) %}  // 148.4131591025766`)
+	RegisterModFnNS("math", "log", "", modMathLog).
+		WithParam("val float", "Not mandatory").
+		WithDescription("Modifier 'log' computes the natural logarithm of value.").
+		WithExample(`num = 6
+{%f.6= num|math::log() %} // 1.791759469228055
+{%f.6= math::log(num) %}  // 1.791759469228055`)
+	RegisterModFnNS("math", "factorial", "fact", modMathFact).
+		WithParam("val float", "Not mandatory").
+		WithParam("root float", "Root of value required").
+		WithDescription("Modifier 'radical' computes the radical (`root`-order root) of value.").
+		WithExample(`num = 16
+{%f.6= num|math::rad(4) %}  // 2
+{%f.6= math::rad(num, 4) %} // 2`)
+	RegisterModFnNS("math", "max", "", modMathMax).
+		WithParam("arg0 float", "").
+		WithParam("arg1 float", "").
+		WithDescription("Modifier 'max' returns maximum value of `arg0` or `arg1`.")
+	RegisterModFnNS("math", "min", "", modMathMin).
+		WithParam("arg0 float", "").
+		WithParam("arg1 float", "").
+		WithDescription("Modifier 'max' returns minimum value of `arg0` or `arg1`.")
+	RegisterModFnNS("math", "pow", "", modMathPow).
+		WithParam("val float", "Not mandatory").
+		WithParam("exp float", "Exponent").
+		WithDescription("Modifier 'radical' computes `val**exp`, the base-`val` exponential of `exp`.").
+		WithExample(`num = 2
+{%= num|math::pow(4) %}  // 16
+{%= math::pow(num, 4) %} // 16`)
 
 	// Register builtin condition helpers.
 	RegisterCondFn("lenEq0", condLenEq0)
