@@ -15,6 +15,13 @@ import (
 // * args is a list of all arguments listed on modifier call.
 type ModFn func(ctx *Ctx, buf *any, val any, args []any) error
 
+// Internal modifier representation.
+type mod struct {
+	id  []byte
+	fn  ModFn
+	arg []*arg
+}
+
 type modFnParam struct {
 	param string
 	desc  string
@@ -27,13 +34,6 @@ type ModFnTuple struct {
 	params  []modFnParam
 	example string
 	fn      ModFn
-}
-
-// Internal modifier representation.
-type mod struct {
-	id  []byte
-	fn  ModFn
-	arg []*arg
 }
 
 func (t *ModFnTuple) WithDescription(desc string) *ModFnTuple {

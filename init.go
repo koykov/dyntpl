@@ -239,22 +239,54 @@ func init() {
 		WithDescription("Checks if value is boolean and equals to false.")
 
 	// Register datetime layouts.
-	RegisterGlobalNS("time", "Layout", "", clock.Layout)
-	RegisterGlobalNS("time", "ANSIC", "", clock.ANSIC)
-	RegisterGlobalNS("time", "UnixDate", "", clock.UnixDate)
-	RegisterGlobalNS("time", "RubyDate", "", clock.RubyDate)
-	RegisterGlobalNS("time", "RFC822", "", clock.RFC822)
-	RegisterGlobalNS("time", "RFC822Z", "", clock.RFC822Z)
-	RegisterGlobalNS("time", "RFC850", "", clock.RFC850)
-	RegisterGlobalNS("time", "RFC1123", "", clock.RFC1123)
-	RegisterGlobalNS("time", "RFC1123Z", "", clock.RFC1123Z)
-	RegisterGlobalNS("time", "RFC3339", "", clock.RFC3339)
-	RegisterGlobalNS("time", "RFC3339Nano", "", clock.RFC3339Nano)
-	RegisterGlobalNS("time", "Kitchen", "", clock.Kitchen)
-	RegisterGlobalNS("time", "Stamp", "", clock.Stamp)
-	RegisterGlobalNS("time", "StampMilli", "", clock.StampMilli)
-	RegisterGlobalNS("time", "StampMicro", "", clock.StampMicro)
-	RegisterGlobalNS("time", "StampNano", "", clock.StampNano)
+	RegisterGlobalNS("time", "Layout", "", clock.Layout).
+		WithType("string").
+		WithDescription("time.Layout presentation in strtotime format.")
+	RegisterGlobalNS("time", "ANSIC", "", clock.ANSIC).
+		WithType("string").
+		WithDescription("time.ANSIC presentation in strtotime format.")
+	RegisterGlobalNS("time", "UnixDate", "", clock.UnixDate).
+		WithType("string").
+		WithDescription("time.UnixDate presentation in strtotime format.")
+	RegisterGlobalNS("time", "RubyDate", "", clock.RubyDate).
+		WithType("string").
+		WithDescription("time.RubyDate presentation in strtotime format.")
+	RegisterGlobalNS("time", "RFC822", "", clock.RFC822).
+		WithType("string").
+		WithDescription("time.RFC822 presentation in strtotime format.")
+	RegisterGlobalNS("time", "RFC822Z", "", clock.RFC822Z).
+		WithType("string").
+		WithDescription("time.RFC822Z presentation in strtotime format.")
+	RegisterGlobalNS("time", "RFC850", "", clock.RFC850).
+		WithType("string").
+		WithDescription("time.RFC850 presentation in strtotime format.")
+	RegisterGlobalNS("time", "RFC1123", "", clock.RFC1123).
+		WithType("string").
+		WithDescription("time.RFC1123 presentation in strtotime format.")
+	RegisterGlobalNS("time", "RFC1123Z", "", clock.RFC1123Z).
+		WithType("string").
+		WithDescription("time.RFC1123Z presentation in strtotime format.")
+	RegisterGlobalNS("time", "RFC3339", "", clock.RFC3339).
+		WithType("string").
+		WithDescription("time.RFC3339 presentation in strtotime format.")
+	RegisterGlobalNS("time", "RFC3339Nano", "", clock.RFC3339Nano).
+		WithType("string").
+		WithDescription("time.RFC3339Nano presentation in strtotime format.")
+	RegisterGlobalNS("time", "Kitchen", "", clock.Kitchen).
+		WithType("string").
+		WithDescription("time.Kitchen presentation in strtotime format.")
+	RegisterGlobalNS("time", "Stamp", "", clock.Stamp).
+		WithType("string").
+		WithDescription("time.Stamp presentation in strtotime format.")
+	RegisterGlobalNS("time", "StampMilli", "", clock.StampMilli).
+		WithType("string").
+		WithDescription("time.StampMilli presentation in strtotime format.")
+	RegisterGlobalNS("time", "StampMicro", "", clock.StampMicro).
+		WithType("string").
+		WithDescription("time.StampMicro presentation in strtotime format.")
+	RegisterGlobalNS("time", "StampNano", "", clock.StampNano).
+		WithType("string").
+		WithDescription("time.StampNano presentation in strtotime format.")
 
 	// Register test modifiers.
 	RegisterModFn("testNameOf", "", modTestNameOf).

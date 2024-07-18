@@ -114,6 +114,17 @@ func writeDocgenMarkdown(w io.Writer) error {
 		}
 	}
 
+	_, _ = w.Write([]byte("## Global variables\n\n"))
+	for i := 0; i < len(globBuf); i++ {
+		tuple := &globBuf[i]
+		_, _ = w.Write([]byte("* `" + tuple.id + " " + tuple.typ + "`"))
+		if len(tuple.desc) > 0 {
+			_, _ = w.Write([]byte(" "))
+			_, _ = w.Write([]byte(tuple.desc))
+		}
+		_, _ = w.Write([]byte("\n"))
+	}
+
 	return nil
 }
 
