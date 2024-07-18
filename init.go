@@ -240,14 +240,19 @@ func init() {
 	RegisterGlobalNS("time", "StampNano", "", clock.StampNano)
 
 	// Register test modifiers.
-	RegisterModFn("testNameOf", "", modTestNameOf)
-	RegisterModFnNS("testns", "pack", "", func(_ *Ctx, _ *any, _ any, _ []any) error { return nil })
-	RegisterModFnNS("testns", "extract", "", func(_ *Ctx, _ *any, _ any, _ []any) error { return nil })
-	RegisterModFnNS("testns", "marshal", "", func(_ *Ctx, _ *any, _ any, _ []any) error { return nil })
+	RegisterModFn("testNameOf", "", modTestNameOf).
+		WithDescription("Testing stuff: don't use in production.")
+	RegisterModFnNS("testns", "pack", "", func(_ *Ctx, _ *any, _ any, _ []any) error { return nil }).
+		WithDescription("Testing namespace stuff: don't use in production.")
+	RegisterModFnNS("testns", "extract", "", func(_ *Ctx, _ *any, _ any, _ []any) error { return nil }).
+		WithDescription("Testing namespace stuff: don't use in production.")
+	RegisterModFnNS("testns", "marshal", "", func(_ *Ctx, _ *any, _ any, _ []any) error { return nil }).
+		WithDescription("Testing namespace stuff: don't use in production.")
 	RegisterModFnNS("testns", "modCB", "", func(ctx *Ctx, _ *any, _ any, args []any) error {
 		ctx.SetStatic("testVar", args[0])
 		return nil
-	})
+	}).
+		WithDescription("Testing namespace stuff: don't use in production.")
 
 	// Register test condition-ok helpers.
 	RegisterCondOKFn("__testUserNextHistory999", testCondOK)
