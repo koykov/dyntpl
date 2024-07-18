@@ -67,6 +67,13 @@ func writeDocgenMarkdown(w io.Writer) error {
 	}
 	_, _ = w.Write([]byte("\n"))
 
+	_, _ = w.Write([]byte("## Variable-inspector pairs\n\n"))
+	for i := 0; i < len(varInsBuf); i++ {
+		tuple := &varInsBuf[i]
+		_ = tuple.write(w, DocgenFormatMarkdown, true)
+	}
+	_, _ = w.Write([]byte("\n"))
+
 	return nil
 }
 
@@ -83,7 +90,7 @@ type docgenParam struct {
 }
 
 type docgen struct {
-	name, alias, typ, desc, note, example string
+	name, alias, typ, desc, note, example, ins string
 
 	params []docgenParam
 }
@@ -118,11 +125,16 @@ func (t *docgen) WithExample(example string) *docgen {
 
 func (t *docgen) write(w io.Writer, format DocgenFormat, compact bool) error {
 	switch {
-	case format == DocgenFormatMarkdown && compact:
+	case format == DocgenFormatMarkdown && compact == true:
 		_, _ = w.Write([]byte("* `"))
 		_, _ = w.Write([]byte(t.name))
 		if len(t.typ) > 0 {
+			_, _ = w.Write([]byte(" "))
 			_, _ = w.Write([]byte(t.typ))
+		}
+		if len(t.ins) > 0 {
+			_, _ = w.Write([]byte(" "))
+			_, _ = w.Write([]byte(t.ins))
 		}
 		_, _ = w.Write([]byte("`"))
 		if len(t.desc) > 0 {
@@ -130,7 +142,7 @@ func (t *docgen) write(w io.Writer, format DocgenFormat, compact bool) error {
 			_, _ = w.Write([]byte(t.desc))
 		}
 		_, _ = w.Write([]byte("\n"))
-	case format == DocgenFormatMarkdown && !compact:
+	case format == DocgenFormatMarkdown && compact == false:
 		_, _ = w.Write([]byte("### "))
 		_, _ = w.Write([]byte(t.name))
 		_, _ = w.Write([]byte("\n"))
