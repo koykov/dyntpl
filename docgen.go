@@ -38,115 +38,34 @@ func writeDocgenMarkdown(w io.Writer) error {
 	_, _ = w.Write([]byte("## Modifiers\n\n"))
 	for i := 0; i < len(modBuf); i++ {
 		tuple := &modBuf[i]
-		_, _ = w.Write([]byte("### "))
-		_, _ = w.Write([]byte(tuple.name))
-		_, _ = w.Write([]byte("\n"))
-		if len(tuple.alias) > 0 {
-			_, _ = w.Write([]byte("Alias: `" + tuple.alias + "`\n"))
-		}
-		_, _ = w.Write([]byte("\n"))
-		if len(tuple.params) > 0 {
-			_, _ = w.Write([]byte("Params:\n"))
-			for j := 0; j < len(tuple.params); j++ {
-				param := &tuple.params[j]
-				_, _ = w.Write([]byte("* `" + param.name + "`"))
-				if len(param.desc) > 0 {
-					_, _ = w.Write([]byte(" " + param.desc))
-				}
-				_, _ = w.Write([]byte("\n"))
-			}
-			_, _ = w.Write([]byte("\n"))
-		}
-
-		if len(tuple.desc) > 0 {
-			_, _ = w.Write([]byte(tuple.desc))
-			_, _ = w.Write([]byte("\n\n"))
-		}
-
-		if len(tuple.example) > 0 {
-			_, _ = w.Write([]byte("Example:\n```\n"))
-			_, _ = w.Write([]byte(tuple.example))
-			_, _ = w.Write([]byte("\n```\n\n"))
-		}
+		_ = tuple.write(w, DocgenFormatMarkdown, false)
 	}
 
-	_, _ = w.Write([]byte("## Conditions\n\n"))
+	_, _ = w.Write([]byte("## Condition helpers\n\n"))
 	for i := 0; i < len(condBuf); i++ {
 		tuple := &condBuf[i]
-		_, _ = w.Write([]byte("### "))
-		_, _ = w.Write([]byte(tuple.name))
-		_, _ = w.Write([]byte("\n\n"))
-		if len(tuple.params) > 0 {
-			_, _ = w.Write([]byte("Params:\n"))
-			for j := 0; j < len(tuple.params); j++ {
-				param := &tuple.params[j]
-				_, _ = w.Write([]byte("* `" + param.name + "`"))
-				if len(param.desc) > 0 {
-					_, _ = w.Write([]byte(" " + param.desc))
-				}
-				_, _ = w.Write([]byte("\n"))
-			}
-			_, _ = w.Write([]byte("\n"))
-		}
-
-		if len(tuple.desc) > 0 {
-			_, _ = w.Write([]byte(tuple.desc))
-			_, _ = w.Write([]byte("\n\n"))
-		}
-
-		if len(tuple.example) > 0 {
-			_, _ = w.Write([]byte("Example:\n```\n"))
-			_, _ = w.Write([]byte(tuple.example))
-			_, _ = w.Write([]byte("\n```\n\n"))
-		}
+		_ = tuple.write(w, DocgenFormatMarkdown, false)
 	}
 
-	_, _ = w.Write([]byte("## Condition-OK\n\n"))
+	_, _ = w.Write([]byte("## Condition-OK helpers\n\n"))
 	for i := 0; i < len(condBuf); i++ {
 		tuple := &condBuf[i]
-		_, _ = w.Write([]byte("### "))
-		_, _ = w.Write([]byte(tuple.name))
-		_, _ = w.Write([]byte("\n\n"))
-		if len(tuple.params) > 0 {
-			_, _ = w.Write([]byte("Params:\n"))
-			for j := 0; j < len(tuple.params); j++ {
-				param := &tuple.params[j]
-				_, _ = w.Write([]byte("* `" + param.name + "`"))
-				if len(param.desc) > 0 {
-					_, _ = w.Write([]byte(" " + param.desc))
-				}
-				_, _ = w.Write([]byte("\n"))
-			}
-			_, _ = w.Write([]byte("\n"))
-		}
-
-		if len(tuple.desc) > 0 {
-			_, _ = w.Write([]byte(tuple.desc))
-			_, _ = w.Write([]byte("\n\n"))
-		}
+		_ = tuple.write(w, DocgenFormatMarkdown, false)
 	}
 
 	_, _ = w.Write([]byte("## Empty checks\n\n"))
 	for i := 0; i < len(emptyCheckBuf); i++ {
 		tuple := &emptyCheckBuf[i]
-		_, _ = w.Write([]byte("* `" + tuple.name + "`"))
-		if len(tuple.desc) > 0 {
-			_, _ = w.Write([]byte(" " + tuple.desc))
-		}
-		_, _ = w.Write([]byte("\n"))
+		_ = tuple.write(w, DocgenFormatMarkdown, true)
 	}
 	_, _ = w.Write([]byte("\n"))
 
 	_, _ = w.Write([]byte("## Global variables\n\n"))
 	for i := 0; i < len(globBuf); i++ {
 		tuple := &globBuf[i]
-		_, _ = w.Write([]byte("* `" + tuple.name + " " + tuple.typ + "`"))
-		if len(tuple.desc) > 0 {
-			_, _ = w.Write([]byte(" "))
-			_, _ = w.Write([]byte(tuple.desc))
-		}
-		_, _ = w.Write([]byte("\n"))
+		_ = tuple.write(w, DocgenFormatMarkdown, true)
 	}
+	_, _ = w.Write([]byte("\n"))
 
 	return nil
 }
@@ -164,7 +83,7 @@ type docgenParam struct {
 }
 
 type docgen struct {
-	name, alias, typ, desc, example string
+	name, alias, typ, desc, note, example string
 
 	params []docgenParam
 }
@@ -187,7 +106,68 @@ func (t *docgen) WithParam(param, desc string) *docgen {
 	return t
 }
 
+func (t *docgen) WithNote(note string) *docgen {
+	t.note = note
+	return t
+}
+
 func (t *docgen) WithExample(example string) *docgen {
 	t.example = example
 	return t
+}
+
+func (t *docgen) write(w io.Writer, format DocgenFormat, compact bool) error {
+	switch {
+	case format == DocgenFormatMarkdown && compact:
+		_, _ = w.Write([]byte("* `"))
+		_, _ = w.Write([]byte(t.name))
+		if len(t.typ) > 0 {
+			_, _ = w.Write([]byte(t.typ))
+		}
+		_, _ = w.Write([]byte("`"))
+		if len(t.desc) > 0 {
+			_, _ = w.Write([]byte(" "))
+			_, _ = w.Write([]byte(t.desc))
+		}
+		_, _ = w.Write([]byte("\n"))
+	case format == DocgenFormatMarkdown && !compact:
+		_, _ = w.Write([]byte("### "))
+		_, _ = w.Write([]byte(t.name))
+		_, _ = w.Write([]byte("\n"))
+		if len(t.alias) > 0 {
+			_, _ = w.Write([]byte("Alias: `" + t.alias + "`\n"))
+		}
+		_, _ = w.Write([]byte("\n"))
+		if len(t.params) > 0 {
+			_, _ = w.Write([]byte("Params:\n"))
+			for j := 0; j < len(t.params); j++ {
+				param := &t.params[j]
+				_, _ = w.Write([]byte("* `" + param.name + "`"))
+				if len(param.desc) > 0 {
+					_, _ = w.Write([]byte(" " + param.desc))
+				}
+				_, _ = w.Write([]byte("\n"))
+			}
+			_, _ = w.Write([]byte("\n"))
+		}
+
+		if len(t.desc) > 0 {
+			_, _ = w.Write([]byte(t.desc))
+			_, _ = w.Write([]byte("\n\n"))
+		}
+
+		if len(t.note) > 0 {
+			_, _ = w.Write([]byte("> **_NOTE:_** "))
+			_, _ = w.Write([]byte(t.note))
+			_, _ = w.Write([]byte("\n\n"))
+		}
+
+		if len(t.example) > 0 {
+			_, _ = w.Write([]byte("Example:\n```\n"))
+			_, _ = w.Write([]byte(t.example))
+			_, _ = w.Write([]byte("\n```\n\n"))
+		}
+	}
+
+	return nil
 }
