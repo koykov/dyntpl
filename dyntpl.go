@@ -529,9 +529,9 @@ func (t *Tpl) writeNode(w io.Writer, node *Node, ctx *Ctx) (err error) {
 						// Prepare arguments list.
 						ctx.bufA = ctx.bufA[:0]
 						if n := len(ch.caseHlpArg); n > 0 {
-							_ = node.caseHlpArg[n]
+							_ = ch.caseHlpArg[n-1]
 							for j := 0; j < n; j++ {
-								arg_ := node.condHlpArg[j]
+								arg_ := ch.caseHlpArg[j]
 								if arg_.static {
 									ctx.bufA = append(ctx.bufA, &arg_.val)
 								} else {
