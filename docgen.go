@@ -82,6 +82,52 @@ func writeDocgenMarkdown(w io.Writer) error {
 }
 
 func writeDocgenHTML(w io.Writer) error {
+	_, _ = w.Write([]byte("<html><head><meta charset=\"utf-8\">"))
+	_, _ = w.Write([]byte(`<style>`))
+	_, _ = w.Write([]byte(`blockquote,code{margin:0}code,pre{border-radius:6px}li,pre{margin-top:.5rem}*{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji;font-size:16px;line-height:1.5;word-wrap:break-word}body{padding:1em}h1{font-size:var(--h1-size,32px)}h1,h2,h3,h4{font-weight:var(--base-text-weight-semibold,600)}h2{font-size:var(--h2-size,24px)}h3{font-size:var(--h3-size,20px)}p{margin-top:0;margin-bottom:10px}code{padding:.2em .4em;white-space:break-spaces;background-color:rgba(99,110,123,.2)}pre{padding:10px 9px;background-color:rgb(45,51,59,.2)}`))
+	_, _ = w.Write([]byte(`</style>`))
+	_, _ = w.Write([]byte("</head><body><h1>API</h1>"))
+
+	_, _ = w.Write([]byte(`<a name="mod"></a><h2>Modifiers</h2>`))
+	for i := 0; i < len(modBuf); i++ {
+		tuple := &modBuf[i]
+		_ = tuple.write(w, DocgenFormatHTML, false)
+	}
+
+	_, _ = w.Write([]byte(`<a name="cond"></a><h2>Condition helpers</h2>`))
+	for i := 0; i < len(condBuf); i++ {
+		tuple := &condBuf[i]
+		_ = tuple.write(w, DocgenFormatHTML, false)
+	}
+
+	_, _ = w.Write([]byte(`<a name="condOK"></a><h2>Condition-OK helpers</h2>`))
+	for i := 0; i < len(condBuf); i++ {
+		tuple := &condBuf[i]
+		_ = tuple.write(w, DocgenFormatHTML, false)
+	}
+
+	_, _ = w.Write([]byte(`<a name="empty"></a><h2>Empty checks</h2>`))
+	for i := 0; i < len(emptyCheckBuf); i++ {
+		tuple := &emptyCheckBuf[i]
+		_ = tuple.write(w, DocgenFormatHTML, true)
+	}
+	_, _ = w.Write([]byte("\n"))
+
+	_, _ = w.Write([]byte(`<a name="global"></a><h2>Global variables</h2>`))
+	for i := 0; i < len(globBuf); i++ {
+		tuple := &globBuf[i]
+		_ = tuple.write(w, DocgenFormatHTML, true)
+	}
+	_, _ = w.Write([]byte("\n"))
+
+	_, _ = w.Write([]byte(`<a name="varins"></a><h2>Variable-inspector pairs</h2>`))
+	for i := 0; i < len(varInsBuf); i++ {
+		tuple := &varInsBuf[i]
+		_ = tuple.write(w, DocgenFormatHTML, true)
+	}
+	_, _ = w.Write([]byte("\n"))
+
+	_, _ = w.Write([]byte("</body></html>"))
 	return nil
 }
 
@@ -168,6 +214,16 @@ func (t *docgen) WithExample(example string) *docgen {
 }
 
 func (t *docgen) write(w io.Writer, format DocgenFormat, compact bool) error {
+	htmlEscape := func(s string, nl2br bool) string {
+		s = html.EscapeString(s)
+		s = reDGHTMLCode.ReplaceAllString(s, "<code>$0</code>")
+		if nl2br {
+			s = strings.ReplaceAll(s, "\n", "<br/>")
+		}
+		s = strings.ReplaceAll(s, "`", "")
+		return s
+	}
+
 	switch {
 	case format == DocgenFormatMarkdown && compact == true:
 		_, _ = w.Write([]byte("* `"))
@@ -222,6 +278,58 @@ func (t *docgen) write(w io.Writer, format DocgenFormat, compact bool) error {
 			_, _ = w.Write([]byte("Example:\n```\n"))
 			_, _ = w.Write([]byte(t.example))
 			_, _ = w.Write([]byte("\n```\n\n"))
+		}
+	case format == DocgenFormatHTML && compact == true:
+		_, _ = w.Write([]byte("<li><code>"))
+		_, _ = w.Write([]byte(t.name))
+		if len(t.typ) > 0 {
+			_, _ = w.Write([]byte(" "))
+			_, _ = w.Write([]byte(t.typ))
+		}
+		if len(t.ins) > 0 {
+			_, _ = w.Write([]byte(" "))
+			_, _ = w.Write([]byte(t.ins))
+		}
+		_, _ = w.Write([]byte("</code>"))
+		if len(t.desc) > 0 {
+			_, _ = w.Write([]byte(" "))
+			_, _ = w.Write([]byte(htmlEscape(t.desc, false)))
+		}
+		_, _ = w.Write([]byte("</li>"))
+	case format == DocgenFormatHTML && compact == false:
+		_, _ = w.Write([]byte("<h3>" + t.name + "</h3>"))
+		if len(t.alias) > 0 {
+			_, _ = w.Write([]byte("<block>Alias: <code>" + t.alias + "</code></block>"))
+		}
+		if len(t.params) > 0 {
+			_, _ = w.Write([]byte("<div>Params:<ul>"))
+			for j := 0; j < len(t.params); j++ {
+				param := &t.params[j]
+				_, _ = w.Write([]byte("<li><code>" + param.name + "</code>"))
+				if len(param.desc) > 0 {
+					_, _ = w.Write([]byte(" " + htmlEscape(param.desc, true)))
+				}
+				_, _ = w.Write([]byte("</li>"))
+			}
+			_, _ = w.Write([]byte("</ul></div>"))
+		}
+
+		if len(t.desc) > 0 {
+			_, _ = w.Write([]byte("<p>"))
+			_, _ = w.Write([]byte(htmlEscape(t.desc, false)))
+			_, _ = w.Write([]byte("</p>"))
+		}
+
+		if len(t.note) > 0 {
+			_, _ = w.Write([]byte("<blockquote>"))
+			_, _ = w.Write([]byte(htmlEscape(t.note, false)))
+			_, _ = w.Write([]byte("</blockquote>"))
+		}
+
+		if len(t.example) > 0 {
+			_, _ = w.Write([]byte("<div>Example:<pre>"))
+			_, _ = w.Write([]byte(htmlEscape(t.example, false)))
+			_, _ = w.Write([]byte("</pre></div>"))
 		}
 	}
 
