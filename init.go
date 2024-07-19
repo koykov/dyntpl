@@ -10,7 +10,7 @@ func init() {
 	RegisterModFn("default", "def", modDefault).
 		WithDescription("Modifier `default` returns the passed `arg` if the preceding value is undefined or empty, otherwise the value of the variable.").
 		WithParam("arg any", "").
-		WithExample(`{%= notExistingOrEmptyVar|default("N/D") %}"`)
+		WithExample(`{%= notExistingOrEmptyVar|default("N/D") %}`)
 	RegisterModFn("ifThen", "if", modIfThen).
 		WithDescription("Modifier `ifThen` passes `arg` only if preceding condition is true.").
 		WithParam("arg any", "").
@@ -95,7 +95,7 @@ func init() {
 		WithExample(`{%= date|time::add("+1 m")|time::date(time::StampNano) %}{% endl %}      // Jan 21 20:05:26.000000555
 {%= date|time::add("+1 min")|time::date(time::StampNano) %}{% endl %}	 // Jan 21 20:05:26.000000555
 {%= date|time::add("+1 minute")|time::date(time::StampNano) %}{% endl %} // Jan 21 20:05:26.000000555
-{%= date|time::add("+1 minutes")|time::date(time::StampNano) %}			 // Jan 21 20:05:26.000000555
+{%= date|time::add("+1 minutes")|time::date(time::StampNano) %}		 // Jan 21 20:05:26.000000555
 `)
 
 	// Register math modifiers.
