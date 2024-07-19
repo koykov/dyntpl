@@ -2,8 +2,12 @@ package dyntpl
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
+	"html"
 	"io"
+	"regexp"
+	"strings"
 )
 
 type DocgenFormat string
@@ -82,7 +86,47 @@ func writeDocgenHTML(w io.Writer) error {
 }
 
 func writeDocgenJSON(w io.Writer) error {
-	return nil
+	cpy := func(t *docgen) (r docgenJSON) {
+		r.Name = t.name
+		r.Alias = t.alias
+		r.Type = t.typ
+		r.Desc = t.desc
+		r.Note = t.note
+		r.Example = t.example
+		r.Inspector = t.ins
+		for i := 0; i < len(t.params); i++ {
+			p := &t.params[i]
+			r.Params = append(r.Params, docgenParamJSON{
+				Name: p.name,
+				Desc: p.desc,
+			})
+		}
+		return
+	}
+
+	var x docgenContainerJSON
+	for i := 0; i < len(modBuf); i++ {
+		x.Modifiers = append(x.Modifiers, cpy(&modBuf[i].docgen))
+	}
+	for i := 0; i < len(condBuf); i++ {
+		x.ConditionHelpers = append(x.ConditionHelpers, cpy(&condBuf[i].docgen))
+	}
+	for i := 0; i < len(condOkBuf); i++ {
+		x.ConditionOKHelpers = append(x.ConditionOKHelpers, cpy(&condOkBuf[i].docgen))
+	}
+	for i := 0; i < len(emptyCheckBuf); i++ {
+		x.EmptyCheckHelpers = append(x.EmptyCheckHelpers, cpy(&emptyCheckBuf[i].docgen))
+	}
+	for i := 0; i < len(globBuf); i++ {
+		x.GlobalVariables = append(x.GlobalVariables, cpy(&globBuf[i].docgen))
+	}
+	for i := 0; i < len(varInsBuf); i++ {
+		x.VariableInspectorPairs = append(x.VariableInspectorPairs, cpy(&varInsBuf[i].docgen))
+	}
+	b, err := json.Marshal(&x)
+	_, _ = w.Write(b)
+
+	return err
 }
 
 type docgenParam struct {
@@ -183,3 +227,31 @@ func (t *docgen) write(w io.Writer, format DocgenFormat, compact bool) error {
 
 	return nil
 }
+
+var reDGHTMLCode = regexp.MustCompile("`([^`]+)`")
+
+type (
+	docgenJSON struct {
+		Name      string `json:"name,omitempty"`
+		Alias     string `json:"alias,omitempty"`
+		Type      string `json:"type,omitempty"`
+		Desc      string `json:"desc,omitempty"`
+		Note      string `json:"note,omitempty"`
+		Example   string `json:"example,omitempty"`
+		Inspector string `json:"inspector,omitempty"`
+
+		Params []docgenParamJSON `json:"params,omitempty"`
+	}
+	docgenParamJSON struct {
+		Name string `json:"name,omitempty"`
+		Desc string `json:"desc,omitempty"`
+	}
+	docgenContainerJSON struct {
+		Modifiers              []docgenJSON `json:"modifiers,omitempty"`
+		ConditionHelpers       []docgenJSON `json:"conditionHelpers,omitempty"`
+		ConditionOKHelpers     []docgenJSON `json:"conditionOKHelpers,omitempty"`
+		EmptyCheckHelpers      []docgenJSON `json:"emptyCheckHelpers,omitempty"`
+		GlobalVariables        []docgenJSON `json:"globalVariables,omitempty"`
+		VariableInspectorPairs []docgenJSON `json:"variableInspectorPairs,omitempty"`
+	}
+)
