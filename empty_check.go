@@ -29,11 +29,11 @@ func RegisterEmptyCheckFn(name string, cond EmptyCheckFn) *EmptyCheckTuple {
 }
 
 // RegisterEmptyCheckFnNS registers new empty check helper.
-func RegisterEmptyCheckFnNS(namespace, name string, cond EmptyCheckFn) {
+func RegisterEmptyCheckFnNS(namespace, name string, cond EmptyCheckFn) *EmptyCheckTuple {
 	if len(namespace) > 0 {
 		name = namespace + "::" + name
 	}
-	RegisterEmptyCheckFn(name, cond)
+	return RegisterEmptyCheckFn(name, cond)
 }
 
 // GetEmptyCheckFn gets empty check helper from the registry.
