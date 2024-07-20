@@ -84,7 +84,7 @@ func writeDocgenMarkdown(w io.Writer) error {
 func writeDocgenHTML(w io.Writer) error {
 	_, _ = w.Write([]byte("<html><head><meta charset=\"utf-8\">"))
 	_, _ = w.Write([]byte(`<style>`))
-	_, _ = w.Write([]byte(`*{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji;font-size:16px;line-height:1.5;word-wrap:break-word}body{padding:1em}blockquote,code{margin:0}code,pre{border-radius:6px;font-family:monospace;font-size:12px}li,pre{margin-top:.5rem}h1{font-size:var(--h1-size,32px)}h1,h2,h3,h4{font-weight:var(--base-text-weight-semibold,600)}h2{font-size:var(--h2-size,24px)}h3{font-size:var(--h3-size,20px)}p{margin-top:0;margin-bottom:10px}code{padding:.2em .4em;white-space:break-spaces;background-color:rgba(99,110,123,.2)}pre{padding:10px 9px;background-color:rgb(45,51,59,.2)}`))
+	_, _ = w.Write([]byte(`*{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Noto Sans,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji;font-size:16px;line-height:1.5;word-wrap:break-word}body{padding:1em}blockquote,code{margin:0}blockquote{background-color:#e7f3fe;border-left:6px solid #2196F3;padding:10px 15px;}code,pre{border-radius:6px;font-family:monospace;font-size:12px}li,pre{margin-top:.5rem}h1{font-size:var(--h1-size,32px)}h1,h2,h3,h4{font-weight:var(--base-text-weight-semibold,600)}h2{font-size:var(--h2-size,24px)}h3{font-size:var(--h3-size,20px)}p{margin-top:0;margin-bottom:10px}code{padding:.2em .4em;white-space:break-spaces;background-color:rgba(99,110,123,.2)}pre{padding:10px 9px;background-color:rgb(45,51,59,.2)}`))
 	_, _ = w.Write([]byte(`</style>`))
 	_, _ = w.Write([]byte("</head><body><h1>API</h1>"))
 
@@ -101,8 +101,8 @@ func writeDocgenHTML(w io.Writer) error {
 	}
 
 	_, _ = w.Write([]byte(`<a name="condOK"></a><h2>Condition-OK helpers</h2>`))
-	for i := 0; i < len(condBuf); i++ {
-		tuple := &condBuf[i]
+	for i := 0; i < len(condOkBuf); i++ {
+		tuple := &condOkBuf[i]
 		_ = tuple.write(w, DocgenFormatHTML, false)
 	}
 
