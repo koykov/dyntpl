@@ -3,39 +3,51 @@ package dyntpl
 // Global describes value of global variable.
 type Global any
 
+type GlobalTuple struct {
+	docgen
+	val Global
+}
+
 var (
 	globIdx = map[string]int{}
-	globBuf []any
+	globBuf []GlobalTuple
 )
 
 // RegisterGlobal registers new global variable.
 //
 // Caution! Globals registered after template parsing will take no effect.
-func RegisterGlobal(name, alias string, val Global) {
-	globBuf = append(globBuf, val)
-	globIdx[name] = len(globBuf) - 1
-	if len(alias) > 0 {
-		globIdx[alias] = len(globBuf) - 1
+func RegisterGlobal(name, alias string, val Global) *GlobalTuple {
+	if idx, ok := globIdx[name]; ok && idx >= 0 && idx < len(globBuf) {
+		return &globBuf[idx]
 	}
+	globBuf = append(globBuf, GlobalTuple{
+		docgen: docgen{name: name, typ: "any"},
+		val:    val,
+	})
+	idx := len(globBuf) - 1
+	globIdx[name] = idx
+	if len(alias) > 0 {
+		globIdx[alias] = idx
+	}
+	return &globBuf[idx]
 }
 
 // RegisterGlobalNS registers new global variable in given namespace.
-func RegisterGlobalNS(namespace, name, alias string, val Global) {
+func RegisterGlobalNS(namespace, name, alias string, val Global) *GlobalTuple {
 	if len(namespace) == 0 {
-		RegisterGlobal(name, alias, val)
-		return
+		return RegisterGlobal(name, alias, val)
 	}
 	name = namespace + "::" + name
 	if len(alias) > 0 {
 		alias = namespace + "::" + alias
 	}
-	RegisterGlobal(name, alias, val)
+	return RegisterGlobal(name, alias, val)
 }
 
 // GetGlobal returns global variable by given name.
 func GetGlobal(name string) Global {
 	if idx, ok := globIdx[name]; ok && idx >= 0 && idx < len(globBuf) {
-		return globBuf[idx]
+		return globBuf[idx].val
 	}
 	return nil
 }

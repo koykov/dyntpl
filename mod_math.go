@@ -92,6 +92,14 @@ func modMathDiv(ctx *Ctx, buf *any, val any, args []any) (err error) {
 	if f, d, err, ok = mathConv2(val, args); !ok {
 		return
 	}
+	if d == 0 {
+		var sign int
+		if f < 0 {
+			sign = -1
+		}
+		ctx.BufF = math.Inf(sign)
+		return
+	}
 	f /= d
 	ctx.BufF = f
 	*buf = &ctx.BufF
@@ -104,6 +112,14 @@ func modMathMod(ctx *Ctx, buf *any, val any, args []any) (err error) {
 		ok   bool
 	)
 	if f, d, err, ok = mathConv2(val, args); !ok {
+		return
+	}
+	if d == 0 {
+		var sign int
+		if f < 0 {
+			sign = -1
+		}
+		ctx.BufF = math.Inf(sign)
 		return
 	}
 	f1, d1 := int64(f), int64(d)
