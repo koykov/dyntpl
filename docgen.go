@@ -316,7 +316,7 @@ func (t *docgen) write(w io.Writer, format DocgenFormat, compact bool) error {
 
 		if len(t.desc) > 0 {
 			_, _ = w.Write([]byte("<p>"))
-			_, _ = w.Write([]byte(htmlEscape(t.desc, false)))
+			_, _ = w.Write([]byte(htmlEscape(t.desc, true)))
 			_, _ = w.Write([]byte("</p>"))
 		}
 
