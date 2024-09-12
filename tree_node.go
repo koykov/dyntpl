@@ -44,6 +44,7 @@ type Node struct {
 	loopLimStatic bool
 	loopSep       []byte
 	loopBrkD      int
+	loopElse      []Node
 
 	switchArg []byte
 
