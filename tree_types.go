@@ -97,7 +97,7 @@ func (typ Type) String() string {
 	}
 }
 
-// String view of the opertion.
+// String view of the operation.
 func (o Op) String() string {
 	switch o {
 	case OpEq:
