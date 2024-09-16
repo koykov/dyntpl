@@ -4,6 +4,7 @@ import "errors"
 
 var (
 	ErrUnexpectedEOF = errors.New("unexpected end of file: control structure couldn't be closed")
+	ErrUnbalancedCtl = errors.New("unbalanced control structures found")
 	ErrUnknownCtl    = errors.New("unknown ctl")
 
 	ErrSenselessCond   = errors.New("comparison of two static args")

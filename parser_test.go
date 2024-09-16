@@ -57,7 +57,10 @@ func testParser(t *testing.T) {
 		return
 	}
 	if len(st.expect) > 0 {
-		tree, _ := Parse(st.origin, false)
+		tree, err := Parse(st.origin, false)
+		if err != nil {
+			t.Error(err)
+		}
 		r := tree.HumanReadable()
 		if !bytes.Equal(r, st.expect) {
 			t.Errorf("%s test failed\nexp: %s\ngot: %s", key, string(st.expect), string(r))
