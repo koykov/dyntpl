@@ -500,6 +500,19 @@ func (ctx *Ctx) rloop(path []byte, node *Node, tpl *Tpl, w io.Writer) {
 			// Mark RL as inuse and loop over var using inspector.
 			rl.stat = rlInuse
 			ctx.Err = v.ins.Loop(v.val, rl, &ctx.buf, ctx.bufS[1:]...)
+
+			// Check for-else condition.
+			if rl.c == 0 && len(node.child) > 1 && node.child[1].typ == TypeCondFalse {
+				child := node.child[1].child
+				for j := 0; j < len(child); j++ {
+					ch := &child[j]
+					if ctx.Err = rl.tpl.writeNode(w, ch, ctx); ctx.Err != nil {
+						break
+					}
+				}
+			}
+
+			// Mark RL as free to use.
 			rl.stat = rlFree
 			return
 		}
