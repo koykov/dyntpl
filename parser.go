@@ -531,11 +531,20 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 		}
 
 		// Create new target, increase loop counter and dive deeper.
-		target := newTarget(p)
+		t := newTarget(p)
 		p.cl++
 
-		root.child = make([]Node, 0)
-		root.child, offset, err = p.parseTpl(root.child, pos+len(ctl), target)
+		var subNodes []Node
+		subNodes, offset, err = p.parseTpl(subNodes, pos+len(ctl), t)
+		split := splitNodes(subNodes)
+		if len(split) > 1 {
+			nodeTrue := Node{typ: TypeCondTrue, child: split[0]}
+			root.child = append(root.child, nodeTrue)
+			nodeFalse := Node{typ: TypeCondFalse, child: split[1]}
+			root.child = append(root.child, nodeFalse)
+		} else {
+			root.child = subNodes
+		}
 
 		nodes = addNode(nodes, *root)
 		return nodes, offset, up, err

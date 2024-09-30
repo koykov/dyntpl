@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+	<node type="raw" val="<select name=&quot;type&quot;>"/>
+	<node type="rloop" key="k" val="v" src="user.historyTags">
+		<nodes>
+			<node type="true">
+				<nodes>
+					<node type="raw" val="<option value=&quot;"/>
+					<node type="tpl" val="k"/>
+					<node type="raw" val="&quot;>"/>
+					<node type="tpl" val="v"/>
+					<node type="raw" val="</option>"/>
+				</nodes>
+			</node>
+			<node type="false">
+				<nodes>
+					<node type="raw" val="<option>N/D</option>"/>
+				</nodes>
+			</node>
+		</nodes>
+	</node>
+	<node type="raw" val="</select>"/>
+</nodes>
