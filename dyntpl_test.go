@@ -28,6 +28,7 @@ func TestTpl(t *testing.T) {
 	t.Run("loopCountLazybreak", testTpl)
 	t.Run("loopCountLazybreakN", testTpl)
 	t.Run("loopCountStatic", testTpl)
+	t.Run("loopCountElse", testTpl)
 	t.Run("loopRange", testTpl)
 	t.Run("loopRangeLazybreakN", testTpl)
 	t.Run("loopRangeElse", testTpl)

@@ -524,7 +524,6 @@ func (ctx *Ctx) rloop(path []byte, node *Node, tpl *Tpl, w io.Writer) {
 func (ctx *Ctx) cloop(node *Node, tpl *Tpl, w io.Writer) {
 	var (
 		cnt, lim  int64
-		cntr      int
 		allowIter bool
 	)
 	// Prepare bounds.
@@ -542,7 +541,7 @@ func (ctx *Ctx) cloop(node *Node, tpl *Tpl, w io.Writer) {
 	valLC := cnt
 	// Start the loop.
 	allowIter = false
-	cntr = 0
+	var c int
 	for {
 		// Check iteration allowance.
 		switch node.loopCondOp {
@@ -573,15 +572,19 @@ func (ctx *Ctx) cloop(node *Node, tpl *Tpl, w io.Writer) {
 		ctx.SetStatic(byteconv.B2S(node.loopCnt), &ctx.bufLC[idxLC])
 
 		// Write separator.
-		if cntr > 0 && len(node.loopSep) > 0 {
+		if c > 0 && len(node.loopSep) > 0 {
 			_, _ = w.Write(node.loopSep)
 		}
-		cntr++
+		c++
 		// Loop over child nodes with square brackets check in paths.
 		ctx.chQB = true
 		var err, lerr error
-		for i := 0; i < len(node.child); i++ {
-			ch := &node.child[i]
+		child := node.child
+		if len(child) > 0 && child[0].typ == TypeCondTrue {
+			child = child[0].child
+		}
+		for i := 0; i < len(child); i++ {
+			ch := &child[i]
 			err = tpl.writeNode(w, ch, ctx)
 			if err == ErrLBreakLoop {
 				lerr = err
@@ -616,6 +619,17 @@ func (ctx *Ctx) cloop(node *Node, tpl *Tpl, w io.Writer) {
 			continue
 		}
 	}
+
+	if c == 0 && len(node.child) > 1 && node.child[1].typ == TypeCondFalse {
+		child := node.child[1].child
+		for j := 0; j < len(child); j++ {
+			ch := &child[j]
+			if ctx.Err = tpl.writeNode(w, ch, ctx); ctx.Err != nil {
+				break
+			}
+		}
+	}
+
 	return
 }
 
