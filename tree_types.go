@@ -1,141 +1,146 @@
 package dyntpl
 
-// Type of the node.
-type Type int
-
-// Op is a type of the operation in conditions and loops.
-type Op int
-
-type lc int
+// rtype represents a runtime type of the node.
+type rtype int
 
 const (
-	TypeRaw       Type = 0
-	TypeTpl       Type = 1
-	TypeCond      Type = 2
-	TypeCondOK    Type = 3
-	TypeCondTrue  Type = 4
-	TypeCondFalse Type = 5
-	TypeLoopRange Type = 6
-	TypeLoopCount Type = 7
-	TypeBreak     Type = 8
-	TypeLBreak    Type = 9
-	TypeContinue  Type = 10
-	TypeCtx       Type = 11
-	TypeCounter   Type = 12
-	TypeSwitch    Type = 13
-	TypeCase      Type = 14
-	TypeDefault   Type = 15
-	TypeDiv       Type = 16
-	TypeJsonQ     Type = 17
-	TypeEndJsonQ  Type = 18
-	TypeHtmlE     Type = 19
-	TypeEndHtmlE  Type = 20
-	TypeUrlEnc    Type = 21
-	TypeEndUrlEnc Type = 22
-	TypeInclude   Type = 23
-	TypeExit      Type = 99
-
-	// Must be in sync with inspector.Op type.
-	OpUnk Op = 0
-	OpEq  Op = 1
-	OpNq  Op = 2
-	OpGt  Op = 3
-	OpGtq Op = 4
-	OpLt  Op = 5
-	OpLtq Op = 6
-	OpInc Op = 7
-	OpDec Op = 8
-
-	lcNone lc = 0
-	lcLen  lc = 1
-	lcCap  lc = 2
+	typeRaw rtype = iota
+	typeTpl
+	typeCond
+	typeCondOK
+	typeCondTrue
+	typeCondFalse
+	typeLoopRange
+	typeLoopCount
+	typeBreak
+	typeLBreak
+	typeContinue
+	typeCtx
+	typeCounter
+	typeSwitch
+	typeCase
+	typeDefault
+	typeDiv
+	typeJsonQ
+	typeEndJsonQ
+	typeHtmlE
+	typeEndHtmlE
+	typeUrlEnc
+	typeEndUrlEnc
+	typeInclude
+	typeExit
 )
 
 // String view of the type.
-func (typ Type) String() string {
+func (typ rtype) String() string {
 	switch typ {
-	case TypeRaw:
+	case typeRaw:
 		return "raw"
-	case TypeTpl:
+	case typeTpl:
 		return "tpl"
-	case TypeCond:
+	case typeCond:
 		return "cond"
-	case TypeCondOK:
+	case typeCondOK:
 		return "condOK"
-	case TypeCondTrue:
+	case typeCondTrue:
 		return "true"
-	case TypeCondFalse:
+	case typeCondFalse:
 		return "false"
-	case TypeLoopRange:
+	case typeLoopRange:
 		return "rloop"
-	case TypeLoopCount:
+	case typeLoopCount:
 		return "cloop"
-	case TypeBreak:
+	case typeBreak:
 		return "break"
-	case TypeLBreak:
+	case typeLBreak:
 		return "lazybreak"
-	case TypeContinue:
+	case typeContinue:
 		return "cont"
-	case TypeCtx:
+	case typeCtx:
 		return "ctx"
-	case TypeCounter:
+	case typeCounter:
 		return "cntr"
-	case TypeSwitch:
+	case typeSwitch:
 		return "switch"
-	case TypeCase:
+	case typeCase:
 		return "case"
-	case TypeDefault:
+	case typeDefault:
 		return "def"
-	case TypeDiv:
+	case typeDiv:
 		return "div"
-	case TypeInclude:
+	case typeInclude:
 		return "inc"
-	case TypeExit:
+	case typeExit:
 		return "exit"
 	default:
 		return "unk"
 	}
 }
 
-// String view of the operation.
-func (o Op) String() string {
+// op represents a type of the operation in conditions and loops.
+type op int
+
+// Must be in sync with inspector.Op type.
+const (
+	opUnk op = iota
+	opEq
+	opNq
+	opGt
+	opGtq
+	opLt
+	opLtq
+	opInc
+	opDec
+)
+
+// Swap inverts itself.
+func (o op) Swap() op {
 	switch o {
-	case OpEq:
+	case opGt:
+		return opLt
+	case opGtq:
+		return opLtq
+	case opLt:
+		return opGt
+	case opLtq:
+		return opGtq
+	default:
+		return o
+	}
+}
+
+// String view of the operation.
+func (o op) String() string {
+	switch o {
+	case opEq:
 		return "=="
-	case OpNq:
+	case opNq:
 		return "!="
-	case OpGt:
+	case opGt:
 		return ">"
-	case OpGtq:
+	case opGtq:
 		return ">="
-	case OpLt:
+	case opLt:
 		return "<"
-	case OpLtq:
+	case opLtq:
 		return "<="
-	case OpInc:
+	case opInc:
 		return "++"
-	case OpDec:
+	case opDec:
 		return "--"
 	default:
 		return "unk"
 	}
 }
 
-// Swap inverts itself.
-func (o Op) Swap() Op {
-	switch o {
-	case OpGt:
-		return OpLt
-	case OpGtq:
-		return OpLtq
-	case OpLt:
-		return OpGt
-	case OpLtq:
-		return OpGtq
-	default:
-		return o
-	}
-}
+// lc represents len/cap type.
+type lc int
+
+const (
+	lcNone lc = iota
+	lcLen
+	lcCap
+)
 
 func (lc lc) String() string {
 	switch lc {

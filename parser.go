@@ -12,26 +12,14 @@ import (
 	"github.com/koykov/byteconv"
 )
 
-const (
-	// Types of targets.
-	targetCond = iota
-	targetLoop
-	targetSwitch
-)
-
-// Parser object.
-type Parser struct {
+// parser object.
+type parser struct {
+	target
 	// Keep format flag. Remove all new lines and tabulations when false.
 	keepFmt bool
 	// Template body to parse.
 	tpl []byte
-
-	// Counters (depths) of conditions, loops and switches.
-	cc, cl, cs int
 }
-
-// Target is a storage of depths needed to provide proper out from conditions, loops and switches control structures.
-type target map[int]int
 
 var (
 	// Byte constants.
@@ -99,14 +87,14 @@ var (
 	idF   = []byte("ceilPrec")  // float precision ceil
 
 	// Operation constants.
-	opEq  = []byte("==")
-	opNq  = []byte("!=")
-	opGt  = []byte(">")
-	opGtq = []byte(">=")
-	opLt  = []byte("<")
-	opLtq = []byte("<=")
-	opInc = []byte("++")
-	opDec = []byte("--")
+	opEq_  = []byte("==")
+	opNq_  = []byte("!=")
+	opGt_  = []byte(">")
+	opGtq_ = []byte(">=")
+	opLt_  = []byte("<")
+	opLtq_ = []byte("<=")
+	opInc_ = []byte("++")
+	opDec_ = []byte("--")
 
 	// Regexp to clear template.
 	reCutComments = regexp.MustCompile(`{#[^#]*#}`)
@@ -168,7 +156,7 @@ var (
 
 // Parse initializes parser and parse the template body.
 func Parse(tpl []byte, keepFmt bool) (tree *Tree, err error) {
-	p := &Parser{
+	p := &parser{
 		tpl:     tpl,
 		keepFmt: keepFmt,
 	}
@@ -182,7 +170,7 @@ func Parse(tpl []byte, keepFmt bool) (tree *Tree, err error) {
 
 	// Prepare template tree.
 	tree = &Tree{hsum: hsum}
-	t := newTarget(p)
+	t := p.targetSnapshot()
 	tree.nodes, _, err = p.parseTpl(tree.nodes, 0, t)
 	return
 }
@@ -202,12 +190,12 @@ func ParseFile(fileName string, keepFmt bool) (tree *Tree, err error) {
 }
 
 // Remove all comments from the template body.
-func (p *Parser) cutComments() {
+func (p *parser) cutComments() {
 	p.tpl = reCutComments.ReplaceAll(p.tpl, empty)
 }
 
 // Remove template formatting if needed.
-func (p *Parser) cutFmt() {
+func (p *parser) cutFmt() {
 	if p.keepFmt {
 		return
 	}
@@ -216,7 +204,7 @@ func (p *Parser) cutFmt() {
 }
 
 // Initial parsing method.
-func (p *Parser) parseTpl(nodes []Node, offset int, t *target) ([]Node, int, error) {
+func (p *parser) parseTpl(nodes []Node, offset int, t *target) ([]Node, int, error) {
 	var (
 		up  bool
 		err error
@@ -268,7 +256,7 @@ func (p *Parser) parseTpl(nodes []Node, offset int, t *target) ([]Node, int, err
 }
 
 // General parsing method.
-func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]Node, int, bool, error) {
+func (p *parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]Node, int, bool, error) {
 	var (
 		offset int
 		up     bool
@@ -280,7 +268,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 	// Check tpl (print) structure.
 	if reTplPS.Match(ct) || reTplP.Match(ct) || reTplS.Match(ct) || reTpl.Match(ct) || reTplCB.Match(ct) {
 		// Sequentially check print structure from the complex to the simplest.
-		root.typ = TypeTpl
+		root.typ = typeTpl
 		if m := reTplPS.FindSubmatch(ct); m != nil {
 			// Tpl with prefix and suffix found.
 			root.raw, root.mod, root.noesc = p.extractMods(m[2], m[1])
@@ -309,7 +297,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 
 	// Check context structure.
 	if reCtx.Match(ct) {
-		root.typ = TypeCtx
+		root.typ = typeCtx
 		var (
 			m           [][]byte
 			forceStatic bool
@@ -346,7 +334,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 
 	// Check counter structure.
 	if reCntr.Match(ct) {
-		root.typ = TypeCounter
+		root.typ = typeCounter
 		root.cntrInitF = false
 		if m := reCntrInit.FindSubmatch(ct); m != nil {
 			root.cntrVar = m[1]
@@ -358,18 +346,18 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 			root.cntrInit = i
 		} else if m := reCntrOp0.FindSubmatch(ct); m != nil {
 			root.cntrVar = m[1]
-			if bytes.Equal(m[2], opDec) {
-				root.cntrOp = OpDec
+			if bytes.Equal(m[2], opDec_) {
+				root.cntrOp = opDec
 			} else {
-				root.cntrOp = OpInc
+				root.cntrOp = opInc
 			}
 			root.cntrOpArg = 1
 		} else if m := reCntrOp1.FindSubmatch(ct); m != nil {
 			root.cntrVar = m[1]
 			if m[2][0] == '-' {
-				root.cntrOp = OpDec
+				root.cntrOp = opDec
 			} else {
-				root.cntrOp = OpInc
+				root.cntrOp = opInc
 			}
 			a, err := strconv.Atoi(string(m[2][1:]))
 			if err != nil {
@@ -384,7 +372,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 
 	// Check if-ok instruction.
 	if reCondOK.Match(ct) {
-		root.typ = TypeCondOK
+		root.typ = typeCondOK
 		var m [][]byte
 		m = reCondAsOK.FindSubmatch(ct)
 		if m == nil {
@@ -400,18 +388,18 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 		}
 		root.condL, root.condR, root.condStaticL, root.condStaticR, root.condOp = p.parseCondExpr(reCondExprOK, ct)
 
-		t := newTarget(p)
+		t := p.targetSnapshot()
 		p.cc++
 
 		subNodes := make([]Node, 0)
 		subNodes, offset, err = p.parseTpl(subNodes, pos+len(ctl), t)
 		split := splitNodes(subNodes)
 		if len(split) > 0 {
-			nodeTrue := Node{typ: TypeCondTrue, child: split[0]}
+			nodeTrue := Node{typ: typeCondTrue, child: split[0]}
 			root.child = append(root.child, nodeTrue)
 		}
 		if len(split) > 1 {
-			nodeFalse := Node{typ: TypeCondFalse, child: split[1]}
+			nodeFalse := Node{typ: typeCondFalse, child: split[1]}
 			root.child = append(root.child, nodeFalse)
 		}
 
@@ -425,14 +413,14 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 		if reCondComplex.Match(ct) {
 			// Check if condition may be handled by the condition helper.
 			if m := reCondHelper.FindSubmatch(ct); m != nil {
-				target := newTarget(p)
+				t := p.targetSnapshot()
 				p.cc++
 
 				subNodes := make([]Node, 0)
-				subNodes, offset, err = p.parseTpl(subNodes, pos+len(ctl), target)
+				subNodes, offset, err = p.parseTpl(subNodes, pos+len(ctl), t)
 				split := splitNodes(subNodes)
 
-				root.typ = TypeCond
+				root.typ = typeCond
 				root.condHlp = m[1]
 				root.condHlpArg = p.extractArgs(m[2])
 				root.condL, root.condR, root.condStaticL, root.condStaticR, root.condOp = p.parseCondExpr(reCondExpr, ct)
@@ -443,11 +431,11 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 					root.condLC = lcCap
 				}
 				if len(split) > 0 {
-					nodeTrue := Node{typ: TypeCondTrue, child: split[0]}
+					nodeTrue := Node{typ: typeCondTrue, child: split[0]}
 					root.child = append(root.child, nodeTrue)
 				}
 				if len(split) > 1 {
-					nodeFalse := Node{typ: TypeCondFalse, child: split[1]}
+					nodeFalse := Node{typ: typeCondFalse, child: split[1]}
 					root.child = append(root.child, nodeFalse)
 				}
 
@@ -457,21 +445,21 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 			return nodes, pos, up, fmt.Errorf("too complex condition '%s' at offset %d", ct, pos)
 		}
 		// Create new target, increase condition counter and dive deeper.
-		target := newTarget(p)
+		t := p.targetSnapshot()
 		p.cc++
 
 		subNodes := make([]Node, 0)
-		subNodes, offset, err = p.parseTpl(subNodes, pos+len(ctl), target)
+		subNodes, offset, err = p.parseTpl(subNodes, pos+len(ctl), t)
 		split := splitNodes(subNodes)
 
-		root.typ = TypeCond
+		root.typ = typeCond
 		root.condL, root.condR, root.condStaticL, root.condStaticR, root.condOp = p.parseCondExpr(reCondExpr, ct)
 		if len(split) > 0 {
-			nodeTrue := Node{typ: TypeCondTrue, child: split[0]}
+			nodeTrue := Node{typ: typeCondTrue, child: split[0]}
 			root.child = append(root.child, nodeTrue)
 		}
 		if len(split) > 1 {
-			nodeFalse := Node{typ: TypeCondFalse, child: split[1]}
+			nodeFalse := Node{typ: typeCondFalse, child: split[1]}
 			root.child = append(root.child, nodeFalse)
 		}
 
@@ -480,7 +468,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 	}
 	// Check condition divider.
 	if bytes.Equal(ct, condElse) {
-		root.typ = TypeDiv
+		root.typ = typeDiv
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
 		return nodes, offset, up, err
@@ -498,7 +486,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 	if reLoop.Match(ct) {
 		if m := reLoopRange.FindSubmatch(ct); m != nil {
 			// Range loop found.
-			root.typ = TypeLoopRange
+			root.typ = typeLoopRange
 			if bytes.Contains(m[1], comma) {
 				kv := bytes.Split(m[1], comma)
 				root.loopKey = bytealg.Trim(kv[0], space)
@@ -515,7 +503,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 			}
 		} else if m := reLoopCount.FindSubmatch(ct); m != nil {
 			// Counter loop found.
-			root.typ = TypeLoopCount
+			root.typ = typeLoopCount
 			root.loopCnt = m[1]
 			root.loopCntInit = m[2]
 			root.loopCntStatic = isStatic(m[2])
@@ -531,16 +519,16 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 		}
 
 		// Create new target, increase loop counter and dive deeper.
-		t := newTarget(p)
+		t := p.targetSnapshot()
 		p.cl++
 
 		var subNodes []Node
 		subNodes, offset, err = p.parseTpl(subNodes, pos+len(ctl), t)
 		split := splitNodes(subNodes)
 		if len(split) > 1 {
-			nodeTrue := Node{typ: TypeCondTrue, child: split[0]}
+			nodeTrue := Node{typ: typeCondTrue, child: split[0]}
 			root.child = append(root.child, nodeTrue)
-			nodeFalse := Node{typ: TypeCondFalse, child: split[1]}
+			nodeFalse := Node{typ: typeCondFalse, child: split[1]}
 			root.child = append(root.child, nodeFalse)
 		} else {
 			root.child = subNodes
@@ -559,7 +547,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 	}
 	// Check loop lazy break (including lazybreak N).
 	if m := reLoopLBrk.FindSubmatch(ct); m != nil {
-		root.typ = TypeLBreak
+		root.typ = typeLBreak
 		if i, _ := strconv.ParseInt(byteconv.B2S(m[1]), 10, 64); i > 0 {
 			root.loopBrkD = int(i)
 		}
@@ -567,14 +555,14 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 		offset = pos + len(ctl)
 		return nodes, offset, up, err
 	} else if bytes.Equal(ct, loopLBrk) {
-		root.typ = TypeLBreak
+		root.typ = typeLBreak
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
 		return nodes, offset, up, err
 	}
 	// Check loop break (including break N).
 	if m := reLoopBrk.FindSubmatch(ct); m != nil {
-		root.typ = TypeBreak
+		root.typ = typeBreak
 		if i, _ := strconv.ParseInt(byteconv.B2S(m[1]), 10, 64); i > 0 {
 			root.loopBrkD = int(i)
 		}
@@ -582,14 +570,14 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 		offset = pos + len(ctl)
 		return nodes, offset, up, err
 	} else if bytes.Equal(ct, loopBrk) {
-		root.typ = TypeBreak
+		root.typ = typeBreak
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
 		return nodes, offset, up, err
 	}
 	// Check loop continue.
 	if bytes.Equal(ct, loopCont) {
-		root.typ = TypeContinue
+		root.typ = typeContinue
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
 		return nodes, offset, up, err
@@ -598,15 +586,15 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 	// Check switch structure.
 	if m := reSwitch.FindSubmatch(ct); m != nil {
 		// Create new target, increase switch counter and dive deeper.
-		target := newTarget(p)
+		t := p.targetSnapshot()
 		p.cs++
 
-		root.typ = TypeSwitch
+		root.typ = typeSwitch
 		if len(m) > 0 {
 			root.switchArg = m[1]
 		}
 		root.child = make([]Node, 0)
-		root.child, offset, err = p.parseTpl(root.child, pos+len(ctl), target)
+		root.child, offset, err = p.parseTpl(root.child, pos+len(ctl), t)
 		root.child = rollupSwitchNodes(root.child)
 
 		nodes = addNode(nodes, *root)
@@ -614,7 +602,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 	}
 	// Check switch's case with condition helper.
 	if m := reSwitchCaseHelper.FindSubmatch(ct); m != nil {
-		root.typ = TypeCase
+		root.typ = typeCase
 		root.caseHlp = m[1]
 		root.caseHlpArg = p.extractArgs(m[2])
 		nodes = addNode(nodes, *root)
@@ -623,7 +611,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 	}
 	// Check switch's case with simple condition.
 	if reSwitchCase.Match(ct) {
-		root.typ = TypeCase
+		root.typ = typeCase
 		root.caseL, root.caseR, root.caseStaticL, root.caseStaticR, root.caseOp = p.parseCaseExpr(ct)
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
@@ -631,7 +619,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 	}
 	// Check switch's default.
 	if bytes.Equal(ct, swDefault) {
-		root.typ = TypeDefault
+		root.typ = typeDefault
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
 		return nodes, offset, up, err
@@ -647,7 +635,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 
 	// Check tpl interrupt.
 	if bytes.Equal(ct, ctlExit) {
-		root.typ = TypeExit
+		root.typ = typeExit
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
 		return nodes, offset, up, err
@@ -656,25 +644,25 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 	// Check control symbols.
 	switch {
 	case bytes.Equal(ct, symEndl) || bytes.Equal(ct, symNl) || bytes.Equal(ct, symN) || bytes.Equal(ct, symLf):
-		root.typ = TypeRaw
+		root.typ = typeRaw
 		root.raw = nl
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
 		return nodes, offset, up, err
 	case bytes.Equal(ct, symCr) || bytes.Equal(ct, symR):
-		root.typ = TypeRaw
+		root.typ = typeRaw
 		root.raw = cr
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
 		return nodes, offset, up, err
 	case bytes.Equal(ct, symCrLn) || bytes.Equal(ct, symRN):
-		root.typ = TypeRaw
+		root.typ = typeRaw
 		root.raw = crlf
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
 		return nodes, offset, up, err
 	case bytes.Equal(ct, symTab) || bytes.Equal(ct, symT):
-		root.typ = TypeRaw
+		root.typ = typeRaw
 		root.raw = tab
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
@@ -683,13 +671,13 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 
 	// Check json quote.
 	if bytes.Equal(ct, jq) {
-		root.typ = TypeJsonQ
+		root.typ = typeJsonQ
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
 		return nodes, offset, up, err
 	}
 	if bytes.Equal(ct, jqEnd) {
-		root.typ = TypeEndJsonQ
+		root.typ = typeEndJsonQ
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
 		return nodes, offset, up, err
@@ -697,13 +685,13 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 
 	// Check HTML escape.
 	if bytes.Equal(ct, he) {
-		root.typ = TypeHtmlE
+		root.typ = typeHtmlE
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
 		return nodes, offset, up, err
 	}
 	if bytes.Equal(ct, heEnd) {
-		root.typ = TypeEndHtmlE
+		root.typ = typeEndHtmlE
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
 		return nodes, offset, up, err
@@ -711,13 +699,13 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 
 	// Check URL encode.
 	if bytes.Equal(ct, ue) {
-		root.typ = TypeUrlEnc
+		root.typ = typeUrlEnc
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
 		return nodes, offset, up, err
 	}
 	if bytes.Equal(ct, ueEnd) {
-		root.typ = TypeEndUrlEnc
+		root.typ = typeEndUrlEnc
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
 		return nodes, offset, up, err
@@ -725,7 +713,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 
 	// Check include.
 	if m := reInc.FindSubmatch(ct); m != nil {
-		root.typ = TypeInclude
+		root.typ = typeInclude
 		root.tpl = bytes.Split(m[1], space)
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
@@ -736,7 +724,7 @@ func (p *Parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 }
 
 // Parse condition to left/right parts and condition operator.
-func (p *Parser) parseCondExpr(re *regexp.Regexp, expr []byte) (l, r []byte, sl, sr bool, op Op) {
+func (p *parser) parseCondExpr(re *regexp.Regexp, expr []byte) (l, r []byte, sl, sr bool, op op) {
 	if m := re.FindSubmatch(expr); m != nil {
 		l = bytealg.Trim(m[1], space)
 		if len(l) > 0 && l[0] == '!' {
@@ -744,7 +732,7 @@ func (p *Parser) parseCondExpr(re *regexp.Regexp, expr []byte) (l, r []byte, sl,
 			r = bTrue
 			sl = false
 			sr = true
-			op = OpNq
+			op = opNq
 		} else {
 			r = bytealg.Trim(m[3], space)
 			sl = isStatic(l)
@@ -762,7 +750,7 @@ func (p *Parser) parseCondExpr(re *regexp.Regexp, expr []byte) (l, r []byte, sl,
 }
 
 // Parse case condition similar to condition parsing.
-func (p *Parser) parseCaseExpr(expr []byte) (l, r []byte, sl, sr bool, op Op) {
+func (p *parser) parseCaseExpr(expr []byte) (l, r []byte, sl, sr bool, op op) {
 	if m := reSwitchCase.FindSubmatch(expr); m != nil {
 		l = bytealg.Trim(m[1], space)
 		sl = isStatic(l)
@@ -775,34 +763,39 @@ func (p *Parser) parseCaseExpr(expr []byte) (l, r []byte, sl, sr bool, op Op) {
 	return
 }
 
-// Convert operation from string to Op type.
-func (p *Parser) parseOp(src []byte) Op {
-	var op Op
+// Convert operation from string to op type.
+func (p *parser) parseOp(src []byte) op {
+	var op op
 	switch {
-	case bytes.Equal(src, opEq):
-		op = OpEq
-	case bytes.Equal(src, opNq):
-		op = OpNq
-	case bytes.Equal(src, opGt):
-		op = OpGt
-	case bytes.Equal(src, opGtq):
-		op = OpGtq
-	case bytes.Equal(src, opLt):
-		op = OpLt
-	case bytes.Equal(src, opLtq):
-		op = OpLtq
-	case bytes.Equal(src, opInc):
-		op = OpInc
-	case bytes.Equal(src, opDec):
-		op = OpDec
+	case bytes.Equal(src, opEq_):
+		op = opEq
+	case bytes.Equal(src, opNq_):
+		op = opNq
+	case bytes.Equal(src, opGt_):
+		op = opGt
+	case bytes.Equal(src, opGtq_):
+		op = opGtq
+	case bytes.Equal(src, opLt_):
+		op = opLt
+	case bytes.Equal(src, opLtq_):
+		op = opLtq
+	case bytes.Equal(src, opInc_):
+		op = opInc
+	case bytes.Equal(src, opDec_):
+		op = opDec
 	default:
-		op = OpUnk
+		op = opUnk
 	}
 	return op
 }
 
+func (p *parser) targetSnapshot() *target {
+	cpy := p.target
+	return &cpy
+}
+
 // Split print structure to value and mods list.
-func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod, bool) {
+func (p *parser) extractMods(t, outm []byte) ([]byte, []mod, bool) {
 	var noesc bool
 	hasVline := bytes.Contains(t, vline)
 	modNoVar := reModNoVar.Match(t) && !hasVline
@@ -977,7 +970,7 @@ func (p *Parser) extractMods(t, outm []byte) ([]byte, []mod, bool) {
 // {% if condHelper(arg0, ..., argN) %}...{% endif %}
 //
 //	^             ^
-func (p *Parser) extractArgs(raw []byte) []*arg {
+func (p *parser) extractArgs(raw []byte) []*arg {
 	r := make([]*arg, 0)
 	if len(raw) == 0 {
 		return r
@@ -1030,27 +1023,4 @@ func (p *Parser) extractArgs(raw []byte) []*arg {
 		off += pos + 1
 	}
 	return r
-}
-
-// Create new target based on current parser state.
-func newTarget(p *Parser) *target {
-	return &target{
-		targetCond:   p.cc,
-		targetLoop:   p.cl,
-		targetSwitch: p.cs,
-	}
-}
-
-// Check if parser reached the target.
-func (t *target) reached(p *Parser) bool {
-	return (*t)[targetCond] == p.cc &&
-		(*t)[targetLoop] == p.cl &&
-		(*t)[targetSwitch] == p.cs
-}
-
-// Check if target is a root.
-func (t *target) eqZero() bool {
-	return (*t)[targetCond] == 0 &&
-		(*t)[targetLoop] == 0 &&
-		(*t)[targetSwitch] == 0
 }

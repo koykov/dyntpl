@@ -64,7 +64,7 @@ func (rl *RangeLoop) Iterate() inspector.LoopCtl {
 	rl.cntr++
 	var err, lerr error
 	child := rl.node.child
-	if len(child) > 0 && child[0].typ == TypeCondTrue {
+	if len(child) > 0 && child[0].typ == typeCondTrue {
 		child = child[0].child
 	}
 	for i := 0; i < len(child); i++ {

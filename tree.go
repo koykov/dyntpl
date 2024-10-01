@@ -84,7 +84,7 @@ func (t *Tree) hrHelper(buf *bytebuf.Chain, nodes []Node, indent []byte, depth i
 			}
 		}
 
-		if node.typ == TypeCond {
+		if node.typ == typeCond {
 			if len(node.condL) > 0 {
 				t.attrB(buf, "left", node.condL)
 			}
@@ -116,7 +116,7 @@ func (t *Tree) hrHelper(buf *bytebuf.Chain, nodes []Node, indent []byte, depth i
 			}
 		}
 
-		if node.typ == TypeCondOK {
+		if node.typ == typeCondOK {
 			t.attrB(buf, "var", node.condOKL)
 			t.attrB(buf, "varOK", node.condOKR)
 
@@ -220,7 +220,7 @@ func (t *Tree) hrHelper(buf *bytebuf.Chain, nodes []Node, indent []byte, depth i
 			t.attrB(buf, "val", node.loc)
 		}
 
-		if node.typ != TypeExit && node.typ != TypeBreak && node.typ != TypeLBreak && node.typ != TypeContinue && len(node.raw) > 0 {
+		if node.typ != typeExit && node.typ != typeBreak && node.typ != typeLBreak && node.typ != typeContinue && len(node.raw) > 0 {
 			raw := string(node.raw)
 			if repl, ok := ctlRepl[raw]; ok {
 				raw = repl

@@ -147,7 +147,7 @@ func write(w io.Writer, tpl *Tpl, ctx *Ctx) (err error) {
 // General node renderer.
 func (t *Tpl) writeNode(w io.Writer, node *Node, ctx *Ctx) (err error) {
 	switch node.typ {
-	case TypeRaw:
+	case typeRaw:
 		if ctx.chJQ {
 			// JSON quote mode.
 			ctx.BufAcc.StakeOut()
@@ -175,7 +175,7 @@ func (t *Tpl) writeNode(w io.Writer, node *Node, ctx *Ctx) (err error) {
 			// Raw node writes as is.
 			_, err = w.Write(node.raw)
 		}
-	case TypeTpl:
+	case typeTpl:
 		// Get data from the context.
 		raw := ctx.get(node.raw)
 		if ctx.Err != nil {
@@ -245,7 +245,7 @@ func (t *Tpl) writeNode(w io.Writer, node *Node, ctx *Ctx) (err error) {
 				_, _ = w.Write(node.suffix)
 			}
 		}
-	case TypeCtx:
+	case typeCtx:
 		// Context node sets new variable, example:
 		// {% ctx name = user.Name %} or {% ctx limit = 10 %}
 
@@ -324,7 +324,7 @@ func (t *Tpl) writeNode(w io.Writer, node *Node, ctx *Ctx) (err error) {
 				ctx.Set(byteconv.B2S(node.ctxVar), raw, ins)
 			}
 		}
-	case TypeCounter:
+	case typeCounter:
 		if node.cntrInitF {
 			ctx.SetCounter(byteconv.B2S(node.cntrVar), node.cntrInit)
 		} else {
@@ -337,14 +337,14 @@ func (t *Tpl) writeNode(w io.Writer, node *Node, ctx *Ctx) (err error) {
 			if cntr64, ok := ConvInt(raw); ok {
 				cntr = int(cntr64)
 			}
-			if node.cntrOp == OpInc {
+			if node.cntrOp == opInc {
 				cntr += node.cntrOpArg
 			} else {
 				cntr -= node.cntrOpArg
 			}
 			ctx.SetCounter(byteconv.B2S(node.cntrVar), cntr)
 		}
-	case TypeCondOK:
+	case typeCondOK:
 		// Condition-OK node evaluates expressions like if-ok with helper.
 		var r bool
 		// Check condition-OK helper (mandatory at all).
@@ -398,7 +398,7 @@ func (t *Tpl) writeNode(w io.Writer, node *Node, ctx *Ctx) (err error) {
 				}
 			}
 		}
-	case TypeCond:
+	case typeCond:
 		// Condition node evaluates condition expressions.
 		var r bool
 		switch {
@@ -451,7 +451,7 @@ func (t *Tpl) writeNode(w io.Writer, node *Node, ctx *Ctx) (err error) {
 				err = t.writeNode(w, &node.child[1], ctx)
 			}
 		}
-	case TypeCondTrue, TypeCondFalse, TypeCase, TypeDefault:
+	case typeCondTrue, typeCondFalse, typeCase, typeDefault:
 		// Just walk over child nodes.
 		for i := 0; i < len(node.child); i++ {
 			ch := &node.child[i]
@@ -460,7 +460,7 @@ func (t *Tpl) writeNode(w io.Writer, node *Node, ctx *Ctx) (err error) {
 				return
 			}
 		}
-	case TypeLoopCount:
+	case typeLoopCount:
 		// Evaluate counter loops.
 		// See Ctx.cloop().
 		ctx.brkD = 0
@@ -469,7 +469,7 @@ func (t *Tpl) writeNode(w io.Writer, node *Node, ctx *Ctx) (err error) {
 			err = ctx.Err
 			return
 		}
-	case TypeLoopRange:
+	case typeLoopRange:
 		// Evaluate range loops.
 		// See Ctx.rloop().
 		ctx.brkD = 0
@@ -478,34 +478,34 @@ func (t *Tpl) writeNode(w io.Writer, node *Node, ctx *Ctx) (err error) {
 			err = ctx.Err
 			return
 		}
-	case TypeBreak:
+	case typeBreak:
 		// Break the loop.
 		ctx.brkD = node.loopBrkD
 		err = ErrBreakLoop
-	case TypeLBreak:
+	case typeLBreak:
 		// Lazy break the loop.
 		ctx.brkD = node.loopBrkD
 		err = ErrLBreakLoop
-	case TypeContinue:
+	case typeContinue:
 		// Go to next iteration of loop.
 		err = ErrContLoop
-	case TypeSwitch:
+	case typeSwitch:
 		// Switch magic...
 		r := false
 		if len(node.switchArg) > 0 {
 			// Classic switch case.
 			for i := 0; i < len(node.child); i++ {
 				ch := &node.child[i]
-				if ch.typ == TypeCase {
+				if ch.typ == typeCase {
 					if ch.caseStaticL {
-						r = ctx.cmp(node.switchArg, OpEq, ch.caseL)
+						r = ctx.cmp(node.switchArg, opEq, ch.caseL)
 					} else {
 						ctx.get(ch.caseL)
 						if ctx.Err == nil {
 							if err = ctx.BufAcc.StakeOut().WriteX(ctx.bufX).Error(); err != nil {
 								return
 							}
-							r = ctx.cmp(node.switchArg, OpEq, ctx.BufAcc.StakedBytes())
+							r = ctx.cmp(node.switchArg, opEq, ctx.BufAcc.StakedBytes())
 						}
 					}
 				}
@@ -518,7 +518,7 @@ func (t *Tpl) writeNode(w io.Writer, node *Node, ctx *Ctx) (err error) {
 			// Switch without condition case.
 			for i := 0; i < len(node.child); i++ {
 				ch := &node.child[i]
-				if ch.typ == TypeCase {
+				if ch.typ == typeCase {
 					if len(ch.caseHlp) > 0 {
 						// Case condition helper caught.
 						fn := GetCondFn(byteconv.B2S(ch.caseHlp))
@@ -580,13 +580,13 @@ func (t *Tpl) writeNode(w io.Writer, node *Node, ctx *Ctx) (err error) {
 		if !r {
 			for i := 0; i < len(node.child); i++ {
 				ch := &node.child[i]
-				if ch.typ == TypeDefault {
+				if ch.typ == typeDefault {
 					err = t.writeNode(w, ch, ctx)
 					break
 				}
 			}
 		}
-	case TypeInclude:
+	case typeInclude:
 		// Include sub-template expression.
 		tpl := tplDB.getBKeys(node.tpl)
 		if tpl != nil {
@@ -599,20 +599,20 @@ func (t *Tpl) writeNode(w io.Writer, node *Node, ctx *Ctx) (err error) {
 		} else {
 			err = ErrTplNotFound
 		}
-	case TypeExit:
+	case typeExit:
 		// Interrupt template evaluation.
 		err = ErrInterrupt
-	case TypeJsonQ:
+	case typeJsonQ:
 		ctx.chJQ = true
-	case TypeEndJsonQ:
+	case typeEndJsonQ:
 		ctx.chJQ = false
-	case TypeHtmlE:
+	case typeHtmlE:
 		ctx.chHE = true
-	case TypeEndHtmlE:
+	case typeEndHtmlE:
 		ctx.chHE = false
-	case TypeUrlEnc:
+	case typeUrlEnc:
 		ctx.chUE = true
-	case TypeEndUrlEnc:
+	case typeEndUrlEnc:
 		ctx.chUE = false
 	default:
 		// Unknown node type caught.
