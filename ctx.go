@@ -389,7 +389,7 @@ func (ctx *Ctx) get(path []byte) any {
 }
 
 // Compare method.
-func (ctx *Ctx) cmp(path []byte, cond Op, right []byte) bool {
+func (ctx *Ctx) cmp(path []byte, cond op, right []byte) bool {
 	// Split path.
 	ctx.bufS = ctx.bufS[:0]
 	ctx.bufS = bytealg.AppendSplitString(ctx.bufS, byteconv.B2S(path), ".", -1)
@@ -416,7 +416,7 @@ func (ctx *Ctx) cmp(path []byte, cond Op, right []byte) bool {
 	return false
 }
 
-func (ctx *Ctx) cmpLC(lc lc, path []byte, cond Op, right []byte) bool {
+func (ctx *Ctx) cmpLC(lc lc, path []byte, cond op, right []byte) bool {
 	ctx.Err = nil
 	if ctx.chQB {
 		path = ctx.replaceQB(path)
@@ -502,7 +502,7 @@ func (ctx *Ctx) rloop(path []byte, node *Node, tpl *Tpl, w io.Writer) {
 			ctx.Err = v.ins.Loop(v.val, rl, &ctx.buf, ctx.bufS[1:]...)
 
 			// Check for-else condition.
-			if rl.c == 0 && len(node.child) > 1 && node.child[1].typ == TypeCondFalse {
+			if rl.c == 0 && len(node.child) > 1 && node.child[1].typ == typeCondFalse {
 				child := node.child[1].child
 				for j := 0; j < len(child); j++ {
 					ch := &child[j]
@@ -545,17 +545,17 @@ func (ctx *Ctx) cloop(node *Node, tpl *Tpl, w io.Writer) {
 	for {
 		// Check iteration allowance.
 		switch node.loopCondOp {
-		case OpLt:
+		case opLt:
 			allowIter = valLC < lim
-		case OpLtq:
+		case opLtq:
 			allowIter = valLC <= lim
-		case OpGt:
+		case opGt:
 			allowIter = valLC > lim
-		case OpGtq:
+		case opGtq:
 			allowIter = valLC >= lim
-		case OpEq:
+		case opEq:
 			allowIter = valLC == lim
-		case OpNq:
+		case opNq:
 			allowIter = valLC != lim
 		default:
 			ctx.Err = ErrWrongLoopCond
@@ -580,7 +580,7 @@ func (ctx *Ctx) cloop(node *Node, tpl *Tpl, w io.Writer) {
 		ctx.chQB = true
 		var err, lerr error
 		child := node.child
-		if len(child) > 0 && child[0].typ == TypeCondTrue {
+		if len(child) > 0 && child[0].typ == typeCondTrue {
 			child = child[0].child
 		}
 		for i := 0; i < len(child); i++ {
@@ -597,10 +597,10 @@ func (ctx *Ctx) cloop(node *Node, tpl *Tpl, w io.Writer) {
 
 		// Modify counter var.
 		switch node.loopCntOp {
-		case OpInc:
+		case opInc:
 			valLC++
 			ctx.bufLC[idxLC]++
-		case OpDec:
+		case opDec:
 			valLC--
 			ctx.bufLC[idxLC]--
 		default:
@@ -620,7 +620,7 @@ func (ctx *Ctx) cloop(node *Node, tpl *Tpl, w io.Writer) {
 		}
 	}
 
-	if c == 0 && len(node.child) > 1 && node.child[1].typ == TypeCondFalse {
+	if c == 0 && len(node.child) > 1 && node.child[1].typ == typeCondFalse {
 		child := node.child[1].child
 		for j := 0; j < len(child); j++ {
 			ch := &child[j]

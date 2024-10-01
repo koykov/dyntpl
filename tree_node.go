@@ -4,7 +4,7 @@ package dyntpl
 // Every piece of the template, beginning from static text and finishing of complex structures (switch, loop, ...)
 // Represents by this type.
 type Node struct {
-	typ    Type
+	typ    rtype
 	raw    []byte
 	prefix []byte
 	suffix []byte
@@ -19,14 +19,14 @@ type Node struct {
 	cntrVar   []byte
 	cntrInit  int
 	cntrInitF bool
-	cntrOp    Op
+	cntrOp    op
 	cntrOpArg int
 
 	condL, condOKL []byte
 	condR, condOKR []byte
 	condStaticL    bool
 	condStaticR    bool
-	condOp         Op
+	condOp         op
 	condHlp        []byte
 	condHlpArg     []*arg
 	condIns        []byte
@@ -38,8 +38,8 @@ type Node struct {
 	loopCnt       []byte
 	loopCntInit   []byte
 	loopCntStatic bool
-	loopCntOp     Op
-	loopCondOp    Op
+	loopCntOp     op
+	loopCondOp    op
 	loopLim       []byte
 	loopLimStatic bool
 	loopSep       []byte
@@ -51,7 +51,7 @@ type Node struct {
 	caseR       []byte
 	caseStaticL bool
 	caseStaticR bool
-	caseOp      Op
+	caseOp      op
 	caseHlp     []byte
 	caseHlpArg  []*arg
 
@@ -73,7 +73,7 @@ func addRaw(nodes []Node, raw []byte) []Node {
 	if len(raw) == 0 {
 		return nodes
 	}
-	nodes = append(nodes, Node{typ: TypeRaw, raw: raw})
+	nodes = append(nodes, Node{typ: typeRaw, raw: raw})
 	return nodes
 }
 
@@ -85,7 +85,7 @@ func splitNodes(nodes []Node) [][]Node {
 	split := make([][]Node, 0)
 	var o int
 	for i, node := range nodes {
-		if node.typ == TypeDiv {
+		if node.typ == typeDiv {
 			split = append(split, nodes[o:i])
 			o = i + 1
 		}
@@ -106,10 +106,10 @@ func rollupSwitchNodes(nodes []Node) []Node {
 		group = Node{typ: -1}
 	)
 	for _, node := range nodes {
-		if node.typ != TypeCase && node.typ != TypeDefault && group.typ == -1 {
+		if node.typ != typeCase && node.typ != typeDefault && group.typ == -1 {
 			continue
 		}
-		if node.typ == TypeCase || node.typ == TypeDefault {
+		if node.typ == typeCase || node.typ == typeDefault {
 			if group.typ != -1 {
 				r = append(r, group)
 			}

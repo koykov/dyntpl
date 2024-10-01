@@ -66,7 +66,7 @@ func testParser(t *testing.T) {
 			t.Errorf("%s test failed\nexp: %s\ngot: %s", key, string(st.expect), string(r))
 		}
 	} else if len(st.raw) > 0 {
-		p := &Parser{tpl: st.origin}
+		p := &parser{tpl: st.origin}
 		p.cutComments()
 		p.cutFmt()
 		if !bytes.Equal(st.raw, p.tpl) {
