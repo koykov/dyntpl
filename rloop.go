@@ -21,6 +21,7 @@ type RangeLoop struct {
 	tpl  *Tpl
 	ctx  *Ctx
 	next *RangeLoop
+	c    uint
 	w    io.Writer
 }
 
@@ -52,6 +53,7 @@ func (rl *RangeLoop) SetVal(val any, ins inspector.Inspector) {
 
 // Iterate performs the iteration.
 func (rl *RangeLoop) Iterate() inspector.LoopCtl {
+	rl.c++
 	if rl.ctx.brkD > 0 {
 		return inspector.LoopCtlBrk
 	}
@@ -61,8 +63,12 @@ func (rl *RangeLoop) Iterate() inspector.LoopCtl {
 	}
 	rl.cntr++
 	var err, lerr error
-	for i := 0; i < len(rl.node.child); i++ {
-		ch := &rl.node.child[i]
+	child := rl.node.child
+	if len(child) > 0 && child[0].typ == TypeCondTrue {
+		child = child[0].child
+	}
+	for i := 0; i < len(child); i++ {
+		ch := &child[i]
 		err = rl.tpl.writeNode(rl.w, ch, rl.ctx)
 		if err == ErrLBreakLoop {
 			lerr = err
@@ -94,6 +100,7 @@ func (rl *RangeLoop) Reset() {
 		crl.cntr = 0
 		crl.ctx = nil
 		crl.tpl = nil
+		crl.c = 0
 		crl.w = nil
 		crl = crl.next
 	}

@@ -1,14 +1,15 @@
 {
 	"id":"{%= user.Id %}",
 	"name":"{%= user.Name %}",
-	"fin_history":[
-    {% for k, item := range user.Finance.History sep , %}
+	"history":[
+    {% for k, item := range user.HistoryTree sep , %}
     {%= k %}:{
       "utime":{%= item.DateUnix %},
       "cost":{%= item.Cost %},
       "desc":"{%= item.Comment %}"
-      {% if k == 2 %}{% lazybreak 2 %}{% endif %}
     }
+    {% else %}
+      -1:{"error":"no history rows"}
     {% endfor %}
 	]
 }
