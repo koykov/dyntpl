@@ -137,8 +137,16 @@ var (
 	reLoop      = regexp.MustCompile(`for .*`)
 	reLoopRange = regexp.MustCompile(`for ([^:]+)\s*:*=\s*range\s*([^\s]*)\s*(?:separator|sep)*\s*(.*)` + "")
 	reLoopCount = regexp.MustCompile(`for (\w*)\s*:*=\s*(\w+)\s*;\s*\w+\s*(<|<=|>|>=|!=)+\s*([^;]+)\s*;\s*\w*(--|\+\+)+\s*(?:separator|sep)*\s*(.*)`)
-	reLoopBrk   = regexp.MustCompile(`break (\d+)`)
-	reLoopLBrk  = regexp.MustCompile(`lazybreak (\d+)`)
+	// Regexp to parse break/lazybreak instructions.
+	reLoopBrkN  = regexp.MustCompile(`break (\d+)`)
+	reLoopLBrkN = regexp.MustCompile(`lazybreak (\d+)`)
+	// Regexp to parse break-if/lazybreak-if instructions.
+	reLoopBrkIf   = regexp.MustCompile(`break (if .*)`)
+	reLoopBrkNIf  = regexp.MustCompile(`break (\d+) (if .*)`)
+	reLoopLBrkIf  = regexp.MustCompile(`lazybreak (if .*)`)
+	reLoopLBrkNIf = regexp.MustCompile(`lazybreak (\d+) (if .*)`)
+	// Regexp to parse continue if-instructions.
+	reLoopContIf = regexp.MustCompile(`continue (if .*)`)
 
 	// Regexp to parse switch instruction.
 	reSwitch           = regexp.MustCompile(`^switch\s*(.*)`)
@@ -409,62 +417,7 @@ func (p *parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 
 	// Check condition structure.
 	if reCond.Match(ct) {
-		// Check complexity of the condition first.
-		if reCondComplex.Match(ct) {
-			// Check if condition may be handled by the condition helper.
-			if m := reCondHelper.FindSubmatch(ct); m != nil {
-				t := p.targetSnapshot()
-				p.cc++
-
-				subNodes := make([]Node, 0)
-				subNodes, offset, err = p.parseTpl(subNodes, pos+len(ctl), t)
-				split := splitNodes(subNodes)
-
-				root.typ = typeCond
-				root.condHlp = m[1]
-				root.condHlpArg = p.extractArgs(m[2])
-				root.condL, root.condR, root.condStaticL, root.condStaticR, root.condOp = p.parseCondExpr(reCondExpr, ct)
-				switch {
-				case bytes.Equal(root.condHlp, condLen):
-					root.condLC = lcLen
-				case bytes.Equal(root.condHlp, condCap):
-					root.condLC = lcCap
-				}
-				if len(split) > 0 {
-					nodeTrue := Node{typ: typeCondTrue, child: split[0]}
-					root.child = append(root.child, nodeTrue)
-				}
-				if len(split) > 1 {
-					nodeFalse := Node{typ: typeCondFalse, child: split[1]}
-					root.child = append(root.child, nodeFalse)
-				}
-
-				nodes = addNode(nodes, *root)
-				return nodes, offset, up, err
-			}
-			return nodes, pos, up, fmt.Errorf("too complex condition '%s' at offset %d", ct, pos)
-		}
-		// Create new target, increase condition counter and dive deeper.
-		t := p.targetSnapshot()
-		p.cc++
-
-		subNodes := make([]Node, 0)
-		subNodes, offset, err = p.parseTpl(subNodes, pos+len(ctl), t)
-		split := splitNodes(subNodes)
-
-		root.typ = typeCond
-		root.condL, root.condR, root.condStaticL, root.condStaticR, root.condOp = p.parseCondExpr(reCondExpr, ct)
-		if len(split) > 0 {
-			nodeTrue := Node{typ: typeCondTrue, child: split[0]}
-			root.child = append(root.child, nodeTrue)
-		}
-		if len(split) > 1 {
-			nodeFalse := Node{typ: typeCondFalse, child: split[1]}
-			root.child = append(root.child, nodeFalse)
-		}
-
-		nodes = addNode(nodes, *root)
-		return nodes, offset, up, err
+		return p.processCond(nodes, root, ctl, pos, ct, offset, up, true)
 	}
 	// Check condition divider.
 	if bytes.Equal(ct, condElse) {
@@ -546,7 +499,7 @@ func (p *parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 		return nodes, offset, up, err
 	}
 	// Check loop lazy break (including lazybreak N).
-	if m := reLoopLBrk.FindSubmatch(ct); m != nil {
+	if m := reLoopLBrkN.FindSubmatch(ct); m != nil {
 		root.typ = typeLBreak
 		if i, _ := strconv.ParseInt(byteconv.B2S(m[1]), 10, 64); i > 0 {
 			root.loopBrkD = int(i)
@@ -561,7 +514,7 @@ func (p *parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 		return nodes, offset, up, err
 	}
 	// Check loop break (including break N).
-	if m := reLoopBrk.FindSubmatch(ct); m != nil {
+	if m := reLoopBrkN.FindSubmatch(ct); m != nil {
 		root.typ = typeBreak
 		if i, _ := strconv.ParseInt(byteconv.B2S(m[1]), 10, 64); i > 0 {
 			root.loopBrkD = int(i)
@@ -576,7 +529,14 @@ func (p *parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 		return nodes, offset, up, err
 	}
 	// Check loop continue.
-	if bytes.Equal(ct, loopCont) {
+	if m := reLoopContIf.FindSubmatch(ct); m != nil {
+		if nodes, offset, up, err = p.processCond(nodes, root, ctl, pos, ct, offset, up, true); err != nil {
+			contNode := Node{typ: typeContinue}
+			root.child = append(root.child, contNode)
+			offset = pos + len(ctl)
+			return nodes, offset, up, err
+		}
+	} else if bytes.Equal(ct, loopCont) {
 		root.typ = typeContinue
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
@@ -721,6 +681,72 @@ func (p *parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 	}
 
 	return nodes, 0, up, fmt.Errorf("unknown control structure '%s' at offset %d", ct, pos)
+}
+
+func (p *parser) processCond(nodes []Node, root *Node, ctl []byte, pos int, ct []byte, offset int, up, dive bool) ([]Node, int, bool, error) {
+	var (
+		subNodes []Node
+		split    [][]Node
+		err      error
+	)
+	// Check complexity of the condition first.
+	if reCondComplex.Match(ct) {
+		// Check if condition may be handled by the condition helper.
+		if m := reCondHelper.FindSubmatch(ct); m != nil {
+			root.typ = typeCond
+			root.condHlp = m[1]
+			root.condHlpArg = p.extractArgs(m[2])
+			root.condL, root.condR, root.condStaticL, root.condStaticR, root.condOp = p.parseCondExpr(reCondExpr, ct)
+			switch {
+			case bytes.Equal(root.condHlp, condLen):
+				root.condLC = lcLen
+			case bytes.Equal(root.condHlp, condCap):
+				root.condLC = lcCap
+			}
+
+			if dive {
+				t := p.targetSnapshot()
+				p.cc++
+				subNodes, offset, err = p.parseTpl(subNodes, pos+len(ctl), t)
+				split = splitNodes(subNodes)
+
+				if len(split) > 0 {
+					nodeTrue := Node{typ: typeCondTrue, child: split[0]}
+					root.child = append(root.child, nodeTrue)
+				}
+				if len(split) > 1 {
+					nodeFalse := Node{typ: typeCondFalse, child: split[1]}
+					root.child = append(root.child, nodeFalse)
+				}
+				nodes = addNode(nodes, *root)
+			}
+			return nodes, offset, up, err
+		}
+		return nodes, pos, up, fmt.Errorf("too complex condition '%s' at offset %d", ct, pos)
+	}
+	root.typ = typeCond
+	root.condL, root.condR, root.condStaticL, root.condStaticR, root.condOp = p.parseCondExpr(reCondExpr, ct)
+
+	if dive {
+		// Create new target, increase condition counter and dive deeper.
+		t := p.targetSnapshot()
+		p.cc++
+
+		subNodes = make([]Node, 0)
+		subNodes, offset, err = p.parseTpl(subNodes, pos+len(ctl), t)
+		split = splitNodes(subNodes)
+
+		if len(split) > 0 {
+			nodeTrue := Node{typ: typeCondTrue, child: split[0]}
+			root.child = append(root.child, nodeTrue)
+		}
+		if len(split) > 1 {
+			nodeFalse := Node{typ: typeCondFalse, child: split[1]}
+			root.child = append(root.child, nodeFalse)
+		}
+		nodes = addNode(nodes, *root)
+	}
+	return nodes, offset, up, err
 }
 
 // Parse condition to left/right parts and condition operator.
