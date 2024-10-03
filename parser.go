@@ -498,6 +498,32 @@ func (p *parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 		up = true
 		return nodes, offset, up, err
 	}
+	// Check loop lazybreak/break/continue-if (including N).
+	xif := []struct {
+		re *regexp.Regexp
+		n  bool
+	}{
+		{reLoopLBrkNIf, true}, // eg: {% lazybreak 2 if v > 5 %}
+		{reLoopLBrkIf, false}, // eg: {% lazybreak if len(x) == 4 %}
+		{reLoopBrkNIf, true},  // eg: {% break 4 if x!=3.14 %}
+		{reLoopBrkIf, false},  // eg: {% break if conditionHelperFn(x, y, z, true) %}
+		{reLoopContIf, false}, // eg: {% continue if x1 != x2 %}
+	}
+	for i := 0; i < len(xif); i++ {
+		x := &xif[i]
+		if m := x.re.FindSubmatch(ct); m != nil {
+			if nodes, offset, up, err = p.processCond(nodes, root, ctl, pos, m[2], offset, up, false); err != nil {
+				brkNode := Node{typ: typeLBreak}
+				if i, _ := strconv.ParseInt(byteconv.B2S(m[1]), 10, 64); i > 0 {
+					root.loopBrkD = int(i)
+				}
+				root.child = append(root.child, brkNode)
+				nodes = addNode(nodes, *root)
+				offset = pos + len(ctl)
+				return nodes, offset, up, err
+			}
+		}
+	}
 	// Check loop lazy break (including lazybreak N).
 	if m := reLoopLBrkN.FindSubmatch(ct); m != nil {
 		root.typ = typeLBreak
@@ -529,14 +555,7 @@ func (p *parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 		return nodes, offset, up, err
 	}
 	// Check loop continue.
-	if m := reLoopContIf.FindSubmatch(ct); m != nil {
-		if nodes, offset, up, err = p.processCond(nodes, root, ctl, pos, ct, offset, up, true); err != nil {
-			contNode := Node{typ: typeContinue}
-			root.child = append(root.child, contNode)
-			offset = pos + len(ctl)
-			return nodes, offset, up, err
-		}
-	} else if bytes.Equal(ct, loopCont) {
+	if bytes.Equal(ct, loopCont) {
 		root.typ = typeContinue
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
