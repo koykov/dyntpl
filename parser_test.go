@@ -40,6 +40,7 @@ func TestParser(t *testing.T) {
 	t.Run("loopBreakNested", testParser)
 	t.Run("loopElse", testParser)
 	t.Run("loopElseMixedCond", testParser)
+	t.Run("loopBreakIf", testParser)
 	t.Run("switch", testParser)
 	t.Run("switchNoCondition", testParser)
 	t.Run("switchNoConditionWithHelper", testParser)

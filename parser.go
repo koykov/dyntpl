@@ -158,6 +158,18 @@ var (
 
 	crc64Tab = crc64.MakeTable(crc64.ISO)
 
+	// List of lazybreak/break/continue checkers.
+	xif = []struct {
+		re *regexp.Regexp
+		n  bool
+	}{
+		{reLoopLBrkNIf, true}, // eg: {% lazybreak 2 if v > 5 %}
+		{reLoopLBrkIf, false}, // eg: {% lazybreak if len(x) == 4 %}
+		{reLoopBrkNIf, true},  // eg: {% break 4 if x!=3.14 %}
+		{reLoopBrkIf, false},  // eg: {% break if conditionHelperFn(x, y, z, true) %}
+		{reLoopContIf, false}, // eg: {% continue if x1 != x2 %}
+	}
+
 	// Suppress go vet warning.
 	_ = ParseFile
 )
@@ -499,16 +511,6 @@ func (p *parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 		return nodes, offset, up, err
 	}
 	// Check loop lazybreak/break/continue-if (including N).
-	xif := []struct {
-		re *regexp.Regexp
-		n  bool
-	}{
-		{reLoopLBrkNIf, true}, // eg: {% lazybreak 2 if v > 5 %}
-		{reLoopLBrkIf, false}, // eg: {% lazybreak if len(x) == 4 %}
-		{reLoopBrkNIf, true},  // eg: {% break 4 if x!=3.14 %}
-		{reLoopBrkIf, false},  // eg: {% break if conditionHelperFn(x, y, z, true) %}
-		{reLoopContIf, false}, // eg: {% continue if x1 != x2 %}
-	}
 	for i := 0; i < len(xif); i++ {
 		x := &xif[i]
 		if m := x.re.FindSubmatch(ct); m != nil {
