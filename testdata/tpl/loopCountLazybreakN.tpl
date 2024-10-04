@@ -5,7 +5,7 @@
 		<li>Amount: {%= user.Finance.History[j].Cost %}<br/>
 			Description: {%= user.Finance.History[j].Comment %}<br/>
 			Date: {%= user.Finance.History[j].DateUnix %}
-			{% if j == 2 %}{% lazybreak 2 %}{% endif %}
+			{% lazybreak 2 if j == 2 %}
 		</li>
 		{% endfor %}
 	</ul>

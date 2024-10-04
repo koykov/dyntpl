@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+	<node type="raw" val="["/>
+	<node type="cloop" counter="i" cond="<" limit="10" op="++" sep=",">
+		<nodes>
+			<node type="raw" val="{&quot;"/>
+			<node type="tpl" val="i"/>
+			<node type="raw" val="&quot;:"/>
+			<node type="tpl" val="i"/>
+			<node type="raw" val="}"/>
+			<node type="cond" left="i" op=">" right="5">
+				<nodes>
+					<node type="break"/>
+				</nodes>
+			</node>
+		</nodes>
+	</node>
+	<node type="raw" val=","/>
+	<node type="rloop" key="k" val="v" src="list" sep=",">
+		<nodes>
+			<node type="cond" helper="empty" arg0="k">
+				<nodes>
+					<node type="lazybreak"/>
+				</nodes>
+			</node>
+			<node type="raw" val="{&quot;"/>
+			<node type="tpl" val="k">
+				<mods>
+					<mod name="default" arg0="v"/>
+				</mods>
+			</node>
+			<node type="raw" val="&quot;:"/>
+			<node type="tpl" val="v"/>
+			<node type="raw" val="}"/>
+		</nodes>
+	</node>
+	<node type="raw" val=","/>
+	<node type="cloop" counter="j" cond="<" limit="10" op="++" sep=",">
+		<nodes>
+			<node type="cloop" counter="k" cond="<" limit="10" op="++" sep=",">
+				<nodes>
+					<node type="cond" left="k" op="<" right="j">
+						<nodes>
+							<node type="cont"/>
+						</nodes>
+					</node>
+					<node type="raw" val="{&quot;"/>
+					<node type="tpl" val="j"/>
+					<node type="raw" val="&quot;:"/>
+					<node type="tpl" val="k"/>
+					<node type="raw" val="}"/>
+				</nodes>
+			</node>
+		</nodes>
+	</node>
+	<node type="raw" val=","/>
+	<node type="cloop" counter="j" cond="<" limit="10" op="++" sep=",">
+		<nodes>
+			<node type="rloop" key="k" val="v" src="list" sep=",">
+				<nodes>
+					<node type="cond" left="k" op="==" right="-1">
+						<nodes>
+							<node type="break" brkD="2"/>
+						</nodes>
+					</node>
+					<node type="raw" val="{&quot;"/>
+					<node type="tpl" val="k"/>
+					<node type="raw" val="&quot;:"/>
+					<node type="tpl" val="v"/>
+					<node type="raw" val="}"/>
+				</nodes>
+			</node>
+		</nodes>
+	</node>
+	<node type="raw" val=","/>
+	<node type="cloop" counter="j" cond="<" limit="10" op="++" sep=",">
+		<nodes>
+			<node type="cloop" counter="k" cond="<" limit="10" op="++" sep=",">
+				<nodes>
+					<node type="cond" left="k" op="==" right="j">
+						<nodes>
+							<node type="lazybreak" brkD="2"/>
+						</nodes>
+					</node>
+					<node type="raw" val="{&quot;"/>
+					<node type="tpl" val="j"/>
+					<node type="raw" val="&quot;:"/>
+					<node type="tpl" val="k"/>
+					<node type="raw" val="}"/>
+				</nodes>
+			</node>
+		</nodes>
+	</node>
+	<node type="raw" val="]"/>
+</nodes>
