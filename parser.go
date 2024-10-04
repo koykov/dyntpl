@@ -161,13 +161,15 @@ var (
 	// List of lazybreak/break/continue checkers.
 	xif = []struct {
 		re *regexp.Regexp
+		t  rtype
+		i  int
 		n  bool
 	}{
-		{reLoopLBrkNIf, true}, // eg: {% lazybreak 2 if v > 5 %}
-		{reLoopLBrkIf, false}, // eg: {% lazybreak if len(x) == 4 %}
-		{reLoopBrkNIf, true},  // eg: {% break 4 if x!=3.14 %}
-		{reLoopBrkIf, false},  // eg: {% break if conditionHelperFn(x, y, z, true) %}
-		{reLoopContIf, false}, // eg: {% continue if x1 != x2 %}
+		{reLoopLBrkNIf, typeLBreak, 2, true},   // eg: {% lazybreak 2 if v > 5 %}
+		{reLoopLBrkIf, typeLBreak, 1, false},   // eg: {% lazybreak if len(x) == 4 %}
+		{reLoopBrkNIf, typeBreak, 2, true},     // eg: {% break 4 if x!=3.14 %}
+		{reLoopBrkIf, typeBreak, 1, false},     // eg: {% break if conditionHelperFn(x, y, z, true) %}
+		{reLoopContIf, typeContinue, 1, false}, // eg: {% continue if x1 != x2 %}
 	}
 
 	// Suppress go vet warning.
@@ -427,10 +429,6 @@ func (p *parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 		return nodes, offset, up, err
 	}
 
-	// Check condition structure.
-	if reCond.Match(ct) {
-		return p.processCond(nodes, root, ctl, pos, ct, offset, up, true)
-	}
 	// Check condition divider.
 	if bytes.Equal(ct, condElse) {
 		root.typ = typeDiv
@@ -514,16 +512,19 @@ func (p *parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 	for i := 0; i < len(xif); i++ {
 		x := &xif[i]
 		if m := x.re.FindSubmatch(ct); m != nil {
-			if nodes, offset, up, err = p.processCond(nodes, root, ctl, pos, m[2], offset, up, false); err != nil {
-				brkNode := Node{typ: typeLBreak}
-				if i, _ := strconv.ParseInt(byteconv.B2S(m[1]), 10, 64); i > 0 {
-					root.loopBrkD = int(i)
-				}
-				root.child = append(root.child, brkNode)
-				nodes = addNode(nodes, *root)
-				offset = pos + len(ctl)
+			if nodes, offset, up, err = p.processCond(nodes, root, ctl, pos, m[x.i], offset, up, false); err != nil {
 				return nodes, offset, up, err
 			}
+			ch := Node{typ: x.t}
+			if len(m) > 2 {
+				if i, _ := strconv.ParseInt(byteconv.B2S(m[1]), 10, 64); i > 0 {
+					ch.loopBrkD = int(i)
+				}
+			}
+			root.child = append(root.child, ch)
+			nodes = addNode(nodes, *root)
+			offset = pos + len(ctl)
+			return nodes, offset, up, err
 		}
 	}
 	// Check loop lazy break (including lazybreak N).
@@ -562,6 +563,11 @@ func (p *parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
 		return nodes, offset, up, err
+	}
+
+	// Check condition structure.
+	if reCond.Match(ct) {
+		return p.processCond(nodes, root, ctl, pos, ct, offset, up, true)
 	}
 
 	// Check switch structure.
