@@ -5,6 +5,6 @@
 		Description: {%= user.Finance.History[i].Comment %}<br/>
 		Date: {%= user.Finance.History[i].DateUnix %}
 	</li>
-	{% if i == 2 %}{% break %}{% endif %}
+	{% break if i == 2 %}
 	{% endfor %}
 </ul>
