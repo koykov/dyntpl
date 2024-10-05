@@ -9,7 +9,7 @@ import (
 
 // Tree structure that represents parsed template as list of nodes with childrens.
 type Tree struct {
-	nodes []Node
+	nodes []node
 	hsum  uint64
 }
 
@@ -44,7 +44,7 @@ func (t *Tree) HumanReadable() []byte {
 }
 
 // Internal human-readable helper.
-func (t *Tree) hrHelper(buf *bytebuf.Chain, nodes []Node, indent []byte, depth int) {
+func (t *Tree) hrHelper(buf *bytebuf.Chain, nodes []node, indent []byte, depth int) {
 	if depth == 0 {
 		buf.WriteString("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n")
 	} else {
@@ -52,55 +52,55 @@ func (t *Tree) hrHelper(buf *bytebuf.Chain, nodes []Node, indent []byte, depth i
 	}
 	buf.WriteString("<nodes>\n")
 	depth++
-	for _, node := range nodes {
+	for _, n := range nodes {
 		buf.Write(bytes.Repeat(indent, depth))
-		buf.WriteString(`<node type="`).WriteString(node.typ.String()).WriteByte('"')
+		buf.WriteString(`<node type="`).WriteString(n.typ.String()).WriteByte('"')
 
-		if len(node.prefix) > 0 {
-			t.attrB(buf, "prefix", node.prefix)
+		if len(n.prefix) > 0 {
+			t.attrB(buf, "prefix", n.prefix)
 		}
-		if len(node.suffix) > 0 {
-			t.attrB(buf, "suffix", node.suffix)
+		if len(n.suffix) > 0 {
+			t.attrB(buf, "suffix", n.suffix)
 		}
 
-		if len(node.ctxVar) > 0 && len(node.ctxSrc) > 0 {
-			t.attrB(buf, "var", node.ctxVar)
-			if len(node.ctxOK) > 0 {
-				t.attrB(buf, "varOK", node.ctxOK)
+		if len(n.ctxVar) > 0 && len(n.ctxSrc) > 0 {
+			t.attrB(buf, "var", n.ctxVar)
+			if len(n.ctxOK) > 0 {
+				t.attrB(buf, "varOK", n.ctxOK)
 			}
-			t.attrB(buf, "src", node.ctxSrc)
-			if len(node.ctxIns) > 0 {
-				t.attrB(buf, "ins", node.ctxIns)
+			t.attrB(buf, "src", n.ctxSrc)
+			if len(n.ctxIns) > 0 {
+				t.attrB(buf, "ins", n.ctxIns)
 			}
 		}
 
-		if len(node.cntrVar) > 0 {
-			t.attrB(buf, "var", node.cntrVar)
-			if node.cntrInitF {
-				t.attrI(buf, "val", node.cntrInit)
+		if len(n.cntrVar) > 0 {
+			t.attrB(buf, "var", n.cntrVar)
+			if n.cntrInitF {
+				t.attrI(buf, "val", n.cntrInit)
 			} else {
-				t.attrS(buf, "op", node.cntrOp.String())
-				t.attrI(buf, "delta", node.cntrOpArg)
+				t.attrS(buf, "op", n.cntrOp.String())
+				t.attrI(buf, "delta", n.cntrOpArg)
 			}
 		}
 
-		if node.typ == typeCond {
-			if len(node.condL) > 0 {
-				t.attrB(buf, "left", node.condL)
+		if n.typ == typeCond {
+			if len(n.condL) > 0 {
+				t.attrB(buf, "left", n.condL)
 			}
-			if node.condOp != 0 {
-				t.attrS(buf, "op", node.condOp.String())
+			if n.condOp != 0 {
+				t.attrS(buf, "op", n.condOp.String())
 			}
-			if len(node.condR) > 0 {
-				t.attrB(buf, "right", node.condR)
+			if len(n.condR) > 0 {
+				t.attrB(buf, "right", n.condR)
 			}
-			if len(node.condHlp) > 0 {
-				t.attrB(buf, "helper", node.condHlp)
-				if node.condLC > lcNone {
-					t.attrS(buf, "lc", node.condLC.String())
+			if len(n.condHlp) > 0 {
+				t.attrB(buf, "helper", n.condHlp)
+				if n.condLC > lcNone {
+					t.attrS(buf, "lc", n.condLC.String())
 				}
-				if len(node.condHlpArg) > 0 {
-					for j, a := range node.condHlpArg {
+				if len(n.condHlpArg) > 0 {
+					for j, a := range n.condHlpArg {
 						pfx := "arg"
 						if a.static {
 							pfx = "sarg"
@@ -116,14 +116,14 @@ func (t *Tree) hrHelper(buf *bytebuf.Chain, nodes []Node, indent []byte, depth i
 			}
 		}
 
-		if node.typ == typeCondOK {
-			t.attrB(buf, "var", node.condOKL)
-			t.attrB(buf, "varOK", node.condOKR)
+		if n.typ == typeCondOK {
+			t.attrB(buf, "var", n.condOKL)
+			t.attrB(buf, "varOK", n.condOKR)
 
-			if len(node.condHlp) > 0 {
-				t.attrB(buf, "helper", node.condHlp)
-				if len(node.condHlpArg) > 0 {
-					for j, a := range node.condHlpArg {
+			if len(n.condHlp) > 0 {
+				t.attrB(buf, "helper", n.condHlp)
+				if len(n.condHlpArg) > 0 {
+					for j, a := range n.condHlpArg {
 						pfx := "arg"
 						if a.static {
 							pfx = "sarg"
@@ -138,59 +138,59 @@ func (t *Tree) hrHelper(buf *bytebuf.Chain, nodes []Node, indent []byte, depth i
 				}
 			}
 
-			if len(node.condL) > 0 {
-				t.attrB(buf, "left", node.condL)
+			if len(n.condL) > 0 {
+				t.attrB(buf, "left", n.condL)
 			}
-			if node.condOp != 0 {
-				t.attrS(buf, "op", node.condOp.String())
+			if n.condOp != 0 {
+				t.attrS(buf, "op", n.condOp.String())
 			}
-			if len(node.condR) > 0 {
-				t.attrB(buf, "right", node.condR)
+			if len(n.condR) > 0 {
+				t.attrB(buf, "right", n.condR)
 			}
 		}
 
-		if len(node.loopKey) > 0 {
-			t.attrB(buf, "key", node.loopKey)
+		if len(n.loopKey) > 0 {
+			t.attrB(buf, "key", n.loopKey)
 		}
-		if len(node.loopVal) > 0 {
-			t.attrB(buf, "val", node.loopVal)
+		if len(n.loopVal) > 0 {
+			t.attrB(buf, "val", n.loopVal)
 		}
-		if len(node.loopSrc) > 0 {
-			t.attrB(buf, "src", node.loopSrc)
+		if len(n.loopSrc) > 0 {
+			t.attrB(buf, "src", n.loopSrc)
 		}
-		if len(node.loopCnt) > 0 {
-			t.attrB(buf, "counter", node.loopCnt)
+		if len(n.loopCnt) > 0 {
+			t.attrB(buf, "counter", n.loopCnt)
 		}
-		if node.loopCondOp != 0 {
-			t.attrS(buf, "cond", node.loopCondOp.String())
+		if n.loopCondOp != 0 {
+			t.attrS(buf, "cond", n.loopCondOp.String())
 		}
-		if len(node.loopLim) > 0 {
-			t.attrB(buf, "limit", node.loopLim)
+		if len(n.loopLim) > 0 {
+			t.attrB(buf, "limit", n.loopLim)
 		}
-		if node.loopCntOp != 0 {
-			t.attrS(buf, "op", node.loopCntOp.String())
+		if n.loopCntOp != 0 {
+			t.attrS(buf, "op", n.loopCntOp.String())
 		}
-		if len(node.loopSep) > 0 {
-			t.attrB(buf, "sep", node.loopSep)
+		if len(n.loopSep) > 0 {
+			t.attrB(buf, "sep", n.loopSep)
 		}
-		if node.loopBrkD > 0 {
-			t.attrI(buf, "brkD", node.loopBrkD)
+		if n.loopBrkD > 0 {
+			t.attrI(buf, "brkD", n.loopBrkD)
 		}
 
-		if len(node.switchArg) > 0 {
-			t.attrB(buf, "arg", node.switchArg)
+		if len(n.switchArg) > 0 {
+			t.attrB(buf, "arg", n.switchArg)
 		}
-		if len(node.caseL) > 0 && node.caseOp != 0 && len(node.caseR) > 0 {
-			t.attrB(buf, "left", node.caseL)
-			t.attrS(buf, "op", node.caseOp.String())
-			t.attrB(buf, "right", node.caseR)
-		} else if len(node.caseL) > 0 {
-			t.attrB(buf, "val", node.caseL)
+		if len(n.caseL) > 0 && n.caseOp != 0 && len(n.caseR) > 0 {
+			t.attrB(buf, "left", n.caseL)
+			t.attrS(buf, "op", n.caseOp.String())
+			t.attrB(buf, "right", n.caseR)
+		} else if len(n.caseL) > 0 {
+			t.attrB(buf, "val", n.caseL)
 		}
-		if len(node.caseHlp) > 0 {
-			t.attrB(buf, "helper", node.caseHlp)
-			if len(node.caseHlpArg) > 0 {
-				for j, a := range node.caseHlpArg {
+		if len(n.caseHlp) > 0 {
+			t.attrB(buf, "helper", n.caseHlp)
+			if len(n.caseHlpArg) > 0 {
+				for j, a := range n.caseHlpArg {
 					pfx := "arg"
 					if a.static {
 						pfx = "sarg"
@@ -205,8 +205,8 @@ func (t *Tree) hrHelper(buf *bytebuf.Chain, nodes []Node, indent []byte, depth i
 			}
 		}
 
-		if len(node.tpl) > 0 {
-			for j, tpl := range node.tpl {
+		if len(n.tpl) > 0 {
+			for j, tpl := range n.tpl {
 				buf.WriteByte(' ').
 					WriteString("tpl").
 					WriteInt(int64(j)).
@@ -216,31 +216,31 @@ func (t *Tree) hrHelper(buf *bytebuf.Chain, nodes []Node, indent []byte, depth i
 			}
 		}
 
-		if len(node.loc) > 0 {
-			t.attrB(buf, "val", node.loc)
+		if len(n.loc) > 0 {
+			t.attrB(buf, "val", n.loc)
 		}
 
-		if node.typ != typeExit && node.typ != typeBreak && node.typ != typeLBreak && node.typ != typeContinue && len(node.raw) > 0 {
-			raw := string(node.raw)
+		if n.typ != typeExit && n.typ != typeBreak && n.typ != typeLBreak && n.typ != typeContinue && len(n.raw) > 0 {
+			raw := string(n.raw)
 			if repl, ok := ctlRepl[raw]; ok {
 				raw = repl
 			}
 			t.attrS(buf, "val", raw)
 		}
 
-		if node.noesc {
+		if n.noesc {
 			t.attrS(buf, "noesc", "true")
 		}
 
-		if len(node.mod) > 0 || len(node.child) > 0 {
+		if len(n.mod) > 0 || len(n.child) > 0 {
 			buf.WriteByte('>')
 		}
 
-		if len(node.mod) > 0 {
+		if len(n.mod) > 0 {
 			depth++
 			buf.WriteByte('\n').Write(bytes.Repeat(indent, depth)).WriteString("<mods>\n")
 			depth++
-			for _, mod := range node.mod {
+			for _, mod := range n.mod {
 				buf.Write(bytes.Repeat(indent, depth)).WriteString(`<mod name="`).Write(mod.id).WriteByte('"')
 				if len(mod.arg) > 0 {
 					for j, a := range mod.arg {
@@ -276,11 +276,11 @@ func (t *Tree) hrHelper(buf *bytebuf.Chain, nodes []Node, indent []byte, depth i
 			depth--
 		}
 
-		if len(node.child) > 0 {
+		if len(n.child) > 0 {
 			buf.WriteByte('\n')
-			t.hrHelper(buf, node.child, indent, depth+1)
+			t.hrHelper(buf, n.child, indent, depth+1)
 		}
-		if len(node.mod) > 0 || len(node.child) > 0 {
+		if len(n.mod) > 0 || len(n.child) > 0 {
 			buf.Write(bytes.Repeat(indent, depth)).WriteString("</node>\n")
 		} else {
 			buf.WriteString("/>\n")

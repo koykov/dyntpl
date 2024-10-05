@@ -9,7 +9,7 @@ import (
 
 // Counter loop method to evaluate expressions like:
 // {% for i:=0; i<10; i++ %}...{% endfor %}
-func (ctx *Ctx) cloop(node *Node, tpl *Tpl, w io.Writer) {
+func (ctx *Ctx) cloop(node *node, tpl *Tpl, w io.Writer) {
 	var (
 		cnt, lim  int64
 		allowIter bool

@@ -1,9 +1,9 @@
 package dyntpl
 
-// Node is a description of template part.
+// node is a description of template part.
 // Every piece of the template, beginning from static text and finishing of complex structures (switch, loop, ...)
 // Represents by this type.
-type Node struct {
+type node struct {
 	typ    rtype
 	raw    []byte
 	prefix []byte
@@ -59,33 +59,33 @@ type Node struct {
 	loc []byte
 
 	mod   []mod
-	child []Node
+	child []node
 }
 
 // Add new node to the destination list.
-func addNode(nodes []Node, node Node) []Node {
+func addNode(nodes []node, node node) []node {
 	nodes = append(nodes, node)
 	return nodes
 }
 
 // Add raw node (static text) to the list.
-func addRaw(nodes []Node, raw []byte) []Node {
+func addRaw(nodes []node, raw []byte) []node {
 	if len(raw) == 0 {
 		return nodes
 	}
-	nodes = append(nodes, Node{typ: typeRaw, raw: raw})
+	nodes = append(nodes, node{typ: typeRaw, raw: raw})
 	return nodes
 }
 
 // Split nodes by divider node.
-func splitNodes(nodes []Node) [][]Node {
+func splitNodes(nodes []node) [][]node {
 	if len(nodes) == 0 {
 		return nil
 	}
-	split := make([][]Node, 0)
+	split := make([][]node, 0)
 	var o int
-	for i, node := range nodes {
-		if node.typ == typeDiv {
+	for i, n := range nodes {
+		if n.typ == typeDiv {
 			split = append(split, nodes[o:i])
 			o = i + 1
 		}
@@ -97,26 +97,26 @@ func splitNodes(nodes []Node) [][]Node {
 }
 
 // Walk over the nodes list and group them by the type, need to make tree of switch structure.
-func rollupSwitchNodes(nodes []Node) []Node {
+func rollupSwitchNodes(nodes []node) []node {
 	if len(nodes) == 0 {
 		return nil
 	}
 	var (
-		r     = make([]Node, 0)
-		group = Node{typ: -1}
+		r     = make([]node, 0)
+		group = node{typ: -1}
 	)
-	for _, node := range nodes {
-		if node.typ != typeCase && node.typ != typeDefault && group.typ == -1 {
+	for _, n := range nodes {
+		if n.typ != typeCase && n.typ != typeDefault && group.typ == -1 {
 			continue
 		}
-		if node.typ == typeCase || node.typ == typeDefault {
+		if n.typ == typeCase || n.typ == typeDefault {
 			if group.typ != -1 {
 				r = append(r, group)
 			}
-			group = node
+			group = n
 			continue
 		}
-		group.child = append(group.child, node)
+		group.child = append(group.child, n)
 	}
 	if len(group.child) > 0 {
 		r = append(r, group)

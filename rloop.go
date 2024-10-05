@@ -17,7 +17,7 @@ const (
 type RangeLoop struct {
 	cntr int
 	stat uint
-	node *Node
+	node *node
 	tpl  *Tpl
 	ctx  *Ctx
 	next *RangeLoop
@@ -26,7 +26,7 @@ type RangeLoop struct {
 }
 
 // NewRangeLoop makes new RL.
-func NewRangeLoop(node *Node, tpl *Tpl, ctx *Ctx, w io.Writer) *RangeLoop {
+func NewRangeLoop(node *node, tpl *Tpl, ctx *Ctx, w io.Writer) *RangeLoop {
 	rl := RangeLoop{
 		node: node,
 		tpl:  tpl,
