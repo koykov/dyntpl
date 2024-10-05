@@ -23,7 +23,7 @@ type parser struct {
 
 var (
 	// Byte constants.
-	empty    []byte
+	empty_   []byte
 	space    = []byte(" ")
 	spaceCBE = []byte("} ")
 	comma    = []byte(",")
@@ -213,7 +213,7 @@ func ParseFile(fileName string, keepFmt bool) (tree *Tree, err error) {
 
 // Remove all comments from the template body.
 func (p *parser) cutComments() {
-	p.tpl = reCutComments.ReplaceAll(p.tpl, empty)
+	p.tpl = reCutComments.ReplaceAll(p.tpl, empty_)
 }
 
 // Remove template formatting if needed.
@@ -221,12 +221,12 @@ func (p *parser) cutFmt() {
 	if p.keepFmt {
 		return
 	}
-	p.tpl = reCutFmt.ReplaceAll(p.tpl, empty)
+	p.tpl = reCutFmt.ReplaceAll(p.tpl, empty_)
 	p.tpl = bytealg.Trim(p.tpl, noFmt)
 }
 
 // Initial parsing method.
-func (p *parser) parseTpl(nodes []Node, offset int, t *target) ([]Node, int, error) {
+func (p *parser) parseTpl(nodes []node, offset int, t *target) ([]node, int, error) {
 	var (
 		up  bool
 		err error
@@ -254,8 +254,8 @@ func (p *parser) parseTpl(nodes []Node, offset int, t *target) ([]Node, int, err
 				break
 			}
 			e += 2
-			node := Node{}
-			nodes, e, up, err = p.processCtl(nodes, &node, p.tpl[o:e], o)
+			n := node{}
+			nodes, e, up, err = p.processCtl(nodes, &n, p.tpl[o:e], o)
 			if err != nil {
 				break
 			}
@@ -278,7 +278,7 @@ func (p *parser) parseTpl(nodes []Node, offset int, t *target) ([]Node, int, err
 }
 
 // General parsing method.
-func (p *parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]Node, int, bool, error) {
+func (p *parser) processCtl(nodes []node, root *node, ctl []byte, pos int) ([]node, int, bool, error) {
 	var (
 		offset int
 		up     bool
@@ -413,15 +413,15 @@ func (p *parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 		t := p.targetSnapshot()
 		p.cc++
 
-		subNodes := make([]Node, 0)
+		subNodes := make([]node, 0)
 		subNodes, offset, err = p.parseTpl(subNodes, pos+len(ctl), t)
 		split := splitNodes(subNodes)
 		if len(split) > 0 {
-			nodeTrue := Node{typ: typeCondTrue, child: split[0]}
+			nodeTrue := node{typ: typeCondTrue, child: split[0]}
 			root.child = append(root.child, nodeTrue)
 		}
 		if len(split) > 1 {
-			nodeFalse := Node{typ: typeCondFalse, child: split[1]}
+			nodeFalse := node{typ: typeCondFalse, child: split[1]}
 			root.child = append(root.child, nodeFalse)
 		}
 
@@ -485,13 +485,13 @@ func (p *parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 		t := p.targetSnapshot()
 		p.cl++
 
-		var subNodes []Node
+		var subNodes []node
 		subNodes, offset, err = p.parseTpl(subNodes, pos+len(ctl), t)
 		split := splitNodes(subNodes)
 		if len(split) > 1 {
-			nodeTrue := Node{typ: typeCondTrue, child: split[0]}
+			nodeTrue := node{typ: typeCondTrue, child: split[0]}
 			root.child = append(root.child, nodeTrue)
-			nodeFalse := Node{typ: typeCondFalse, child: split[1]}
+			nodeFalse := node{typ: typeCondFalse, child: split[1]}
 			root.child = append(root.child, nodeFalse)
 		} else {
 			root.child = subNodes
@@ -515,7 +515,7 @@ func (p *parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 			if nodes, offset, up, err = p.processCond(nodes, root, ctl, pos, m[x.i], offset, up, false); err != nil {
 				return nodes, offset, up, err
 			}
-			ch := Node{typ: x.t}
+			ch := node{typ: x.t}
 			if len(m) > 2 {
 				if i, _ := strconv.ParseInt(byteconv.B2S(m[1]), 10, 64); i > 0 {
 					ch.loopBrkD = int(i)
@@ -580,7 +580,7 @@ func (p *parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 		if len(m) > 0 {
 			root.switchArg = m[1]
 		}
-		root.child = make([]Node, 0)
+		root.child = make([]node, 0)
 		root.child, offset, err = p.parseTpl(root.child, pos+len(ctl), t)
 		root.child = rollupSwitchNodes(root.child)
 
@@ -710,10 +710,10 @@ func (p *parser) processCtl(nodes []Node, root *Node, ctl []byte, pos int) ([]No
 	return nodes, 0, up, fmt.Errorf("unknown control structure '%s' at offset %d", ct, pos)
 }
 
-func (p *parser) processCond(nodes []Node, root *Node, ctl []byte, pos int, ct []byte, offset int, up, dive bool) ([]Node, int, bool, error) {
+func (p *parser) processCond(nodes []node, root *node, ctl []byte, pos int, ct []byte, offset int, up, dive bool) ([]node, int, bool, error) {
 	var (
-		subNodes []Node
-		split    [][]Node
+		subNodes []node
+		split    [][]node
 		err      error
 	)
 	// Check complexity of the condition first.
@@ -738,11 +738,11 @@ func (p *parser) processCond(nodes []Node, root *Node, ctl []byte, pos int, ct [
 				split = splitNodes(subNodes)
 
 				if len(split) > 0 {
-					nodeTrue := Node{typ: typeCondTrue, child: split[0]}
+					nodeTrue := node{typ: typeCondTrue, child: split[0]}
 					root.child = append(root.child, nodeTrue)
 				}
 				if len(split) > 1 {
-					nodeFalse := Node{typ: typeCondFalse, child: split[1]}
+					nodeFalse := node{typ: typeCondFalse, child: split[1]}
 					root.child = append(root.child, nodeFalse)
 				}
 				nodes = addNode(nodes, *root)
@@ -759,16 +759,16 @@ func (p *parser) processCond(nodes []Node, root *Node, ctl []byte, pos int, ct [
 		t := p.targetSnapshot()
 		p.cc++
 
-		subNodes = make([]Node, 0)
+		subNodes = make([]node, 0)
 		subNodes, offset, err = p.parseTpl(subNodes, pos+len(ctl), t)
 		split = splitNodes(subNodes)
 
 		if len(split) > 0 {
-			nodeTrue := Node{typ: typeCondTrue, child: split[0]}
+			nodeTrue := node{typ: typeCondTrue, child: split[0]}
 			root.child = append(root.child, nodeTrue)
 		}
 		if len(split) > 1 {
-			nodeFalse := Node{typ: typeCondFalse, child: split[1]}
+			nodeFalse := node{typ: typeCondFalse, child: split[1]}
 			root.child = append(root.child, nodeFalse)
 		}
 		nodes = addNode(nodes, *root)
@@ -818,28 +818,28 @@ func (p *parser) parseCaseExpr(expr []byte) (l, r []byte, sl, sr bool, op op) {
 
 // Convert operation from string to op type.
 func (p *parser) parseOp(src []byte) op {
-	var op op
+	var op_ op
 	switch {
 	case bytes.Equal(src, opEq_):
-		op = opEq
+		op_ = opEq
 	case bytes.Equal(src, opNq_):
-		op = opNq
+		op_ = opNq
 	case bytes.Equal(src, opGt_):
-		op = opGt
+		op_ = opGt
 	case bytes.Equal(src, opGtq_):
-		op = opGtq
+		op_ = opGtq
 	case bytes.Equal(src, opLt_):
-		op = opLt
+		op_ = opLt
 	case bytes.Equal(src, opLtq_):
-		op = opLtq
+		op_ = opLtq
 	case bytes.Equal(src, opInc_):
-		op = opInc
+		op_ = opInc
 	case bytes.Equal(src, opDec_):
-		op = opDec
+		op_ = opDec
 	default:
-		op = opUnk
+		op_ = opUnk
 	}
-	return op
+	return op_
 }
 
 func (p *parser) targetSnapshot() *target {
@@ -1055,15 +1055,15 @@ func (p *parser) extractArgs(raw []byte) []*arg {
 				}
 			} else {
 				a = bytealg.Trim(a, space)
-				arg := arg{
+				a := arg{
 					val:    bytealg.Trim(a, quotes),
 					static: isStatic(a),
 				}
-				if bytes.Equal(arg.val, ddquote) {
-					arg.val = arg.val[:0]
+				if bytes.Equal(a.val, ddquote) {
+					a.val = a.val[:0]
 				}
-				arg.global = GetGlobal(byteconv.B2S(arg.val)) != nil
-				r = append(r, &arg)
+				a.global = GetGlobal(byteconv.B2S(a.val)) != nil
+				r = append(r, &a)
 			}
 			if a[len(a)-1] == '}' {
 				nested = false

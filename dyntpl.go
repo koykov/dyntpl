@@ -126,8 +126,8 @@ func WriteByID(w io.Writer, id int, ctx *Ctx) (err error) {
 func write(w io.Writer, tpl *Tpl, ctx *Ctx) (err error) {
 	// Walk over root nodes in tree and evaluate them.
 	for i := 0; i < len(tpl.tree.nodes); i++ {
-		node := &tpl.tree.nodes[i]
-		err = tpl.writeNode(w, node, ctx)
+		n := &tpl.tree.nodes[i]
+		err = tpl.writeNode(w, n, ctx)
 		if err != nil {
 			if err == ErrInterrupt {
 				// Interrupt logic.
@@ -145,7 +145,7 @@ func write(w io.Writer, tpl *Tpl, ctx *Ctx) (err error) {
 }
 
 // General node renderer.
-func (t *Tpl) writeNode(w io.Writer, node *Node, ctx *Ctx) (err error) {
+func (t *Tpl) writeNode(w io.Writer, node *node, ctx *Ctx) (err error) {
 	switch node.typ {
 	case typeRaw:
 		if ctx.chJQ {
@@ -622,7 +622,7 @@ func (t *Tpl) writeNode(w io.Writer, node *Node, ctx *Ctx) (err error) {
 }
 
 // Evaluate condition expressions.
-func (t *Tpl) nodeCmp(node *Node, ctx *Ctx) (r bool, err error) {
+func (t *Tpl) nodeCmp(node *node, ctx *Ctx) (r bool, err error) {
 	// Regular comparison.
 	sl := node.condStaticL
 	sr := node.condStaticR

@@ -21,12 +21,11 @@ type db struct {
 }
 
 func initDB() *db {
-	db := &db{
+	return &db{
 		idxID:   make(map[int]int),
 		idxKey:  make(map[string]int),
 		idxHash: make(map[uint64]int),
 	}
-	return db
 }
 
 // Save template tree in the storage and make two pairs (ID-tpl and key-tpl).

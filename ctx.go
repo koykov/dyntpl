@@ -452,7 +452,7 @@ func (ctx *Ctx) cmpLC(lc lc, path []byte, cond op, right []byte) bool {
 
 // Range loop method to evaluate expressions like:
 // {% for k, v := range user.History %}...{% endfor %}
-func (ctx *Ctx) rloop(path []byte, node *Node, tpl *Tpl, w io.Writer) {
+func (ctx *Ctx) rloop(path []byte, node *node, tpl *Tpl, w io.Writer) {
 	ctx.bufS = ctx.bufS[:0]
 	ctx.bufS = bytealg.AppendSplitString(ctx.bufS, byteconv.B2S(path), ".", -1)
 	if len(ctx.bufS) == 0 {
