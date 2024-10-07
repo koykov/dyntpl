@@ -12,14 +12,68 @@
 
 ## Принцип работы
 
+Работа с шаблонами поделена на два этапа - парсинг и шаблонизация. Первый этап строит на основе шаблона специальное
+дерево (аналог AST), которое затем надо зарегестрировать в регистре шаблонов под каким-то уникальным именем. Этот этап
+не предназначен для слишком частого исполнения, т.к. он тяжёлый и дорогой. Второй этап - шаблонизация, напротив предназначен
+для использования в хайлоаде. Чтобы передать данные для шаблонизации необходимо добавить переменные в специальную структуру
+[Ctx](ctx.go). Каждая переменная характеризуется тремя параметрами:
+* уникальное имя
+* данные - всё что угодно, что вам необходимо на этапе шаблонизации
+* тип-инспектор
+
+Тип инспектор надо рассмотреть подробнее.
+
 В процессе разработки наибольшей проблемой стало получение данных из произвольных структур без использования рефлексии,
 поскольку пакет `reflect` слишком медленный и делает много аллоков при любом использовании типа `reflect.Value`.
 
-Для решения этой проблемы был разработан фреймворк [inspector](https://github.com/koykov/inspector/blob/master/readme.ru.md).
+Для решения этой проблемы был разработан кодогенерирующий фреймворк [inspector](https://github.com/koykov/inspector/blob/master/readme.ru.md).
 Он предоставляет примитивные методы для чтения данных из структур, итерирования и тд. без использования рефлексии, причём
 делает это быстро. Это достигается посредством использования кодогенерации - inspector для каждой указанной структуры
 (или пакета целиком) делает специальные типы, содержащие код специфичный для конкретной структуры. Это не чистая динамика
 какую предоставляет пакет `reflect`, но за то работает на порядки быстрее и не делает аллокаций.
 
-Пример работы инспетора можно посмотреть в пакете [testobj_ins](./testobj_ins), ктоорый был сгенерирован на основе
+Пример работы кодогенерации можно посмотреть в пакете [testobj_ins](./testobj_ins), который был сгенерирован на основе
 пакета [testobj](./testobj).
+
+## Пример использования
+
+```go
+package main
+
+import (
+	"bytes"
+
+	"github.com/koykov/dyntpl"
+	"path/to/inspector_lib_ins"
+	"path/to/test_struct"
+)
+
+var (
+	// Fill up test struct with data.
+	data = &test_struct.Data{
+		// ...
+	}
+
+	// Template code.
+	tplData = []byte(`{"id":"{%=data.Id%}","hist":[{%for _,v:=range data.History separator ,%}"{%=v.Datetime%}"{%endfor%}]}`)
+)
+
+func init() {
+	// Parse the template and register it.
+	tree, _ := dyntpl.Parse(tplData, false)
+	dyntpl.RegisterTplKey("tplData", tree)
+}
+
+func main() {
+	// Prepare output buffer
+	buf := bytes.Buffer{}
+	// Prepare dyntpl context.
+	ctx := dyntpl.AcquireCtx()
+	ctx.Set("data", data, inspector_lib_ins.DataInspector{})
+	// Execute the template and write result to buf.
+	_ = dyntpl.Write(&buf, "tplData", ctx)
+	// Release context.
+	dyntpl.ReleaseCtx(ctx)
+	// buf.Bytes() or buf.String() contains the result.
+}
+```
