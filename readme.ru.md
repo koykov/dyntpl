@@ -174,3 +174,44 @@ RegisterModFn("default", "def", modDefault)
 //                       ^
 //                       shorthand alias
 ```
+
+### Условия
+
+Сантаксис условных операторов классический, за вычетом фигурных скобок:
+```
+{% if leftVar [==|!=|>|>=|<|<=] rightVar %}
+    true branch
+{% else %}
+    false branch
+{% endif %}
+```
+
+Примеры: [1](testdata/parser/condition.tpl), [2](testdata/parser/conditionNested.tpl), [3](testdata/parser/conditionStr.tpl).
+
+dyntpl не способен распарсить сложные условия, содержащие более одной проверки, пример:
+```
+{% if user.Id == 0 || user.Finance.Balance == 0 %}You're not able to buy!{% endif %}
+```
+В будущем эта проблема будет решена, а пока можно сделать несколько вложенных проверок или воспользоваться механизмом
+`condition helpers` - это функции со специальной сигнатурой
+```go
+type CondFn func(ctx *Ctx, args []any) bool
+```
+, куда можно передать произвольное количество параметров и код этих функций вернёт bool, согласно которому будет выбрана
+ветка для исполнения. Эти функции пользовательские и вы можете создать свою и затем зарегестрировать её с помощью функций
+```go
+func RegisterCondFn(name string, cond CondFn)
+func RegisterCondFnNS(namespace, name string, cond CondFn) // namespace version
+```
+
+Принцип такой же как у пользовательских модификаторов. Далее condition helper станет доступен в шаблонах по указанному имени:
+```
+{% if helperName(user.Id, user.Finance.Balance) %}You're not able to buy!{% endif %}
+```
+
+В виде отдельного исключения существуют функции `len()` и `cap()`, которые работают аналогично нативным функциям Go.
+Результат их выполнения можно сравнивать
+```
+{% if len(user.Name) > 0 %}...{% endif %}
+```
+, тогда как обычные пользовательские функции не допускают никакие сравнения.
