@@ -215,3 +215,11 @@ func RegisterCondFnNS(namespace, name string, cond CondFn) // namespace version
 {% if len(user.Name) > 0 %}...{% endif %}
 ```
 , тогда как обычные пользовательские функции не допускают никакие сравнения.
+
+Для цепочки сравнений dyntpl поддерживает switch оператор, примеры:
+* [классический switch](testdata/parser/switch.tpl)
+* [switch без условия](testdata/parser/switchNoCondition.tpl)
+* [switch без условия и с helper-ми](testdata/parser/switchNoConditionWithHelper.tpl)
+
+switch имеет те же самые ограничения для условий, что и обычное условие. Поэтому необходимо заменять сложные условия
+helper-ми.
