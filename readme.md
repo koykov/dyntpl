@@ -5,22 +5,34 @@ Dynamic replacement for [quicktemplate](https://github.com/valyala/quicktemplate
 ## Retrospective
 
 We're used for a long time quicktemplate for building JSON to interchange data between microservices on high-load project,
-and we were happy.
-But now we need to be able to change existing templates or add new templates on the fly. Unfortunately quicktemplates
-doesn't support this and this package was developed as replacement.
+and we were happy. Ерут we need to be able to change existing templates or add new templates on the fly. Unfortunately
+quicktemplates doesn't support this and this package was developed as replacement.
 
 It reproduces many of qtpl features and syntax.
 
 ## How it works
 
+Working in templates divided to two phases - parsing and templating. The parsing phase builds from template a tree
+(like AST) and registers it in templates registry by unique name afterward. This phase doesn't intended to use in highload
+conditions due to high pressure to cpu/mem. The second phase - templating, against intended to use in highload.
+
+Templating phase required a preparation to pass data to te template. There is special object [Ctx](ctx.go), that collects
+variables to use in template. Each variable must have three params:
+* unique name
+* data - anything you need to use in template
+* inspector type
+
+Inspector type must be explained.
+
 The biggest problem during development was how to get data from arbitrary structure without using reflection,
 since `reflect` package produces a lot of allocations by design and is extremely slowly in general.
 
-To solve that problem was developed [inspector](https://github.com/koykov/inspector) framework. It takes as argument
-path to the package with structures signatures and build an exact primitive methods to get data of any fields in them,
-loop over fields that support loops, etc...
+To solve that problem was developed code-generation framework [inspector](https://github.com/koykov/inspector) framework.
+It provides primitive methods to read data from struct's fields, iterating, etc. without using reflection and makes it
+fast. Framework generates for each required struct a special type with such methods. It isn't a pure dynamic like 
+`reflect` provided, but works so [fast](https://github.com/koykov/versus/tree/master/inspector2) and makes zero allocations. 
 
-You may check example of inspectors in subdirectory [testobj_ins](./testobj_ins) that represents testing structures
+You may check example of inspectors in package [testobj_ins](./testobj_ins) that represents testing structures
 in [testobj](./testobj).
 
 ## Usage
