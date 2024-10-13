@@ -42,45 +42,45 @@ The typical usage of dyntpl looks like this:
 package main
 
 import (
-    "bytes"
+	"bytes"
 
-    "github.com/koykov/dyntpl"
-    "path/to/inspector_lib_ins"
+	"github.com/koykov/dyntpl"
+	"path/to/inspector_lib_ins"
+	"path/to/test_struct"
 )
 
 var (
-    // Test data.
-    data = &Data{
-        // ...
-    }
+	// Fill up test struct with data.
+	data = &test_struct.Data{
+		// ...
+	}
 
-    // Template code.
-    tplData = []byte(`...`)
+	// Template code.
+	tplData = []byte(`{"id":"{%=data.Id%}","hist":[{%for _,v:=range data.History separator ,%}"{%=v.Datetime%}"{%endfor%}]}`)
 )
 
 func init() {
-    // Parse the template and register it.
-    tree, _ := dyntpl.Parse(tplData, false)
-    dyntpl.RegisterTpl("tplData", tree)
+	// Parse the template and register it.
+	tree, _ := dyntpl.Parse(tplData, false)
+	dyntpl.RegisterTplKey("tplData", tree)
 }
 
 func main() {
-    // Prepare output buffer
-    buf := bytes.Buffer{}
-    // Prepare dyntpl context.
-    ctx := dyntpl.AcquireCtx()
-    ctx.Set("data", data, &inspector_lib_ins.DataInspector{})
-    // Execute the template and write result to buf.
-    _ = dyntpl.Write(&buf, "tplData", ctx)
-    // Use result as buf.Bytes() or buf.String() ...
-    // Release context.
-    dyntpl.ReleaseCtx(ctx)
+	// Prepare output buffer
+	buf := bytes.Buffer{}
+	// Prepare dyntpl context.
+	ctx := dyntpl.AcquireCtx()
+	ctx.Set("data", data, inspector_lib_ins.DataInspector{})
+	// Execute the template and write result to buf.
+	_ = dyntpl.Write(&buf, "tplData", ctx)
+	// Release context.
+	dyntpl.ReleaseCtx(ctx)
+	// buf.Bytes() or buf.String() contains the result.
 }
 ```
-Content of `init()` function may be moved to scheduler and periodically take fresh template code from source data,
-e.g. DB table and update it on the fly.
+Content of `init()` function should be executed once (or periodically on fly from some source, eg DB).
 
-Content of `main()` function is how to use dyntpl in general way. Of course, byte buffer should take from the pool.
+Content of `main()` function is how to use dyntpl in general way in highload. Of course, byte buffer should take from the pool.
 
 ## Benchmarks
 
@@ -97,16 +97,16 @@ That is a cost for dynamics. There is no way to write template engine that will 
 
 ## Syntax
 
-#### Print
+### Print
 
 The most general syntax construction is printing a variable or structure field:
 ```
 This is a simple statis variable: {%= var0 %}
 This is a field of struct: {%= obj.Parent.Name %}
 ```
-Construction `{%= ... %}` prints data as is, independent of its type.
+Construction `{%= ... %}` prints data as is without any type check, escaping or modification.
 
-There are special directives before `=` that modifies output before printing:
+There are special escaping modifiers. They should use before `=`:
 * `h` - HTML escape.
 * `a` - HTML attribute escape.
 * `j` - JSON escape.
@@ -120,12 +120,30 @@ There are special directives before `=` that modifies output before printing:
 
 Note, that none of these directives doesn't apply by default. It's your responsibility to controls what and where you print.
 
-All directives supports multipliers, like `{%jj= ... %}`, `{%uu= ... %}`, `{%uuu= ... %}`, ...
+All directives (except of `f` and `F`) supports multipliers, like `{%jj= ... %}`, `{%uu= ... %}`, `{%uuu= ... %}`, ...
 
-For example, the following instruction `{%uu= someUrl %}` will print double url-encoded value of `someUrl`.
+For example, the following instruction `{%uu= someUrl %}` will print double url-encoded value of `someUrl`. It may be
+helpful to build chain of redirects:
+```
+https://domain.com?redirect0={%u= url0 %}{%uu= url1 %}{%uuu= url2 %}
+```
 
-Also, you may combine directives, eg `{%Ja= var1 %}`. In this example JS escape and HTML attribute escape will apply
-consecutively before output `var1`.
+Also, you may combine directives in any combinations (`{%Ja= var1 %}`, `{%jachh= var1 %}`, ...). Modifier will apply
+consecutive and each modifier will take to input the result of previous modifier.
+
+### Bound tags
+
+To apply escaping to some big block containing both text and printing variables there are special bound tags:
+* `{% jsonquote %}...{% endjsonquote %}` apply JSON escape to all contents.
+* `{% htmlescape %}...{% endhtmlescape %}` apply HTML escape.
+* `{% urlencode %}...{% endurlencode %}` URL encode all text data.
+
+Example:
+```
+{"key": "{% jsonquote %}Lorem ipsum "dolor sit amet", {%= var0 %}.{%endjsonquote%}"}
+```
+
+#### Prefix/suffix
 
 Print construction supports prefix and suffix attributes, it may be handy when you print HTML or XML:
 ```html
