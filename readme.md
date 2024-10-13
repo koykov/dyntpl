@@ -153,13 +153,38 @@ Print construction supports prefix and suffix attributes, it may be handy when y
 ```
 Prefix and suffix will print only if `var` isn't empty. Prefix/suffix has shorthands `pfx` and `sfx`.
 
-Also print supports data modifiers. They calls typically for any template languages:
+### Print modifiers
+
+Alongside of short modifiers using before `=` engine supports user defined modifiers. You may use them after printing
+variable using `|` and looks lice function call:
 ```
-Name: {%= obj.Name|default("anonymous") %}
+Name: {%= obj.Name|default("anonymous") %}Welcome, {%= testNameOf(user, {"foo": "bar", "id": user.Id}, "qwe") %}
+                  ^ simple example                     ^ call modifier without variable like simple function call
+Chain of modifiers: {%= dateVariable|default("2022-10-04")|formatDate("%y-%m-%d") %}
+                                    ^ first modifier      ^ second modifier
 ```
-and may contains variadic list of arguments or doesn't contain them at all. See the full list of built-in modifiers
-in [init.go](init.go) (calls of `RegisterModFn()`).
-You may register your own modifiers, see section [Modifier helpers](#modifier-helpers).
+Modifiers may collect in chain with variadic length. In that case each modifier will take to input the result of
+previous modifier. Each modifier may take arbitrary count of arguments.
+
+In general modifier is a Go function with special signature:
+```go
+type ModFn func(ctx *Ctx, buf *any, val any, args []any) error
+```
+, where:
+* ctx - context of the template
+* buf - pointer to return value
+* val - value to pass to input (eg `varName|modifier()` value of `varName`)
+* args - list of all aguments
+
+After writing your function you need to register it using one of functions:
+* `RegisterModFn(name, alias string, mod ModFn)`
+* `RegisterModFnNS(namespace, name, alias string, mod ModFn)`
+
+They are the same, but NS version allows to specify the namespace of the function. In that case you should specify namespace
+on modifiers call:
+```
+Print using ns: {%= varName|namespaceName::modifier() %}
+```
 
 #### Conditions
 

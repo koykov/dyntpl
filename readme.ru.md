@@ -157,10 +157,9 @@ https://domain.com?redirect0={%u= url0 %}{%uu= url1 %}{%uuu= url2 %}
 вывода. Указываются уже после выводимой переменной через символ `|` и выглядят как вызов функции. Примеры:
 ```
 Name: {%= obj.Name|default("anonymous") %}Welcome, {%= testNameOf(user, {"foo": "bar", "id": user.Id}, "qwe") %}
+                  ^ simple example                     ^ call modifier without variable like simple function call
 Chain of modifiers: {%= dateVariable|default("2022-10-04")|formatDate("%y-%m-%d") %}
-Welcome, {%= testNameOf(user, {"foo": "bar", "id": user.Id}, "qwe") %}
-             ^
-             no variable here, therefore null provided to modifier
+                                    ^ first modifier      ^ second modifier
 ```
 
 Модификаторы можно объединять в цепочки произвольной длины. В этом случае на вход каждого модификатора будет подаваться
