@@ -220,23 +220,12 @@ Then condition helper will accessible inside templates and you may use it using 
 {% if helperName(user.Id, user.Finance.Balance) %}You're not able to buy!{% endif %}
 ```
 
-First type is for the simplest case, like:
-```html
-{% if user.Id == 0 %}
-You should <a href="#">log in</a>.
-{% endif %}
+As exception there are two functions `len()` and `cap()` that works the same as builtin native Go functions. The result
+of their execution may be compared
 ```
-Left side or right side or both may be a variable. But you can't specify a condition with static values on both sides,
-since it's senseless.
-
-Second type of condition is for more complex conditions when any side of condition should contain Go code, like:
+{% if len(user.Name) > 0 %}...{% endif %}
 ```
-Welcome, {% if len(user.Name) > 0 %}{%= user.Name %}{% else %}anonymous{%endif%}!
-```
-Dyntpl can't handle that kind of records, but it supports special functions that may make a decision is given args
-suitable or not and return true/false.
-See the full list of built-in condition helpers in [init.go](init.go) (calls of `RegisterCondFn`). Of course,
-you can register your own handlers to implement your logic.
+, whereas user-defined helpers doesn't allow comparisons.
 
 For multiple conditions you can use `switch` statement, example 1:
 ```xml
