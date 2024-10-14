@@ -227,34 +227,10 @@ of their execution may be compared
 ```
 , whereas user-defined helpers doesn't allow comparisons.
 
-For multiple conditions you can use `switch` statement, example 1:
-```xml
-<item type="{% switch item.Type %}
-{% case 0 %}
-    deny
-{% case 1 %}
-    allow
-{% case 2 %}
-    allow-by-permission
-{% default %}
-    unknown
-{% endswitch %}">foo</item>
-```
-, example 2:
-```xml
-<item type="{% switch %}
-{% case item.Type == 0 %}
-    deny
-{% case item.Type == 1 %}
-    allow
-{% case item.Type == 2 %}
-    allow-by-permission
-{% default %}
-    unknown
-{% endswitch %}">foo</item>
-```
-
-Switch can handle only primitive cases, condition helpers doesn't support.
+For multiple conditions you can use `switch` statement, examples:
+* [classic switch](testdata/parser/switch.tpl)
+* [no-condition switch](testdata/parser/switchNoCondition.tpl)
+* [no-condition switch with helpers](testdata/parser/switchNoConditionWithHelper.tpl)
 
 #### Loops
 
