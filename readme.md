@@ -188,9 +188,37 @@ Print using ns: {%= varName|namespaceName::modifier() %}
 
 #### Conditions
 
-Conditions in dyntpl is pretty simple and supports only two types of record:
-* `{% if leftVar [=|!=|>|>=|<|<=] rightVar %}...{% endif %}`
-* `{% if conditionHelper(var0, obj.Name, "foo") %}...{% endif %}`
+dyntpl supports classic syntax of conditions:
+```
+{% if leftVar [==|!=|>|>=|<|<=] rightVar %}
+    true branch
+{% else %}
+    false branch
+{% endif %}
+```
+
+Examples: [1](testdata/parser/condition.tpl), [2](testdata/parser/conditionNested.tpl), [3](testdata/parser/conditionStr.tpl).
+
+dyntpl can't handle complicated conditions containing more than one comparison, like:
+```
+{% if user.Id == 0 || user.Finance.Balance == 0 %}You're not able to buy!{% endif %}
+```
+In the grim darkness of the far future this problem will be solved, but now you can make nested conditions or use
+conditions helpers - functions with signature:
+```go
+type CondFn func(ctx *Ctx, args []any) bool
+```
+, where you may pass arbitrary amount of arguments and these functions will return bool to choose right execution branch.
+These function is user-defined like modifiers and you may write your own and then register it using one of functions:
+```go
+func RegisterCondFn(name string, cond CondFn)
+func RegisterCondFnNS(namespace, name string, cond CondFn) // namespace version
+```
+
+Then condition helper will accessible inside templates and you may use it using name:
+```
+{% if helperName(user.Id, user.Finance.Balance) %}You're not able to buy!{% endif %}
+```
 
 First type is for the simplest case, like:
 ```html
