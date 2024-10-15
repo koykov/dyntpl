@@ -232,16 +232,19 @@ For multiple conditions you can use `switch` statement, examples:
 * [no-condition switch](testdata/parser/switchNoCondition.tpl)
 * [no-condition switch with helpers](testdata/parser/switchNoConditionWithHelper.tpl)
 
-#### Loops
+### Loops
 
 Dyntpl supports both types of loops:
-* conditional loop from three components separated by semicolon, like `{% for i:=0; i<5; i++ %}...{% endfor %}`
+* counter loops, like `{% for i:=0; i<5; i++ %}...{% endfor %}`
 * range-loop, like `{% for k, v := range obj.Items %}...{% endfor %}`
 
 Edge cases like `for k < 2000 {...}` or `for ; i < 10 ; {...}` isn't supported.
 Also, you can't make infinite loop by using `for {...}`.
 
-There is a special attribute `separator` that made special to build JSON output. Example of use:
+#### Separators
+
+When separator between iterations required, there is a special attribute `separator` that made special to build JSON
+output. Example of use:
 ```
 [
   {% for _, a := range user.History separator , %}
@@ -253,7 +256,7 @@ There is a special attribute `separator` that made special to build JSON output.
   {% endfor %}
 ]
 ```
-The output that will produced:
+The output that will be produced:
 ```json
 [
   {"id":1, "date": "2020-01-01", "comment": "success"},
