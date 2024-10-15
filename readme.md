@@ -330,6 +330,49 @@ work the end. Eg template printing some XML element and break inside it will pro
 Obviously, invalid XML document will build. For that case dyntpl supports special instruction `lazybreak`. It breaks the
 loop but allows current iteration works till the end.
 
+#### Nested loops break
+
+In native Go to break nested loops you must use one of instructions:
+* `goto <label>`
+* `break <label>`
+* `continue <label>`
+
+Well, supporting of these things is too strange for template engine, isn't it? There is more handy [break, provided by php](https://www.php.net/manual/en/control-structures.break.php).
+It allows to specify after keyword how many loops must be touched by instruction. dyntpl implements this case and provides
+instructions:
+* `break N`
+* `lazybreak N`
+
+```
+{% for i:=0; i<10; i++ %}
+  bar
+  {% for j:=0; i<10; i++ %}
+    foo
+    {% if j == 8 %}
+      {% break 2 %}
+    {% endif %}
+    {% if j == 7 %}
+      {% lazybreak 2 %}
+    {% endif %}
+    {%= j %}
+  {% endfor %}
+  {%= i %}
+{% endfor %}
+```
+
+`break/lazybreak N` instructions supports conditional versions:
+* `break N if`
+* `lazybreak N if`
+
+The example above may be changed to:
+```
+    ...
+    {% break 2 if j == 8 %}
+    {% lazybreak 2 if j == 7 %}
+    ...
+```
+and you will give the same output.
+
 ## Include sub-templates
 
 To reuse templates exists instruction `include` that may be included directly from the template.
