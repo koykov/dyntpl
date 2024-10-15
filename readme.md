@@ -268,11 +268,16 @@ As you see, commas between 2nd and last elements was added by dyntpl without any
 `...{% if i>0 %},{% endif %}{% endfor %}`.
 Separator has shorthand variant `sep`.
 
+#### loop-else
+
 ## Include sub-templates
 
+To reuse templates exists instruction `include` that may be included directly from the template.
 Just call `{% include subTplID %}` (example `{% include sidebar/right %}`) to render and include output of that template
 inside current template.
 Sub-template will use parent template's context to access the data.
+
+Also, you may include sub-templates in bash-style using `.`.
 
 ## Modifier helpers
 
