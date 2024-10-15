@@ -283,6 +283,53 @@ Separator isn't the last exclusive feature of loops. For loops allows `else` bra
 If loop's source is empty and there aren't data to iterate, then else branch will execute without manual handling. In the
 example above, if `user.historyTags` is empty, the empty `<option>` will display.
 
+#### Loop breaking
+
+dyntpl supports default instructions `break` and `continue` to break loop/iteration, example:
+```
+{% for _, v := list %}
+  {% if v.ID == 0 %}
+    {% continue %}
+  {% endif %}
+  {% if v.Status == -1 %}
+    {% break %}
+  {% endif %}
+{% endfor %}
+```
+
+These instructions works as intended, but they required condition wrapper and that's bulky. Therefore, dyntpl provide
+combined `break if` and `continue if` that works the same:
+```
+{% for _, v := list %}
+  {% continue if v.ID == 0 %}
+  {% break if v.Status == -1 %}
+{% endfor %}
+```
+
+The both examples is equal, but the second is more compact.
+
+#### Lazy breaks
+
+Imagine the case - you've decided in te middle of iteration that loop require break, but the iteration must finish its
+work the end. Eg template printing some XML element and break inside it will produce unclosed tag:
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<users>
+  {% for _, u := range users %}
+    <user>
+        <name>{%= u.Name %}</name>
+        {% if u.Blocked == 1 %}
+          {% break %} {# <-- unclosed tag reson #}
+        {% endif %}
+        <balance>{%= u.Balance }</balance>
+    </user>
+  {% endfor %}
+</users>
+```
+
+Obviously, invalid XML document will build. For that case dyntpl supports special instruction `lazybreak`. It breaks the
+loop but allows current iteration works till the end.
+
 ## Include sub-templates
 
 To reuse templates exists instruction `include` that may be included directly from the template.
