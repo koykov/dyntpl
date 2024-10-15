@@ -270,6 +270,19 @@ Separator has shorthand variant `sep`.
 
 #### loop-else
 
+Separator isn't the last exclusive feature of loops. For loops allows `else` branch like for conditions:
+```
+<select name="type">
+  {% for k, v := range user.historyTags %}
+    <option value="{%= k %}">{%= v %}</option>
+  {% else %}
+    <option>N/D</option>
+  {% endfor %}
+</select>
+```
+If loop's source is empty and there aren't data to iterate, then else branch will execute without manual handling. In the
+example above, if `user.historyTags` is empty, the empty `<option>` will display.
+
 ## Include sub-templates
 
 To reuse templates exists instruction `include` that may be included directly from the template.
