@@ -4,19 +4,19 @@ Dynamic replacement for [quicktemplate](https://github.com/valyala/quicktemplate
 
 ## Retrospective
 
-We're used for a long time quicktemplate for building JSON to interchange data between microservices on high-load project,
+We've used for a long time quicktemplate for building JSON to interchange data between microservices on high-load project,
 and we were happy. Ерут we need to be able to change existing templates or add new templates on the fly. Unfortunately
-quicktemplates doesn't support this and this package was developed as replacement.
+quicktemplates doesn't support this and this package was developed as a replacement.
 
 It reproduces many of qtpl features and syntax.
 
 ## How it works
 
-Working in templates divided to two phases - parsing and templating. The parsing phase builds from template a tree
-(like AST) and registers it in templates registry by unique name afterward. This phase doesn't intended to use in highload
+Working in templates is divided into two phases - parsing and templating. The parsing phase builds from template a tree
+(like AST) and registers it in templates registry by unique name afterward. This phase isn't intended to be used in highload
 conditions due to high pressure to cpu/mem. The second phase - templating, against intended to use in highload.
 
-Templating phase required a preparation to pass data to te template. There is special object [Ctx](ctx.go), that collects
+Templating phase required a preparation to pass data to the template. There is a special object [Ctx](ctx.go), that collects
 variables to use in template. Each variable must have three params:
 * unique name
 * data - anything you need to use in template
@@ -24,15 +24,15 @@ variables to use in template. Each variable must have three params:
 
 Inspector type must be explained.
 
-The biggest problem during development was how to get data from arbitrary structure without using reflection,
+The biggest problem during development was how to get data from an arbitrary structure without using reflection,
 since `reflect` package produces a lot of allocations by design and is extremely slowly in general.
 
-To solve that problem was developed code-generation framework [inspector](https://github.com/koykov/inspector) framework.
+To solve that problem was developed a code-generation framework [inspector](https://github.com/koykov/inspector) framework.
 It provides primitive methods to read data from struct's fields, iterating, etc. without using reflection and makes it
 fast. Framework generates for each required struct a special type with such methods. It isn't a pure dynamic like 
 `reflect` provided, but works so [fast](https://github.com/koykov/versus/tree/master/inspector2) and makes zero allocations. 
 
-You may check example of inspectors in package [testobj_ins](./testobj_ins) that represents testing structures
+You may check example of inspectors in package [testobj_ins](./testobj_ins) that represent testing structures
 in [testobj](./testobj).
 
 ## Usage
@@ -78,22 +78,22 @@ func main() {
 	// buf.Bytes() or buf.String() contains the result.
 }
 ```
-Content of `init()` function should be executed once (or periodically on fly from some source, eg DB).
+Content of `init()` function should be executed once (or periodically on the fly from some source, eg DB).
 
-Content of `main()` function is how to use dyntpl in general way in highload. Of course, byte buffer should take from the pool.
+Content of `main()` function is how to use dyntpl in a general way in highload. Of course, byte buffer should take from the pool.
 
 ## Benchmarks
 
 See [bench.md](bench.md) for result of internal benchmarks.
 
-Highly recommend to check `*_test.go` files in the project, since them contains a lot of typical language constructions
+Highly recommend to check `*_test.go` files in the project, since they contains a lot of typical language constructions
 that supports this engine.
 
 See [versus/dyntpl](https://github.com/koykov/versus/tree/master/dyntpl) for comparison benchmarks with
 [quicktemplate](https://github.com/valyala/quicktemplate) and native marshaler/template.
 
 As you can see, dyntpl in ~3-4 times slower than [quicktemplates](https://github.com/valyala/quicktemplate).
-That is a cost for dynamics. There is no way to write template engine that will faster than native Go code.
+That is a cost for dynamics. There is no way to write template engine that will be faster than native Go code.
 
 ## Syntax
 
@@ -122,18 +122,18 @@ Note, that none of these directives doesn't apply by default. It's your responsi
 
 All directives (except of `f` and `F`) supports multipliers, like `{%jj= ... %}`, `{%uu= ... %}`, `{%uuu= ... %}`, ...
 
-For example, the following instruction `{%uu= someUrl %}` will print double url-encoded value of `someUrl`. It may be
-helpful to build chain of redirects:
+For example, the following instruction `{%uu= someUrl %}` will print a double url-encoded value of `someUrl`. It may be
+helpful to build a chain of redirects:
 ```
 https://domain.com?redirect0={%u= url0 %}{%uu= url1 %}{%uuu= url2 %}
 ```
 
 Also, you may combine directives in any combinations (`{%Ja= var1 %}`, `{%jachh= var1 %}`, ...). Modifier will apply
-consecutive and each modifier will take to input the result of previous modifier.
+consecutive and each modifier will take to input the result of the previous modifier.
 
 ### Bound tags
 
-To apply escaping to some big block containing both text and printing variables there are special bound tags:
+To apply escaping to some big block containing both text and printing variables, there are special bound tags:
 * `{% jsonquote %}...{% endjsonquote %}` apply JSON escape to all contents.
 * `{% htmlescape %}...{% endhtmlescape %}` apply HTML escape.
 * `{% urlencode %}...{% endurlencode %}` URL encode all text data.
@@ -163,10 +163,10 @@ Name: {%= obj.Name|default("anonymous") %}Welcome, {%= testNameOf(user, {"foo": 
 Chain of modifiers: {%= dateVariable|default("2022-10-04")|formatDate("%y-%m-%d") %}
                                     ^ first modifier      ^ second modifier
 ```
-Modifiers may collect in chain with variadic length. In that case each modifier will take to input the result of
-previous modifier. Each modifier may take arbitrary count of arguments.
+Modifiers may collect in chain with variadic length. In that case, each modifier will take to input the result of
+previous modifier. Each modifier may take an arbitrary count of arguments.
 
-In general modifier is a Go function with special signature:
+In general, modifier is a Go function with special signature:
 ```go
 type ModFn func(ctx *Ctx, buf *any, val any, args []any) error
 ```
@@ -176,12 +176,12 @@ type ModFn func(ctx *Ctx, buf *any, val any, args []any) error
 * val - value to pass to input (eg `varName|modifier()` value of `varName`)
 * args - list of all aguments
 
-After writing your function you need to register it using one of functions:
+After writing your function, you need to register it using one of the functions:
 * `RegisterModFn(name, alias string, mod ModFn)`
 * `RegisterModFnNS(namespace, name, alias string, mod ModFn)`
 
-They are the same, but NS version allows to specify the namespace of the function. In that case you should specify namespace
-on modifiers call:
+They are the same, but NS version allows to specify the namespace of the function. In that case, you should specify namespace
+in modifiers call:
 ```
 Print using ns: {%= varName|namespaceName::modifier() %}
 ```
@@ -208,26 +208,26 @@ conditions helpers - functions with signature:
 ```go
 type CondFn func(ctx *Ctx, args []any) bool
 ```
-, where you may pass arbitrary amount of arguments and these functions will return bool to choose right execution branch.
-These function is user-defined like modifiers and you may write your own and then register it using one of functions:
+, where you may pass an arbitrary amount of arguments and these functions will return bool to choose the right execution branch.
+These function are user-defined, like modifiers, and you may write your own and then register it using one of the functions:
 ```go
 func RegisterCondFn(name string, cond CondFn)
 func RegisterCondFnNS(namespace, name string, cond CondFn) // namespace version
 ```
 
-Then condition helper will accessible inside templates and you may use it using name:
+Then condition helper will be accessible inside templates and you may use it using the name:
 ```
 {% if helperName(user.Id, user.Finance.Balance) %}You're not able to buy!{% endif %}
 ```
 
-As exception there are two functions `len()` and `cap()` that works the same as builtin native Go functions. The result
+As an exception, there are two functions `len()` and `cap()` that works the same as built-in native Go functions. The result
 of their execution may be compared
 ```
 {% if len(user.Name) > 0 %}...{% endif %}
 ```
-, whereas user-defined helpers doesn't allow comparisons.
+, whereas user-defined helpers don't allow comparisons.
 
-For multiple conditions you can use `switch` statement, examples:
+For multiple conditions, you can use `switch` statement, examples:
 * [classic switch](testdata/parser/switch.tpl)
 * [no-condition switch](testdata/parser/switchNoCondition.tpl)
 * [no-condition switch with helpers](testdata/parser/switchNoConditionWithHelper.tpl)
@@ -239,11 +239,11 @@ Dyntpl supports both types of loops:
 * range-loop, like `{% for k, v := range obj.Items %}...{% endfor %}`
 
 Edge cases like `for k < 2000 {...}` or `for ; i < 10 ; {...}` isn't supported.
-Also, you can't make infinite loop by using `for {...}`.
+Also, you can't make an infinite loop by using `for {...}`.
 
 #### Separators
 
-When separator between iterations required, there is a special attribute `separator` that made special to build JSON
+When separator between iterations is required, there is a special attribute `separator` that made special to build JSON
 output. Example of use:
 ```
 [
@@ -264,7 +264,7 @@ The output that will be produced:
   {"id":3, "date": "2020-01-01", "comment": "rejected"}
 ]
 ```
-As you see, commas between 2nd and last elements was added by dyntpl without any additional handling like
+As you see, commas between 2nd and last elements were added by dyntpl without any additional handling, like
 `...{% if i>0 %},{% endif %}{% endfor %}`.
 Separator has shorthand variant `sep`.
 
@@ -280,7 +280,7 @@ Separator isn't the last exclusive feature of loops. For loops allows `else` bra
   {% endfor %}
 </select>
 ```
-If loop's source is empty and there aren't data to iterate, then else branch will execute without manual handling. In the
+If loop's source is empty and there aren't data to iterate, then `else` branch will execute without manual handling. In the
 example above, if `user.historyTags` is empty, the empty `<option>` will display.
 
 #### Loop breaking
@@ -306,12 +306,12 @@ combined `break if` and `continue if` that works the same:
 {% endfor %}
 ```
 
-The both examples is equal, but the second is more compact.
+The both examples are equal, but the second is more compact.
 
 #### Lazy breaks
 
-Imagine the case - you've decided in te middle of iteration that loop require break, but the iteration must finish its
-work the end. Eg template printing some XML element and break inside it will produce unclosed tag:
+Imagine the case - you've decided in the middle of iteration that loop requires a break, but the iteration must finish its
+work the end. Eg template printing some XML element and break inside it will produce an unclosed tag:
 ```
 <?xml version="1.0" encoding="UTF-8"?>
 <users>
@@ -327,18 +327,18 @@ work the end. Eg template printing some XML element and break inside it will pro
 </users>
 ```
 
-Obviously, invalid XML document will build. For that case dyntpl supports special instruction `lazybreak`. It breaks the
+Obviously, an invalid XML document will build. For that case, dyntpl supports special instruction `lazybreak`. It breaks the
 loop but allows current iteration works till the end.
 
 #### Nested loops break
 
-In native Go to break nested loops you must use one of instructions:
+In native Go to break nested loops you must use one of the instructions:
 * `goto <label>`
 * `break <label>`
 * `continue <label>`
 
-Well, supporting of these things is too strange for template engine, isn't it? There is more handy [break, provided by php](https://www.php.net/manual/en/control-structures.break.php).
-It allows to specify after keyword how many loops must be touched by instruction. dyntpl implements this case and provides
+Well, supporting these things is too strange for template engine, isn't it? There is more handy [break, provided by php](https://www.php.net/manual/en/control-structures.break.php).
+It allows to specify after a keyword how many loops must be touched by the instruction. dyntpl implements this case and provides
 instructions:
 * `break N`
 * `lazybreak N`
@@ -378,13 +378,13 @@ and you will give the same output.
 To reuse templates exists instruction `include` that may be included directly from the template.
 Just call `{% include subTplID %}` (example `{% include sidebar/right %}`) to render and include output of that template
 inside current template.
-Sub-template will use parent template's context to access the data.
+Sub-template will use the parent template's context to access the data.
 
 Also, you may include sub-templates in bash-style using `.`.
 
 ### Extensions
 
-Dyntpl's features may be extended by including extension modules to the project.  It's a Go packages which calls
+Dyntpl's features may be extended by including extension modules in the project. It's a Go packages that calls
 dyntpl's modifier registration functions (`RegisterModFn`, `RegisterModFnNS`) or condition registration functions
 (`RegisterCondFn`, `RegisterCondFnNS`) or any extending functions from dyntpl API. As result, inside templates will
 appear new modifiers and other helper functions.
@@ -406,6 +406,6 @@ Feel free to develop your own extensions. Strongly recommend to register new mod
 
 ### Conclusion
 
-Due to two phase (parsing and templating) in using dyntpl it isn't a handy to use in simple cases, especially outside
+Due to two phases (parsing and templating) in using dyntpl it isn't handy to use in simple cases, especially outside
 highload. The good condition to use it is a highload project and dynamic support requirement. Use dyntpl in proper
 conditions and it will solve your performance problems.
