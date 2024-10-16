@@ -15,7 +15,8 @@ var (
 		time.Date(2000, 12, 26, 1, 15, 6, 0, time.FixedZone("OTO", 15600)),
 	}
 
-	dtNative = time.Unix(0, 1233810057012345600)
+	loc, _   = time.LoadLocation("Europe/Moscow")
+	dtNative = time.Unix(0, 1233810057012345600).In(loc)
 	dtTZ     = time.Date(1994, 9, 17, 20, 4, 26, 0, time.FixedZone("EST", -18000))
 	dtAdd    = time.Date(2012, 1, 21, 20, 4, 26, 555, time.UTC)
 )
