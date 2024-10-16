@@ -373,7 +373,7 @@ The example above may be changed to:
 ```
 and you will give the same output.
 
-## Include sub-templates
+### Include sub-templates
 
 To reuse templates exists instruction `include` that may be included directly from the template.
 Just call `{% include subTplID %}` (example `{% include sidebar/right %}`) to render and include output of that template
@@ -382,53 +382,14 @@ Sub-template will use parent template's context to access the data.
 
 Also, you may include sub-templates in bash-style using `.`.
 
-## Modifier helpers
+### Extensions
 
-Modifiers is a special functions that may perform modifications over the data during print. These function have signature:
-```go
-func(ctx *Ctx, buf *any, val any, args []any) error
-```
-and should be registered using function `dyntpl.RegisterModFn()`. See [init.go](init.go) for examples.
-See [mod.go](mod.go) for explanation of arguments.
+Dyntpl's features may be extended by including extension modules to the project.  It's a Go packages which calls
+dyntpl's modifier registration functions (`RegisterModFn`, `RegisterModFnNS`) or condition registration functions
+(`RegisterCondFn`, `RegisterCondFnNS`) or any extending functions from dyntpl API. As result, inside templates will
+appear new modifiers and other helper functions.
 
-Modifiers calls using pipeline symbol after a variable, example: `{%= var0|default(0) %}`.
-
-You may specify a sequence of modifiers: `{%= var0|roundPrec(4)|default(1) %}`.
-
-## Condition helpers
-
-If you want to make a condition more complex than simple condition, you may declare a special function with signature:
-```go
-func(ctx *Ctx, args []any) bool
-```
-and register it using function `dyntpl.RegisterCondFn()`. See [init.go](init.go) for examples.
-See [cond.go](cond.go) for explanation of arguments.
-
-After declaring and registering you can use the helper in conditions:
-```
-{% if <condFnName>(var0, var1, "static val", 0, 15.234) %}...{% endif %}
-```
-Function will make a decision according arguments you take and will return true or false.
-
-## Bound tags
-
-Dyntpl support special tags to escape/quote the output. Currently, allows three types:
-* `{% jsonquote %}...{% endjsonquote %}` apply JSON escape for all text data.
-* `{% htmlescape %}...{% endhtmlescape %}` apply HTML escape.
-* `{% urlencode %}...{% endurlencode %}` URL encode all text data.
-
-Note, these tags escapes only text data inside. All variables should be escaped using corresponding modifiers. Example:
-```json
-{"key": "{% jsonquote %}Lorem ipsum "dolor sit amet", {%j= var0 %}.{%endjsonquote%}"}
-```
-Here, `{% end/jsonquote %}` applies only for text data `Lorem ipsum "dolor sit amet",`, whereas `var0` prints using
-JSON-escape printing prefix.
-
-`{% end/htmlescape %}` and `{% end/urlencode %}` works the same.
-
-## Extensions
-
-Dyntpl's features may be extended by including modules to the project. Currently supported modules:
+Currently supported modules:
 * [dyntpl_vector](https://github.com/koykov/dyntpl_vector) provide support of vector parsers inside the templates.
 * [dyntpl_i18n](https://github.com/koykov/dyntpl_i18n) provide support of i18n features.
 
@@ -442,3 +403,9 @@ and vector's [features](https://github.com/koykov/dyntpl_vector) will be availab
 
 Feel free to develop your own extensions. Strongly recommend to register new modifiers using namespaces, like
 [this](https://github.com/koykov/dyntpl_vector/blob/master/init.go#L12).
+
+### Conclusion
+
+Due to two phase (parsing and templating) in using dyntpl it isn't a handy to use in simple cases, especially outside
+highload. The good condition to use it is a highload project and dynamic support requirement. Use dyntpl in proper
+conditions and it will solve your performance problems.
