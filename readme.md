@@ -174,7 +174,7 @@ type ModFn func(ctx *Ctx, buf *any, val any, args []any) error
 * ctx - context of the template
 * buf - pointer to return value
 * val - value to pass to input (eg `varName|modifier()` value of `varName`)
-* args - list of all aguments
+* args - list of all arguments
 
 After writing your function, you need to register it using one of the functions:
 * `RegisterModFn(name, alias string, mod ModFn)`

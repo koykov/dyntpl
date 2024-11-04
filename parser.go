@@ -101,14 +101,16 @@ var (
 	reCutFmt      = regexp.MustCompile(`\n+\t*\s*`)
 
 	// Regexp to parse print instructions.
-	reTplPS    = regexp.MustCompile(`^([jhqluacJfF.\d]*)=\s*(.*) (?:prefix|pfx) (.*) (?:suffix|sfx) (.*)`)
-	reTplP     = regexp.MustCompile(`^([jhqluacJfF.\d]*)=\s*(.*) (?:prefix|pfx) (.*)`)
-	reTplS     = regexp.MustCompile(`^([jhqluacJfF.\d]*)=\s*(.*) (?:suffix|sfx) (.*)`)
-	reTpl      = regexp.MustCompile(`^([jhqluacJfF.\d]*)=\s*(.*)`)
-	reTplCB    = regexp.MustCompile(`^([^(\s]+)\(([^)]*)\)`)
-	reModPfxF  = regexp.MustCompile(`([fF]+)\.*(\d*).*`)
-	reModNoVar = regexp.MustCompile(`([^(]+)\(([^)]*)\)`)
-	reMod      = regexp.MustCompile(`([^(]+)\(*([^)]*)\)*`)
+	reTplPS            = regexp.MustCompile(`^([jhqluacJfF.\d]*)=\s*(.*) (?:prefix|pfx) (.*) (?:suffix|sfx) (.*)`)
+	reTplP             = regexp.MustCompile(`^([jhqluacJfF.\d]*)=\s*(.*) (?:prefix|pfx) (.*)`)
+	reTplS             = regexp.MustCompile(`^([jhqluacJfF.\d]*)=\s*(.*) (?:suffix|sfx) (.*)`)
+	reTpl              = regexp.MustCompile(`^([jhqluacJfF.\d]*)=\s*(.*)`)
+	reTplCB            = regexp.MustCompile(`^([^(\s]+)\(([^)]*)\)`)
+	reTplTernary       = regexp.MustCompile(`^([jhqluacJfF.\d]*)=\s*(.*)(==|!=|>=|<=|>|<)(.*)\s*\?\s*([^:]+):(.*)`)
+	reTplTernaryHelper = regexp.MustCompile(`^^([jhqluacJfF.\d]*)=\s*([^(]+)\(*([^)]*)\)\s*\?\s*([^:]+):(.*)`)
+	reModPfxF          = regexp.MustCompile(`([fF]+)\.*(\d*).*`)
+	reModNoVar         = regexp.MustCompile(`([^(]+)\(([^)]*)\)`)
+	reMod              = regexp.MustCompile(`([^(]+)\(*([^)]*)\)*`)
 
 	// Regexp to parse context instruction.
 	reCtxAs  = regexp.MustCompile(`(?:context|ctx) (\w+),*\s*(\w*)\s*=\s*([\w\s.,:|()"'\[\]]+) as ([\[\]\*\w]*)` + "")
@@ -288,26 +290,33 @@ func (p *parser) processCtl(nodes []node, root *node, ctl []byte, pos int) ([]no
 	up = false
 	ct := bytealg.Trim(ctl, ctlTrim)
 	// Check tpl (print) structure.
-	if reTplPS.Match(ct) || reTplP.Match(ct) || reTplS.Match(ct) || reTpl.Match(ct) || reTplCB.Match(ct) {
+	if reTplPS.Match(ct) || reTplP.Match(ct) || reTplS.Match(ct) || reTpl.Match(ct) || reTplCB.Match(ct) || reTplTernary.Match(ct) {
 		// Sequentially check print structure from the complex to the simplest.
 		root.typ = typeTpl
-		if m := reTplPS.FindSubmatch(ct); m != nil {
+		var m [][]byte
+		if m = reTplTernary.FindSubmatch(ctl); m != nil {
+			root.typ = typeCond
+			// todo implement me
+		} else if m = reTplTernaryHelper.FindSubmatch(ct); m != nil {
+			root.typ = typeCond
+			// todo implement me
+		} else if m = reTplPS.FindSubmatch(ct); m != nil {
 			// Tpl with prefix and suffix found.
 			root.raw, root.mod, root.noesc = p.extractMods(m[2], m[1])
 			root.prefix = m[3]
 			root.suffix = m[4]
-		} else if m := reTplP.FindSubmatch(ct); m != nil {
+		} else if m = reTplP.FindSubmatch(ct); m != nil {
 			// Tpl with prefix found.
 			root.raw, root.mod, root.noesc = p.extractMods(m[2], m[1])
 			root.prefix = m[3]
-		} else if m := reTplS.FindSubmatch(ct); m != nil {
+		} else if m = reTplS.FindSubmatch(ct); m != nil {
 			// Tpl with suffix found.
 			root.raw, root.mod, root.noesc = p.extractMods(m[2], m[1])
 			root.suffix = m[3]
-		} else if m := reTpl.FindSubmatch(ct); m != nil {
+		} else if m = reTpl.FindSubmatch(ct); m != nil {
 			// Simple tpl found.
 			root.raw, root.mod, root.noesc = p.extractMods(bytealg.Trim(m[2], ctlTrimAll), m[1])
-		} else if m := reTplCB.FindSubmatch(ct); m != nil {
+		} else if m = reTplCB.FindSubmatch(ct); m != nil {
 			root.raw, root.mod, root.noesc = p.extractMods(bytealg.Trim(m[0], ctlTrimAll), m[1])
 		} else {
 			root.raw, root.mod, root.noesc = p.extractMods(bytealg.Trim(ct, ctlTrimAll), nil)
