@@ -719,6 +719,12 @@ func (p *parser) processCtl(nodes []node, root *node, ctl []byte, pos int) ([]no
 	return nodes, 0, up, fmt.Errorf("unknown control structure '%s' at offset %d", ct, pos)
 }
 
+func (p *parser) processTernary(nodes []node, root *node, ctl []byte, pos int, ct []byte, offset int, up, dive bool) ([]node, int, bool, error) {
+	_, _, _, _, _, _ = root, ctl, pos, ct, up, dive
+	// todo implement me
+	return nodes, offset, false, nil
+}
+
 func (p *parser) processCond(nodes []node, root *node, ctl []byte, pos int, ct []byte, offset int, up, dive bool) ([]node, int, bool, error) {
 	var (
 		subNodes []node
