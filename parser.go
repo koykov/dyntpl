@@ -101,16 +101,17 @@ var (
 	reCutFmt      = regexp.MustCompile(`\n+\t*\s*`)
 
 	// Regexp to parse print instructions.
-	reTplPS            = regexp.MustCompile(`^([jhqluacJfF.\d]*)=\s*(.*) (?:prefix|pfx) (.*) (?:suffix|sfx) (.*)`)
-	reTplP             = regexp.MustCompile(`^([jhqluacJfF.\d]*)=\s*(.*) (?:prefix|pfx) (.*)`)
-	reTplS             = regexp.MustCompile(`^([jhqluacJfF.\d]*)=\s*(.*) (?:suffix|sfx) (.*)`)
-	reTpl              = regexp.MustCompile(`^([jhqluacJfF.\d]*)=\s*(.*)`)
-	reTplCB            = regexp.MustCompile(`^([^(\s]+)\(([^)]*)\)`)
-	reTplTernary       = regexp.MustCompile(`^([jhqluacJfF.\d]*)=\s*(.*)(==|!=|>=|<=|>|<)(.*)\s*\?\s*([^:]+):(.*)`)
-	reTplTernaryHelper = regexp.MustCompile(`^^([jhqluacJfF.\d]*)=\s*([^(]+)\(*([^)]*)\)\s*\?\s*([^:]+):(.*)`)
-	reModPfxF          = regexp.MustCompile(`([fF]+)\.*(\d*).*`)
-	reModNoVar         = regexp.MustCompile(`([^(]+)\(([^)]*)\)`)
-	reMod              = regexp.MustCompile(`([^(]+)\(*([^)]*)\)*`)
+	reTplPS              = regexp.MustCompile(`^([jhqluacJfF.\d]*)=\s*(.*) (?:prefix|pfx) (.*) (?:suffix|sfx) (.*)`)
+	reTplP               = regexp.MustCompile(`^([jhqluacJfF.\d]*)=\s*(.*) (?:prefix|pfx) (.*)`)
+	reTplS               = regexp.MustCompile(`^([jhqluacJfF.\d]*)=\s*(.*) (?:suffix|sfx) (.*)`)
+	reTpl                = regexp.MustCompile(`^([jhqluacJfF.\d]*)=\s*(.*)`)
+	reTplCB              = regexp.MustCompile(`^([^(\s]+)\(([^)]*)\)`)
+	reTplTernary         = regexp.MustCompile(`^([jhqluacJfF.\d]*)=\s*(.*)(==|!=|>=|<=|>|<)(.*)\s*\?\s*([^:]+):(.*)`)
+	reTplTernaryHelper   = regexp.MustCompile(`^([jhqluacJfF.\d]*)=\s*([^(]+)\(*([^)]*)\)\s*\?\s*([^:]+):(.*)`)
+	reTplTernaryCondExpr = regexp.MustCompile(`[jhqluacJfF.\d]*=\s*(.*)(==|!=|>=|<=|>|<)([^?]+)`)
+	reModPfxF            = regexp.MustCompile(`([fF]+)\.*(\d*).*`)
+	reModNoVar           = regexp.MustCompile(`([^(]+)\(([^)]*)\)`)
+	reMod                = regexp.MustCompile(`([^(]+)\(*([^)]*)\)*`)
 
 	// Regexp to parse context instruction.
 	reCtxAs  = regexp.MustCompile(`(?:context|ctx) (\w+),*\s*(\w*)\s*=\s*([\w\s.,:|()"'\[\]]+) as ([\[\]\*\w]*)` + "")
@@ -290,13 +291,21 @@ func (p *parser) processCtl(nodes []node, root *node, ctl []byte, pos int) ([]no
 	up = false
 	ct := bytealg.Trim(ctl, ctlTrim)
 	// Check tpl (print) structure.
-	if reTplPS.Match(ct) || reTplP.Match(ct) || reTplS.Match(ct) || reTpl.Match(ct) || reTplCB.Match(ct) || reTplTernary.Match(ct) {
+	if reTplPS.Match(ct) || reTplP.Match(ct) || reTplS.Match(ct) || reTpl.Match(ct) || reTplCB.Match(ct) || reTplTernary.Match(ct) || reTplTernaryHelper.Match(ct) {
 		// Sequentially check print structure from the complex to the simplest.
 		root.typ = typeTpl
 		var m [][]byte
-		if m = reTplTernary.FindSubmatch(ctl); m != nil {
+		if m = reTplTernary.FindSubmatch(ct); m != nil {
 			root.typ = typeCond
-			// todo implement me
+			root.condL, root.condR, root.condStaticL, root.condStaticR, root.condOp = p.parseCondExpr(reTplTernaryCondExpr, ct)
+
+			raw, mod_, noesc := p.extractMods(bytealg.Trim(m[5], space), m[1])
+			nodeTrue := node{typ: typeCondTrue, child: []node{{typ: typeTpl, raw: raw, mod: mod_, noesc: noesc}}}
+			root.child = append(root.child, nodeTrue)
+
+			raw, mod_, noesc = p.extractMods(bytealg.Trim(m[6], space), m[1])
+			nodeFalse := node{typ: typeCondFalse, child: []node{{typ: typeTpl, raw: raw, mod: mod_, noesc: noesc}}}
+			root.child = append(root.child, nodeFalse)
 		} else if m = reTplTernaryHelper.FindSubmatch(ct); m != nil {
 			root.typ = typeCond
 			// todo implement me
@@ -717,12 +726,6 @@ func (p *parser) processCtl(nodes []node, root *node, ctl []byte, pos int) ([]no
 	}
 
 	return nodes, 0, up, fmt.Errorf("unknown control structure '%s' at offset %d", ct, pos)
-}
-
-func (p *parser) processTernary(nodes []node, root *node, ctl []byte, pos int, ct []byte, offset int, up, dive bool) ([]node, int, bool, error) {
-	_, _, _, _, _, _ = root, ctl, pos, ct, up, dive
-	// todo implement me
-	return nodes, offset, false, nil
 }
 
 func (p *parser) processCond(nodes []node, root *node, ctl []byte, pos int, ct []byte, offset int, up, dive bool) ([]node, int, bool, error) {
