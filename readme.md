@@ -186,7 +186,7 @@ in modifiers call:
 Print using ns: {%= varName|namespaceName::modifier() %}
 ```
 
-#### Conditions
+### Conditions
 
 dyntpl supports classic syntax of conditions:
 ```
@@ -226,6 +226,28 @@ of their execution may be compared
 {% if len(user.Name) > 0 %}...{% endif %}
 ```
 , whereas user-defined helpers don't allow comparisons.
+
+#### Ternary operator
+
+dyntpl supports ternary operator for most primitive cases of printing the data. Conditions like this:
+```
+{% if x.a == 123 %}
+    {%j= y.c %}
+{% else %}
+    {%j= z.d %}
+{% endif %}
+```
+may be shortener using ternary operator:
+```
+{%j= x.a == 123 ? y.c : z.d %}
+```
+
+Condition helpers also supported:
+```
+{%= myConditionHelper(x.a, x.b, "foobar", 3.1415) ? y.c : z.d %}
+```
+
+#### switch
 
 For multiple conditions, you can use `switch` statement, examples:
 * [classic switch](testdata/parser/switch.tpl)
