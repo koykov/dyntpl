@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+	<node type="cond" helper="testns::check" arg0="obj.Status" sarg1="true">
+		<nodes>
+			<node type="true">
+				<nodes>
+					<node type="tpl" val="obj.Description">
+						<mods>
+							<mod name="htmlEscape" sarg0="1"/>
+						</mods>
+					</node>
+				</nodes>
+			</node>
+			<node type="false">
+				<nodes>
+					<node type="tpl" val="&quot;N/D&quot;">
+						<mods>
+							<mod name="htmlEscape" sarg0="1"/>
+						</mods>
+					</node>
+				</nodes>
+			</node>
+		</nodes>
+	</node>
+</nodes>

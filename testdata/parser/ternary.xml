@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+	<node type="cond" left="user.Status" op="==" right="1">
+		<nodes>
+			<node type="true">
+				<nodes>
+					<node type="tpl" val="user.Name">
+						<mods>
+							<mod name="jsonEscape" sarg0="1"/>
+						</mods>
+					</node>
+				</nodes>
+			</node>
+			<node type="false">
+				<nodes>
+					<node type="tpl" val="&quot;anonymous&quot;">
+						<mods>
+							<mod name="jsonEscape" sarg0="1"/>
+						</mods>
+					</node>
+				</nodes>
+			</node>
+		</nodes>
+	</node>
+</nodes>
