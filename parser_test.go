@@ -49,6 +49,7 @@ func TestParser(t *testing.T) {
 	t.Run("ctlSym", testParser)
 	t.Run("raw", testParser)
 	t.Run("ternary", testParser)
+	t.Run("ternaryHelper", testParser)
 }
 
 func testParser(t *testing.T) {

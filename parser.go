@@ -308,7 +308,22 @@ func (p *parser) processCtl(nodes []node, root *node, ctl []byte, pos int) ([]no
 			root.child = append(root.child, nodeFalse)
 		} else if m = reTplTernaryHelper.FindSubmatch(ct); m != nil {
 			root.typ = typeCond
-			// todo implement me
+			root.condHlp = m[2]
+			root.condHlpArg = p.extractArgs(m[3])
+			switch {
+			case bytes.Equal(root.condHlp, condLen):
+				root.condLC = lcLen
+			case bytes.Equal(root.condHlp, condCap):
+				root.condLC = lcCap
+			}
+
+			raw, mod_, noesc := p.extractMods(bytealg.Trim(m[4], space), m[1])
+			nodeTrue := node{typ: typeCondTrue, child: []node{{typ: typeTpl, raw: raw, mod: mod_, noesc: noesc}}}
+			root.child = append(root.child, nodeTrue)
+
+			raw, mod_, noesc = p.extractMods(bytealg.Trim(m[5], space), m[1])
+			nodeFalse := node{typ: typeCondFalse, child: []node{{typ: typeTpl, raw: raw, mod: mod_, noesc: noesc}}}
+			root.child = append(root.child, nodeFalse)
 		} else if m = reTplPS.FindSubmatch(ct); m != nil {
 			// Tpl with prefix and suffix found.
 			root.raw, root.mod, root.noesc = p.extractMods(m[2], m[1])
