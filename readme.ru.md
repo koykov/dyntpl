@@ -234,6 +234,28 @@ func RegisterCondFnNS(namespace, name string, cond CondFn) // namespace version
 ```
 , тогда как обычные пользовательские функции не допускают никакие сравнения.
 
+#### Тернарный оператор
+
+dyntpl поддерживает тернарный оператор для простейших случаев вывода данных. Например такое условие:
+```
+{% if x.a == 123 %}
+    {%j= y.c %}
+{% else %}
+    {%j= z.d %}
+{% endif %}
+```
+можно записать короче с использованием тернарного оператора:
+```
+{%j= x.a == 123 ? y.c : z.d %}
+```
+
+Аналогично обычным условиям, тернарный оператор поддерживает `condition helpers`:
+```
+{%= myConditionHelper(x.a, x.b, "foobar", 3.1415) ? y.c : z.d %}
+```
+
+#### switch
+
 Для цепочки сравнений dyntpl поддерживает switch оператор, примеры:
 * [классический switch](testdata/parser/switch.tpl)
 * [switch без условия](testdata/parser/switchNoCondition.tpl)
