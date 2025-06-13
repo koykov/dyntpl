@@ -21,6 +21,9 @@ func init() {
 		WithParam("arg1 any", "").
 		WithExample(`{%= user.AllowSell|ifThenElse("<button>Sell</button>", "not available!") %}`)
 
+	// Register fmt modifiers.
+	RegisterModFnNS("fmt", "format", "", modFmtFormat)
+
 	// Register builtin escape/quote modifiers.
 	RegisterModFn("jsonEscape", "je", modJSONEscape).
 		WithDescription("Applies JSON escaping to printing value. May work together with `{% jsonquote %}...{% endjsonquote %}`.").
