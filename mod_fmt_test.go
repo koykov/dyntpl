@@ -500,7 +500,7 @@ var (
 		uint64(1<<64 - 1),
 		1000000000,
 		map[string]int{"a": 1},
-		[]string{"b"},
+		[]string{"a", "b"},
 		[]int(nil),
 		[]int{},
 		array,

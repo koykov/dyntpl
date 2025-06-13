@@ -82,7 +82,7 @@ func testModWA(t *testing.T, args modArgs) {
 		t.Error(err)
 	}
 	if !bytes.Equal(result, st.expect) {
-		t.Errorf("%s mismatch", key)
+		t.Errorf("%s mismatch: need %s\ngot %s", key, st.expect, result)
 	}
 }
 

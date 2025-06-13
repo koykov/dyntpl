@@ -20,7 +20,7 @@ func modFmtFormat(ctx *Ctx, buf *any, _ any, args []any) error {
 		return nil
 	}
 	ctx.BufAcc.StakeOut().
-		WriteFormat(sfmt, args[1:])
+		WriteFormat(sfmt, args[1:]...)
 	ctx.BufModOut(buf, ctx.BufAcc.StakedBytes())
 	return nil
 }
