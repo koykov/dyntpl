@@ -1,0 +1,1 @@
+{%= fmt::format("%.1f", testFmtVar318) %}
