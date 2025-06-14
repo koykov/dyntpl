@@ -1,0 +1,1 @@
+&[4]interface {}{1, "hello", 2.5, interface {}(nil)}

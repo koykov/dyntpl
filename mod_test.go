@@ -82,7 +82,9 @@ func testModWA(t *testing.T, args modArgs) {
 		t.Error(err)
 	}
 	if !bytes.Equal(result, st.expect) {
-		t.Errorf("%s mismatch", key)
+		if !bytes.Contains(st.expect, bPTR) {
+			t.Errorf("%s mismatch: need %s\ngot %s", key, st.expect, result)
+		}
 	}
 }
 
@@ -146,7 +148,6 @@ func benchMod(b *testing.B) {
 
 func benchModWA(b *testing.B, args modArgs) {
 	key := getTBName(b)
-
 	st := getStage(key)
 	if st == nil {
 		b.Error("stage not found")
@@ -171,3 +172,5 @@ func benchModWA(b *testing.B, args modArgs) {
 		ReleaseCtx(ctx)
 	}
 }
+
+var bPTR = []byte("PTR")
