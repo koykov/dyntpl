@@ -148,7 +148,6 @@ func benchMod(b *testing.B) {
 
 func benchModWA(b *testing.B, args modArgs) {
 	key := getTBName(b)
-
 	st := getStage(key)
 	if st == nil {
 		b.Error("stage not found")

@@ -19,7 +19,8 @@ type stage struct {
 }
 
 var (
-	stages []stage
+	stages    []stage
+	stagesReg = make(map[string]int)
 
 	user = &testobj.TestObject{
 		Id:     "115",
@@ -82,6 +83,7 @@ func init() {
 				st.err = bytealg.Trim(byteconv.B2S(raw), "\n")
 			}
 			stages = append(stages, st)
+			stagesReg[st.key] = len(stages) - 1
 
 			RegisterTplKey(st.key, tree)
 		}
@@ -101,6 +103,7 @@ func registerTestStages(dir string) {
 			st.expect, _ = os.ReadFile(strings.Replace(path, ".tpl", ".txt", 1))
 			st.expect = bytealg.Trim(st.expect, []byte("\n"))
 			stages = append(stages, st)
+			stagesReg[st.key] = len(stages) - 1
 
 			RegisterTplKey(st.key, tree)
 		}
@@ -109,11 +112,8 @@ func registerTestStages(dir string) {
 }
 
 func getStage(key string) (st *stage) {
-	for i := 0; i < len(stages); i++ {
-		st1 := &stages[i]
-		if st1.key == key {
-			st = st1
-		}
+	if i, ok := stagesReg[key]; ok {
+		st = &stages[i]
 	}
 	return st
 }

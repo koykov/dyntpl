@@ -1,11 +1,13 @@
 package dyntpl
 
 import (
+	"fmt"
 	"math"
 	"reflect"
-	"strconv"
 	"testing"
 	"time"
+
+	"github.com/koykov/bytebuf"
 )
 
 var (
@@ -688,6 +690,33 @@ var (
 
 func TestModFmt(t *testing.T) {
 	for i := 0; i < len(fmtStages); i++ {
-		t.Run(strconv.Itoa(i), func(t *testing.T) { testModWA(t, modArgs{"fmtVar": fmtStages[i]}) })
+		t.Run(fmt.Sprintf("fmt%d", i), func(t *testing.T) { testModWA(t, modArgs{"fmtVar": fmtStages[i]}) })
+	}
+}
+
+func BenchmarkModFmt(b *testing.B) {
+	args := modArgs{"fmtVar": fmtStages[0]}
+	var bb bytebuf.Chain
+	b.ReportAllocs()
+	b.ResetTimer()
+	for j := 0; j < b.N; j++ {
+		key := bb.Reset().WriteString("fmt").WriteInt(int64(j % len(fmtStages))).String()
+		st := getStage(key)
+		if st == nil {
+			b.Error("stage not found")
+			return
+		}
+
+		ctx := AcquireCtx()
+		args["fmtVar"] = fmtStages[j%len(fmtStages)]
+		for k, v := range args {
+			ctx.SetStatic(k, v)
+		}
+		buf.Reset()
+		err := Write(&buf, key, ctx)
+		if err != nil {
+			b.Error(err)
+		}
+		ReleaseCtx(ctx)
 	}
 }
