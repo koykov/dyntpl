@@ -1,11 +1,9 @@
 package dyntpl
 
 import (
-	"fmt"
 	"math"
 	"reflect"
 	"strconv"
-	"strings"
 	"testing"
 	"time"
 )
@@ -688,12 +686,8 @@ var (
 	}
 )
 
-func zeroFill(prefix string, width int, suffix string) string {
-	return prefix + strings.Repeat("0", width-len(suffix)) + suffix
-}
-
 func TestModFmt(t *testing.T) {
 	for i := 0; i < len(fmtStages); i++ {
-		t.Run(strconv.Itoa(i), func(t *testing.T) { testModWA(t, modArgs{fmt.Sprintf("testFmtVar%d", i): fmtStages[i]}) })
+		t.Run(strconv.Itoa(i), func(t *testing.T) { testModWA(t, modArgs{"fmtVar": fmtStages[i]}) })
 	}
 }

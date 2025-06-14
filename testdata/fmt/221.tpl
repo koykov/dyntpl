@@ -1,1 +1,1 @@
-{%= fmt::format("%-#20.8x", testFmtVar221) %}
+{%= fmt::format("%-#20.8x", fmtVar) %}

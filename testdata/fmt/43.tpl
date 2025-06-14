@@ -1,1 +1,1 @@
-{%= fmt::format("%q", testFmtVar43) %}
+{%= fmt::format("%q", fmtVar) %}

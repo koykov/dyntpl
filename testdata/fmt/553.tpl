@@ -1,1 +1,1 @@
-{%= fmt::format("no args", testFmtVar553) %}
+{%= fmt::format("no args", fmtVar) %}
