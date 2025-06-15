@@ -22,7 +22,7 @@ func init() {
 		WithExample(`{%= user.AllowSell|ifThenElse("<button>Sell</button>", "not available!") %}`)
 
 	// Register fmt modifiers.
-	RegisterModFnNS("fmt", "format", "", modFmtFormat).
+	RegisterModFnNS("fmt", "format", "f", modFmtFormat).
 		WithDescription("Modifier `fmt::format` formats according to a format specifier and returns the resulting string.").
 		WithParam("format string", "").
 		WithParam("args ...any", "").
