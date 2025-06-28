@@ -104,7 +104,7 @@ func dateConv(val any) (t time.Time, ok bool) {
 	case *int32:
 		t = time.Unix(int64(*x), 0)
 	case *int64:
-		t = time.Unix(int64(*x), 0)
+		t = time.Unix(*x, 0)
 	case *uint:
 		t = time.Unix(int64(*x), 0)
 	case *uint8:
