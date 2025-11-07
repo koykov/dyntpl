@@ -14,8 +14,8 @@ type DocgenFormat string
 
 const (
 	DocgenFormatMarkdown DocgenFormat = "markdown"
-	DocgenFormatHTML                  = "html"
-	DocgenFormatJSON                  = "json"
+	DocgenFormatHTML     DocgenFormat = "html"
+	DocgenFormatJSON     DocgenFormat = "json"
 )
 
 func Docgen(format DocgenFormat) ([]byte, error) {
@@ -225,7 +225,7 @@ func (t *docgen) write(w io.Writer, format DocgenFormat, compact bool) error {
 	}
 
 	switch {
-	case format == DocgenFormatMarkdown && compact == true:
+	case format == DocgenFormatMarkdown && compact:
 		_, _ = w.Write([]byte("* `"))
 		_, _ = w.Write([]byte(t.name))
 		if len(t.typ) > 0 {
@@ -242,7 +242,7 @@ func (t *docgen) write(w io.Writer, format DocgenFormat, compact bool) error {
 			_, _ = w.Write([]byte(t.desc))
 		}
 		_, _ = w.Write([]byte("\n"))
-	case format == DocgenFormatMarkdown && compact == false:
+	case format == DocgenFormatMarkdown && !compact:
 		_, _ = w.Write([]byte("### "))
 		_, _ = w.Write([]byte(t.name))
 		_, _ = w.Write([]byte("\n"))
@@ -279,7 +279,7 @@ func (t *docgen) write(w io.Writer, format DocgenFormat, compact bool) error {
 			_, _ = w.Write([]byte(t.example))
 			_, _ = w.Write([]byte("\n```\n\n"))
 		}
-	case format == DocgenFormatHTML && compact == true:
+	case format == DocgenFormatHTML && compact:
 		_, _ = w.Write([]byte("<li><code>"))
 		_, _ = w.Write([]byte(t.name))
 		if len(t.typ) > 0 {
@@ -296,7 +296,7 @@ func (t *docgen) write(w io.Writer, format DocgenFormat, compact bool) error {
 			_, _ = w.Write([]byte(htmlEscape(t.desc, false)))
 		}
 		_, _ = w.Write([]byte("</li>"))
-	case format == DocgenFormatHTML && compact == false:
+	case format == DocgenFormatHTML && !compact:
 		_, _ = w.Write([]byte("<h3>" + t.name + "</h3>"))
 		if len(t.alias) > 0 {
 			_, _ = w.Write([]byte("<block>Alias: <code>" + t.alias + "</code></block>"))

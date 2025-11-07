@@ -180,8 +180,8 @@ func BenchmarkCtx(b *testing.B) {
 }
 
 func benchCtx(b *testing.B, ctx *Ctx, buf *any) {
-	raw := *buf
-	raw = ctx.Get("obj.Id")
+	_ = *buf
+	raw := ctx.Get("obj.Id")
 	if ctx.Err != nil {
 		b.Error("ctx get error", ctx.Err)
 	}

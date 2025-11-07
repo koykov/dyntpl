@@ -23,11 +23,12 @@ func modLinkEscape(ctx *Ctx, buf *any, val any, args []any) (err error) {
 		ctx.BufAcc.StakeOut()
 		_ = b[l-1]
 		for i := 0; i < l; i++ {
-			if b[i] == '"' {
+			switch b[i] {
+			case '"':
 				ctx.BufAcc.WriteString(`\"`)
-			} else if b[i] == ' ' {
+			case ' ':
 				ctx.BufAcc.WriteByte('+')
-			} else {
+			default:
 				ctx.BufAcc.WriteByte(b[i])
 			}
 		}
