@@ -33,7 +33,7 @@ func modDate(ctx *Ctx, buf *any, val any, args []any) (err error) {
 	if len(args) > 1 {
 		if locName := ctx.BufAcc.StakeOut().WriteX(args[1]).StakedString(); len(locName) > 0 {
 			if loc, err1 := clock.LoadLocation(locName); err1 == nil {
-				dt.In(loc)
+				_ = dt.In(loc)
 			}
 		}
 	}
@@ -84,7 +84,7 @@ func dateConv(val any) (t time.Time, ok bool) {
 	case int32:
 		t = time.Unix(int64(x), 0)
 	case int64:
-		t = time.Unix(int64(x), 0)
+		t = time.Unix(x, 0)
 	case uint:
 		t = time.Unix(int64(x), 0)
 	case uint8:

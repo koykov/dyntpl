@@ -397,6 +397,9 @@ func (t *Tpl) writeNode(w io.Writer, node *node, ctx *Ctx) (err error) {
 					err = t.writeNode(w, &node.child[1], ctx)
 				}
 			}
+			if err != nil {
+				return err
+			}
 		}
 	case typeCond:
 		// Condition node evaluates condition expressions.

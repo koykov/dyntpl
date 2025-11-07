@@ -11,8 +11,8 @@ import (
 // {% for i:=0; i<10; i++ %}...{% endfor %}
 func (ctx *Ctx) cloop(node *node, tpl *Tpl, w io.Writer) {
 	var (
-		cnt, lim  int64
-		allowIter bool
+		cnt, lim              int64
+		allowIter, forceBreak bool
 	)
 	// Prepare bounds.
 	cnt = ctx.cloopRange(node.loopCntStatic, node.loopCntInit)
@@ -47,12 +47,12 @@ func (ctx *Ctx) cloop(node *node, tpl *Tpl, w io.Writer) {
 			allowIter = valLC != lim
 		default:
 			ctx.Err = ErrWrongLoopCond
-			break
+			forceBreak = true
 		}
 		// Check breakN signal from child loop.
 		allowIter = allowIter && ctx.brkD == 0
 
-		if !allowIter {
+		if !allowIter || forceBreak {
 			break
 		}
 
@@ -93,6 +93,9 @@ func (ctx *Ctx) cloop(node *node, tpl *Tpl, w io.Writer) {
 			ctx.bufLC[idxLC]--
 		default:
 			ctx.Err = ErrWrongLoopOp
+			forceBreak = true
+		}
+		if forceBreak {
 			break
 		}
 
@@ -117,8 +120,6 @@ func (ctx *Ctx) cloop(node *node, tpl *Tpl, w io.Writer) {
 			}
 		}
 	}
-
-	return
 }
 
 // Counter loop bound check helper.
