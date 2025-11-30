@@ -22,6 +22,13 @@ func (i3 MarshalRowInspector) TypeName() string {
 	return "MarshalRow"
 }
 
+func (i3 MarshalRowInspector) Instance(ptr bool) any {
+	if ptr {
+		return &testobj.MarshalRow{}
+	}
+	return testobj.MarshalRow{}
+}
+
 func (i3 MarshalRowInspector) Get(src any, path ...string) (any, error) {
 	var buf any
 	err := i3.GetTo(src, &buf, path...)
@@ -103,11 +110,11 @@ func (i3 MarshalRowInspector) Compare(src any, cond inspector.Op, right string, 
 		}
 		if path[0] == "N" {
 			var rightExact int
-			t21, err21 := strconv.ParseInt(right, 0, 0)
-			if err21 != nil {
-				return err21
+			t23, err23 := strconv.ParseInt(right, 0, 0)
+			if err23 != nil {
+				return err23
 			}
-			rightExact = int(t21)
+			rightExact = int(t23)
 			switch cond {
 			case inspector.OpEq:
 				*result = x.N == rightExact
@@ -355,7 +362,35 @@ func (i3 MarshalRowInspector) Capacity(src any, result *int, path ...string) err
 	return nil
 }
 
-func (i3 MarshalRowInspector) Reset(x any) error {
+func (i3 MarshalRowInspector) Append(src, value any, path ...string) (any, error) {
+	_, _, _ = src, value, path
+	if src == nil {
+		return src, nil
+	}
+	var x *testobj.MarshalRow
+	_ = x
+	if p, ok := src.(**testobj.MarshalRow); ok {
+		x = *p
+	} else if p, ok := src.(*testobj.MarshalRow); ok {
+		x = p
+	} else if v, ok := src.(testobj.MarshalRow); ok {
+		x = &v
+	} else {
+		return src, nil
+	}
+
+	return src, nil
+}
+
+func (i3 MarshalRowInspector) Reset(x any, path ...string) error {
+	if len(path) == 0 {
+		return i3.reset1(x, path...)
+	} else {
+		return i3.reset2(x, path...)
+	}
+}
+
+func (i3 MarshalRowInspector) reset1(x any, path ...string) error {
 	var origin *testobj.MarshalRow
 	_ = origin
 	switch x.(type) {
@@ -370,5 +405,29 @@ func (i3 MarshalRowInspector) Reset(x any) error {
 	}
 	origin.Msg = ""
 	origin.N = 0
+	return nil
+}
+
+func (i3 MarshalRowInspector) reset2(x any, path ...string) error {
+	var origin *testobj.MarshalRow
+	_ = origin
+	switch x.(type) {
+	case testobj.MarshalRow:
+		return inspector.ErrMustPointerType
+	case *testobj.MarshalRow:
+		origin = x.(*testobj.MarshalRow)
+	case **testobj.MarshalRow:
+		origin = *x.(**testobj.MarshalRow)
+	default:
+		return inspector.ErrUnsupportedType
+	}
+	if len(path) > 0 {
+		if path[0] == "Msg" {
+			origin.Msg = ""
+		}
+		if path[0] == "N" {
+			origin.N = 0
+		}
+	}
 	return nil
 }

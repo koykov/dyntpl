@@ -22,6 +22,13 @@ func (i2 MarshalDataInspector) TypeName() string {
 	return "MarshalData"
 }
 
+func (i2 MarshalDataInspector) Instance(ptr bool) any {
+	if ptr {
+		return &testobj.MarshalData{}
+	}
+	return testobj.MarshalData{}
+}
+
 func (i2 MarshalDataInspector) Get(src any, path ...string) (any, error) {
 	var buf any
 	err := i2.GetTo(src, &buf, path...)
@@ -62,11 +69,11 @@ func (i2 MarshalDataInspector) GetTo(src any, buf *any, path ...string) (err err
 			_ = x0
 			if len(path) > 1 {
 				var i int
-				t11, err11 := strconv.ParseInt(path[1], 0, 0)
-				if err11 != nil {
-					return err11
+				t12, err12 := strconv.ParseInt(path[1], 0, 0)
+				if err12 != nil {
+					return err12
 				}
-				i = int(t11)
+				i = int(t12)
 				if len(x0) > i {
 					x1 := &(x0)[i]
 					_ = x1
@@ -112,11 +119,11 @@ func (i2 MarshalDataInspector) Compare(src any, cond inspector.Op, right string,
 	if len(path) > 0 {
 		if path[0] == "Foo" {
 			var rightExact int
-			t12, err12 := strconv.ParseInt(right, 0, 0)
-			if err12 != nil {
-				return err12
+			t13, err13 := strconv.ParseInt(right, 0, 0)
+			if err13 != nil {
+				return err13
 			}
-			rightExact = int(t12)
+			rightExact = int(t13)
 			switch cond {
 			case inspector.OpEq:
 				*result = x.Foo == rightExact
@@ -158,11 +165,11 @@ func (i2 MarshalDataInspector) Compare(src any, cond inspector.Op, right string,
 			_ = x0
 			if len(path) > 1 {
 				var i int
-				t14, err14 := strconv.ParseInt(path[1], 0, 0)
-				if err14 != nil {
-					return err14
+				t15, err15 := strconv.ParseInt(path[1], 0, 0)
+				if err15 != nil {
+					return err15
 				}
-				i = int(t14)
+				i = int(t15)
 				if len(x0) > i {
 					x1 := &(x0)[i]
 					_ = x1
@@ -189,11 +196,11 @@ func (i2 MarshalDataInspector) Compare(src any, cond inspector.Op, right string,
 						}
 						if path[2] == "N" {
 							var rightExact int
-							t16, err16 := strconv.ParseInt(right, 0, 0)
-							if err16 != nil {
-								return err16
+							t17, err17 := strconv.ParseInt(right, 0, 0)
+							if err17 != nil {
+								return err17
 							}
-							rightExact = int(t16)
+							rightExact = int(t17)
 							switch cond {
 							case inspector.OpEq:
 								*result = x1.N == rightExact
@@ -302,11 +309,11 @@ func (i2 MarshalDataInspector) SetWithBuffer(dst, value any, buf inspector.Accum
 			_ = x0
 			if len(path) > 1 {
 				var i int
-				t17, err17 := strconv.ParseInt(path[1], 0, 0)
-				if err17 != nil {
-					return err17
+				t18, err18 := strconv.ParseInt(path[1], 0, 0)
+				if err18 != nil {
+					return err18
 				}
-				i = int(t17)
+				i = int(t18)
 				if len(x0) > i {
 					x1 := &(x0)[i]
 					_ = x1
@@ -519,11 +526,11 @@ func (i2 MarshalDataInspector) Length(src any, result *int, path ...string) erro
 			return nil
 		}
 		var i int
-		t18, err18 := strconv.ParseInt(path[1], 0, 0)
-		if err18 != nil {
-			return err18
+		t19, err19 := strconv.ParseInt(path[1], 0, 0)
+		if err19 != nil {
+			return err19
 		}
-		i = int(t18)
+		i = int(t19)
 		if len(x.Rows) > i {
 			x1 := &(x.Rows)[i]
 			_ = x1
@@ -570,11 +577,11 @@ func (i2 MarshalDataInspector) Capacity(src any, result *int, path ...string) er
 			return nil
 		}
 		var i int
-		t19, err19 := strconv.ParseInt(path[1], 0, 0)
-		if err19 != nil {
-			return err19
+		t20, err20 := strconv.ParseInt(path[1], 0, 0)
+		if err20 != nil {
+			return err20
 		}
-		i = int(t19)
+		i = int(t20)
 		if len(x.Rows) > i {
 			x1 := &(x.Rows)[i]
 			_ = x1
@@ -588,7 +595,53 @@ func (i2 MarshalDataInspector) Capacity(src any, result *int, path ...string) er
 	return nil
 }
 
-func (i2 MarshalDataInspector) Reset(x any) error {
+func (i2 MarshalDataInspector) Append(src, value any, path ...string) (any, error) {
+	_, _, _ = src, value, path
+	if src == nil {
+		return src, nil
+	}
+	var x *testobj.MarshalData
+	_ = x
+	if p, ok := src.(**testobj.MarshalData); ok {
+		x = *p
+	} else if p, ok := src.(*testobj.MarshalData); ok {
+		x = p
+	} else if v, ok := src.(testobj.MarshalData); ok {
+		x = &v
+	} else {
+		return src, nil
+	}
+
+	if path[0] == "Rows" {
+		if len(path) == 1 {
+			var raw *testobj.MarshalRow
+			var ok bool
+			switch y := value.(type) {
+			case testobj.MarshalRow:
+				raw = &y
+				ok = true
+			case *testobj.MarshalRow:
+				raw = y
+				ok = true
+			}
+			if ok {
+				x.Rows = append(x.Rows, *raw)
+				return &x.Rows, nil
+			}
+		}
+	}
+	return src, nil
+}
+
+func (i2 MarshalDataInspector) Reset(x any, path ...string) error {
+	if len(path) == 0 {
+		return i2.reset1(x, path...)
+	} else {
+		return i2.reset2(x, path...)
+	}
+}
+
+func (i2 MarshalDataInspector) reset1(x any, path ...string) error {
 	var origin *testobj.MarshalData
 	_ = origin
 	switch x.(type) {
@@ -611,6 +664,61 @@ func (i2 MarshalDataInspector) Reset(x any) error {
 			x1.N = 0
 		}
 		(origin.Rows) = (origin.Rows)[:0]
+	}
+	return nil
+}
+
+func (i2 MarshalDataInspector) reset2(x any, path ...string) error {
+	var origin *testobj.MarshalData
+	_ = origin
+	switch x.(type) {
+	case testobj.MarshalData:
+		return inspector.ErrMustPointerType
+	case *testobj.MarshalData:
+		origin = x.(*testobj.MarshalData)
+	case **testobj.MarshalData:
+		origin = *x.(**testobj.MarshalData)
+	default:
+		return inspector.ErrUnsupportedType
+	}
+	if len(path) > 0 {
+		if path[0] == "Foo" {
+			origin.Foo = 0
+		}
+		if path[0] == "Bar" {
+			origin.Bar = ""
+		}
+		if path[0] == "Rows" {
+			if len(path) > 1 {
+				if l := len((origin.Rows)); l > 0 {
+					var i1 int = -1
+					_ = i1
+					_ = (origin.Rows)[l-1]
+					t21, err21 := strconv.ParseInt(path[1], 0, 0)
+					if err21 != nil {
+						return err21
+					}
+					i1 = int(t21)
+					x1 := &(origin.Rows)[i1]
+					if len(path) > 2 {
+						if path[2] == "Msg" {
+							x1.Msg = ""
+						}
+						if path[2] == "N" {
+							x1.N = 0
+						}
+					}
+					if len(path) == 2 {
+						(origin.Rows)[i1] = testobj.MarshalRow{}
+					}
+					if i1 == -1 {
+						(origin.Rows) = (origin.Rows)[:0]
+					}
+				}
+				return nil
+			}
+			(origin.Rows) = (origin.Rows)[:0]
+		}
 	}
 	return nil
 }
