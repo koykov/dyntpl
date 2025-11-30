@@ -22,6 +22,13 @@ func (i0 BenchRowInspector) TypeName() string {
 	return "BenchRow"
 }
 
+func (i0 BenchRowInspector) Instance(ptr bool) any {
+	if ptr {
+		return &testobj.BenchRow{}
+	}
+	return testobj.BenchRow{}
+}
+
 func (i0 BenchRowInspector) Get(src any, path ...string) (any, error) {
 	var buf any
 	err := i0.GetTo(src, &buf, path...)
@@ -381,7 +388,35 @@ func (i0 BenchRowInspector) Capacity(src any, result *int, path ...string) error
 	return nil
 }
 
-func (i0 BenchRowInspector) Reset(x any) error {
+func (i0 BenchRowInspector) Append(src, value any, path ...string) (any, error) {
+	_, _, _ = src, value, path
+	if src == nil {
+		return src, nil
+	}
+	var x *testobj.BenchRow
+	_ = x
+	if p, ok := src.(**testobj.BenchRow); ok {
+		x = *p
+	} else if p, ok := src.(*testobj.BenchRow); ok {
+		x = p
+	} else if v, ok := src.(testobj.BenchRow); ok {
+		x = &v
+	} else {
+		return src, nil
+	}
+
+	return src, nil
+}
+
+func (i0 BenchRowInspector) Reset(x any, path ...string) error {
+	if len(path) == 0 {
+		return i0.reset1(x, path...)
+	} else {
+		return i0.reset2(x, path...)
+	}
+}
+
+func (i0 BenchRowInspector) reset1(x any, path ...string) error {
 	var origin *testobj.BenchRow
 	_ = origin
 	switch x.(type) {
@@ -397,5 +432,32 @@ func (i0 BenchRowInspector) Reset(x any) error {
 	origin.ID = 0
 	origin.Message = ""
 	origin.Print = false
+	return nil
+}
+
+func (i0 BenchRowInspector) reset2(x any, path ...string) error {
+	var origin *testobj.BenchRow
+	_ = origin
+	switch x.(type) {
+	case testobj.BenchRow:
+		return inspector.ErrMustPointerType
+	case *testobj.BenchRow:
+		origin = x.(*testobj.BenchRow)
+	case **testobj.BenchRow:
+		origin = *x.(**testobj.BenchRow)
+	default:
+		return inspector.ErrUnsupportedType
+	}
+	if len(path) > 0 {
+		if path[0] == "ID" {
+			origin.ID = 0
+		}
+		if path[0] == "Message" {
+			origin.Message = ""
+		}
+		if path[0] == "Print" {
+			origin.Print = false
+		}
+	}
 	return nil
 }

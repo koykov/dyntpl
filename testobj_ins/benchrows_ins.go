@@ -22,6 +22,13 @@ func (i1 BenchRowsInspector) TypeName() string {
 	return "BenchRows"
 }
 
+func (i1 BenchRowsInspector) Instance(ptr bool) any {
+	if ptr {
+		return &testobj.BenchRows{}
+	}
+	return testobj.BenchRows{}
+}
+
 func (i1 BenchRowsInspector) Get(src any, path ...string) (any, error) {
 	var buf any
 	err := i1.GetTo(src, &buf, path...)
@@ -540,7 +547,53 @@ func (i1 BenchRowsInspector) Capacity(src any, result *int, path ...string) erro
 	return nil
 }
 
-func (i1 BenchRowsInspector) Reset(x any) error {
+func (i1 BenchRowsInspector) Append(src, value any, path ...string) (any, error) {
+	_, _, _ = src, value, path
+	if src == nil {
+		return src, nil
+	}
+	var x *testobj.BenchRows
+	_ = x
+	if p, ok := src.(**testobj.BenchRows); ok {
+		x = *p
+	} else if p, ok := src.(*testobj.BenchRows); ok {
+		x = p
+	} else if v, ok := src.(testobj.BenchRows); ok {
+		x = &v
+	} else {
+		return src, nil
+	}
+
+	if path[0] == "Rows" {
+		if len(path) == 1 {
+			var raw *testobj.BenchRow
+			var ok bool
+			switch y := value.(type) {
+			case testobj.BenchRow:
+				raw = &y
+				ok = true
+			case *testobj.BenchRow:
+				raw = y
+				ok = true
+			}
+			if ok {
+				x.Rows = append(x.Rows, *raw)
+				return &x.Rows, nil
+			}
+		}
+	}
+	return src, nil
+}
+
+func (i1 BenchRowsInspector) Reset(x any, path ...string) error {
+	if len(path) == 0 {
+		return i1.reset1(x, path...)
+	} else {
+		return i1.reset2(x, path...)
+	}
+}
+
+func (i1 BenchRowsInspector) reset1(x any, path ...string) error {
 	var origin *testobj.BenchRows
 	_ = origin
 	switch x.(type) {
@@ -562,6 +615,58 @@ func (i1 BenchRowsInspector) Reset(x any) error {
 			x1.Print = false
 		}
 		(origin.Rows) = (origin.Rows)[:0]
+	}
+	return nil
+}
+
+func (i1 BenchRowsInspector) reset2(x any, path ...string) error {
+	var origin *testobj.BenchRows
+	_ = origin
+	switch x.(type) {
+	case testobj.BenchRows:
+		return inspector.ErrMustPointerType
+	case *testobj.BenchRows:
+		origin = x.(*testobj.BenchRows)
+	case **testobj.BenchRows:
+		origin = *x.(**testobj.BenchRows)
+	default:
+		return inspector.ErrUnsupportedType
+	}
+	if len(path) > 0 {
+		if path[0] == "Rows" {
+			if len(path) > 1 {
+				if l := len((origin.Rows)); l > 0 {
+					var i1 int = -1
+					_ = i1
+					_ = (origin.Rows)[l-1]
+					t11, err11 := strconv.ParseInt(path[1], 0, 0)
+					if err11 != nil {
+						return err11
+					}
+					i1 = int(t11)
+					x1 := &(origin.Rows)[i1]
+					if len(path) > 2 {
+						if path[2] == "ID" {
+							x1.ID = 0
+						}
+						if path[2] == "Message" {
+							x1.Message = ""
+						}
+						if path[2] == "Print" {
+							x1.Print = false
+						}
+					}
+					if len(path) == 2 {
+						(origin.Rows)[i1] = testobj.BenchRow{}
+					}
+					if i1 == -1 {
+						(origin.Rows) = (origin.Rows)[:0]
+					}
+				}
+				return nil
+			}
+			(origin.Rows) = (origin.Rows)[:0]
+		}
 	}
 	return nil
 }
