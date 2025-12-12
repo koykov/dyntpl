@@ -522,7 +522,7 @@ func (ctx *Ctx) rloop(path []byte, node *node, tpl *Tpl, w io.Writer) {
 // user.History[i] -> user.History.0, user.History.1, ...
 // , since inspector doesn't support variadic paths.
 func (ctx *Ctx) replaceQB(path []byte) []byte {
-	return path
+	// return path
 	// todo remove me
 	qbLi := bytes.Index(path, qbL)
 	qbRi := bytes.Index(path, qbR)
