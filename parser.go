@@ -1051,11 +1051,11 @@ func (p *parser) extractMods(t, outm []byte) ([]byte, []mod, bool) {
 // Get list of arguments of modifier or helper, ex:
 // {%= variable|mod(arg0, ..., argN) %}
 //
-//	^             ^
+//	________________^             ^
 //
 // {% if condHelper(arg0, ..., argN) %}...{% endif %}
 //
-//	^             ^
+//	________________^             ^
 func (p *parser) extractArgs(raw []byte) []*arg {
 	r := make([]*arg, 0)
 	if len(raw) == 0 {
