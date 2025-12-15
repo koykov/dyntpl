@@ -345,8 +345,6 @@ func (ctx *Ctx) get(path []byte) any {
 	// Split path to separate words using dot as separator.
 	// So, path user.Bio.Birthday will convert to []string{"user", "Bio", "Birthday"}
 	ctx.bufS = tokenize(ctx.bufS[:0], byteconv.B2S(path))
-	// ctx.bufS = ctx.bufS[:0]
-	// ctx.bufS = bytealg.AppendSplitString(ctx.bufS, byteconv.B2S(path), ".", -1)
 	return ctx.get2(ctx.bufS)
 }
 
