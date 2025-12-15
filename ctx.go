@@ -342,24 +342,33 @@ func (ctx *Ctx) get(path []byte) any {
 	// Reset error to avoid catching errors from previous nodes.
 	ctx.Err = nil
 
+	// Split path to separate words using dot as separator.
+	// So, path user.Bio.Birthday will convert to []string{"user", "Bio", "Birthday"}
+	ctx.bufS = tokenize(ctx.bufS[:0], byteconv.B2S(path))
+	// ctx.bufS = ctx.bufS[:0]
+	// ctx.bufS = bytealg.AppendSplitString(ctx.bufS, byteconv.B2S(path), ".", -1)
+	return ctx.get2(ctx.bufS)
+}
+
+func (ctx *Ctx) get2(path []string) any {
+	if len(path) == 0 {
+		return nil
+	}
+
+	// Reset error to avoid catching errors from previous nodes.
+	ctx.Err = nil
+
 	// Special case: check square brackets on counter loops.
 	// See Ctx.replaceQB().
 	if ctx.chQB {
-		path = ctx.replaceQB(path)
-	}
-
-	// Split path to separate words using dot as separator.
-	// So, path user.Bio.Birthday will convert to []string{"user", "Bio", "Birthday"}
-	ctx.bufS = ctx.bufS[:0]
-	ctx.bufS = bytealg.AppendSplitString(ctx.bufS, byteconv.B2S(path), ".", -1)
-	if len(ctx.bufS) == 0 {
-		return nil
+		path = append(ctx.bufS[:0], path...)
+		path = ctx.replaceQB2(path)
 	}
 
 	// Look for first path chunk in vars.
 	for i := 0; i < ctx.ln; i++ {
 		v := &ctx.vars[i]
-		if v.key == ctx.bufS[0] {
+		if v.key == path[0] {
 			// Var found.
 			if v.val == nil && len(v.buf) > 0 {
 				// Special case: var is a byte slice.
@@ -376,7 +385,7 @@ func (ctx *Ctx) get(path []byte) any {
 			// Inspect variable using inspector object.
 			// Give search path as list of split path minus first key, e.g. []string{"Bio", "Birthday"}
 			ctx.bufX = nil
-			ctx.Err = v.ins.GetTo(v.val, &ctx.bufX, ctx.bufS[1:]...)
+			ctx.Err = v.ins.GetTo(v.val, &ctx.bufX, path[1:]...)
 			if ctx.Err != nil {
 				return nil
 			}
@@ -541,6 +550,29 @@ func (ctx *Ctx) replaceQB(path []byte) []byte {
 		ctx.chQB = true
 		ctx.BufAcc.Write(path[qbRi+1:])
 		path = ctx.BufAcc.StakedBytes()
+	}
+	return path
+}
+
+func (ctx *Ctx) replaceQB2(path []string) []string {
+	for i := 0; i < len(path); i++ {
+		s := path[i]
+		if len(s) < 2 {
+			continue
+		}
+		if s[0] == '[' && s[len(s)-1] == ']' {
+			key := s[1 : len(s)-1]
+			ctx.chQB = false
+			if ctx.bufX = ctx.get2([]string{key}); ctx.bufX != nil {
+				if err := ctx.BufAcc.StakeOut().WriteX(ctx.bufX).Error(); err != nil {
+					ctx.Err = err
+					ctx.chQB = true
+					return nil
+				}
+			}
+			path[i] = ctx.BufAcc.StakedString()
+			ctx.chQB = true
+		}
 	}
 	return path
 }
