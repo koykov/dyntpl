@@ -344,7 +344,11 @@ func (ctx *Ctx) get(path []byte) any {
 
 	// Split path to separate words using dot as separator.
 	// So, path user.Bio.Birthday will convert to []string{"user", "Bio", "Birthday"}
-	ctx.bufS = tokenize(ctx.bufS[:0], byteconv.B2S(path))
+	tknfn := tokenize
+	if ctx.chQB {
+		tknfn = tokenize1
+	}
+	ctx.bufS = tknfn(ctx.bufS[:0], byteconv.B2S(path))
 	return ctx.get2(ctx.bufS)
 }
 

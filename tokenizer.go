@@ -20,6 +20,17 @@ func Tokenize[T byteseq.Q](dst []T, s T) []T {
 
 func tokenize(dst []string, s string) []string {
 	var tkn indextoken.Tokenizer[string]
+	for {
+		t := tkn.Next(s)
+		if len(t) == 0 {
+			return dst
+		}
+		dst = append(dst, t)
+	}
+}
+
+func tokenize1(dst []string, s string) []string {
+	var tkn indextoken.Tokenizer[string]
 	tkn.KeepSquareBrackets()
 	for {
 		t := tkn.Next(s)
