@@ -363,8 +363,9 @@ func (ctx *Ctx) get2(path []string) any {
 	// Special case: check square brackets on counter loops.
 	// See Ctx.replaceQB().
 	if ctx.chQB {
-		path = append(ctx.bufS[:0], path...)
-		path = ctx.replaceQB2(path)
+		off := len(ctx.bufS)
+		ctx.bufS = ctx.replaceQB2(ctx.bufS, path)
+		ctx.bufS, path = ctx.bufS[:off], ctx.bufS[off:]
 	}
 
 	// Look for first path chunk in vars.
@@ -556,7 +557,7 @@ func (ctx *Ctx) replaceQB(path []byte) []byte {
 	return path
 }
 
-func (ctx *Ctx) replaceQB2(path []string) []string {
+func (ctx *Ctx) replaceQB2(dst, path []string) []string {
 	for i := 0; i < len(path); i++ {
 		s := path[i]
 		if len(s) < 2 {
@@ -576,7 +577,7 @@ func (ctx *Ctx) replaceQB2(path []string) []string {
 			ctx.chQB = true
 		}
 	}
-	return path
+	return dst
 }
 
 // Get new or existing byte writer.
