@@ -9,7 +9,7 @@ require (
 	github.com/koykov/byteseq v1.0.2
 	github.com/koykov/clock v1.1.6
 	github.com/koykov/inspector v1.4.11
-	github.com/koykov/simd v0.0.7-0.20251213214238-d8123b9523e4
+	github.com/koykov/simd v0.0.9
 )
 
 require (
