@@ -304,6 +304,7 @@ func (p *parser) processCtl(nodes []node, root *node, ctl []byte, pos int) ([]no
 				typ:   typeTpl,
 				raw:   raw,
 				rawa:  tokenize1(nil, byteconv.B2S(raw)),
+				hasqb: p.hasqb(raw),
 				mod:   mod_,
 				noesc: noesc,
 			}}}
@@ -314,6 +315,7 @@ func (p *parser) processCtl(nodes []node, root *node, ctl []byte, pos int) ([]no
 				typ:   typeTpl,
 				raw:   raw,
 				rawa:  tokenize1(nil, byteconv.B2S(raw)),
+				hasqb: p.hasqb(raw),
 				mod:   mod_,
 				noesc: noesc,
 			}}}
@@ -334,6 +336,7 @@ func (p *parser) processCtl(nodes []node, root *node, ctl []byte, pos int) ([]no
 				typ:   typeTpl,
 				raw:   raw,
 				rawa:  tokenize1(nil, byteconv.B2S(raw)),
+				hasqb: p.hasqb(raw),
 				mod:   mod_,
 				noesc: noesc,
 			}}}
@@ -344,6 +347,7 @@ func (p *parser) processCtl(nodes []node, root *node, ctl []byte, pos int) ([]no
 				typ:   typeTpl,
 				raw:   raw,
 				rawa:  tokenize1(nil, byteconv.B2S(raw)),
+				hasqb: p.hasqb(raw),
 				mod:   mod_,
 				noesc: noesc,
 			}}}
@@ -370,6 +374,7 @@ func (p *parser) processCtl(nodes []node, root *node, ctl []byte, pos int) ([]no
 			root.raw, root.mod, root.noesc = p.extractMods(bytealg.Trim(ct, ctlTrimAll), nil)
 		}
 		root.rawa = tokenize1(root.rawa, byteconv.B2S(root.raw))
+		root.hasqb = p.hasqb(root.raw)
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
 		return nodes, offset, up, err
@@ -1134,4 +1139,9 @@ func (p *parser) extractArgs(raw []byte) []*arg {
 		off += pos + 1
 	}
 	return r
+}
+
+func (p *parser) hasqb(raw []byte) bool {
+	i, j := bytes.IndexByte(raw, '['), bytes.IndexByte(raw, ']')
+	return i >= 0 && j > 0 && i < j
 }
