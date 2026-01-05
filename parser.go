@@ -303,7 +303,7 @@ func (p *parser) processCtl(nodes []node, root *node, ctl []byte, pos int) ([]no
 			nodeTrue := node{typ: typeCondTrue, child: []node{{
 				typ:   typeTpl,
 				raw:   raw,
-				rawa:  tokenize(nil, byteconv.B2S(raw)),
+				rawa:  tokenize1(nil, byteconv.B2S(raw)),
 				mod:   mod_,
 				noesc: noesc,
 			}}}
@@ -313,7 +313,7 @@ func (p *parser) processCtl(nodes []node, root *node, ctl []byte, pos int) ([]no
 			nodeFalse := node{typ: typeCondFalse, child: []node{{
 				typ:   typeTpl,
 				raw:   raw,
-				rawa:  tokenize(nil, byteconv.B2S(raw)),
+				rawa:  tokenize1(nil, byteconv.B2S(raw)),
 				mod:   mod_,
 				noesc: noesc,
 			}}}
@@ -333,7 +333,7 @@ func (p *parser) processCtl(nodes []node, root *node, ctl []byte, pos int) ([]no
 			nodeTrue := node{typ: typeCondTrue, child: []node{{
 				typ:   typeTpl,
 				raw:   raw,
-				rawa:  tokenize(nil, byteconv.B2S(raw)),
+				rawa:  tokenize1(nil, byteconv.B2S(raw)),
 				mod:   mod_,
 				noesc: noesc,
 			}}}
@@ -343,7 +343,7 @@ func (p *parser) processCtl(nodes []node, root *node, ctl []byte, pos int) ([]no
 			nodeFalse := node{typ: typeCondFalse, child: []node{{
 				typ:   typeTpl,
 				raw:   raw,
-				rawa:  tokenize(nil, byteconv.B2S(raw)),
+				rawa:  tokenize1(nil, byteconv.B2S(raw)),
 				mod:   mod_,
 				noesc: noesc,
 			}}}
@@ -369,7 +369,7 @@ func (p *parser) processCtl(nodes []node, root *node, ctl []byte, pos int) ([]no
 		} else {
 			root.raw, root.mod, root.noesc = p.extractMods(bytealg.Trim(ct, ctlTrimAll), nil)
 		}
-		root.rawa = tokenize(root.rawa, byteconv.B2S(root.raw))
+		root.rawa = tokenize1(root.rawa, byteconv.B2S(root.raw))
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
 		return nodes, offset, up, err

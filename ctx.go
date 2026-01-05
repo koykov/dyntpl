@@ -561,6 +561,7 @@ func (ctx *Ctx) replaceQB2(dst, path []string) []string {
 	for i := 0; i < len(path); i++ {
 		s := path[i]
 		if len(s) < 2 {
+			dst = append(dst, s)
 			continue
 		}
 		if s[0] == '[' && s[len(s)-1] == ']' {
@@ -573,9 +574,11 @@ func (ctx *Ctx) replaceQB2(dst, path []string) []string {
 					return nil
 				}
 			}
-			path[i] = ctx.BufAcc.StakedString()
+			dst = append(dst, ctx.BufAcc.StakedString())
 			ctx.chQB = true
+			continue
 		}
+		dst = append(dst, s)
 	}
 	return dst
 }
