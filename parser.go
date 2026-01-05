@@ -300,11 +300,25 @@ func (p *parser) processCtl(nodes []node, root *node, ctl []byte, pos int) ([]no
 			root.condL, root.condR, root.condStaticL, root.condStaticR, root.condOp = p.parseCondExpr(reTplTernaryCondExpr, ct)
 
 			raw, mod_, noesc := p.extractMods(bytealg.Trim(m[5], space), m[1])
-			nodeTrue := node{typ: typeCondTrue, child: []node{{typ: typeTpl, raw: raw, mod: mod_, noesc: noesc}}}
+			nodeTrue := node{typ: typeCondTrue, child: []node{{
+				typ:   typeTpl,
+				raw:   raw,
+				rawa:  tokenize1(nil, byteconv.B2S(raw)),
+				hasqb: p.hasqb(raw),
+				mod:   mod_,
+				noesc: noesc,
+			}}}
 			root.child = append(root.child, nodeTrue)
 
 			raw, mod_, noesc = p.extractMods(bytealg.Trim(m[6], space), m[1])
-			nodeFalse := node{typ: typeCondFalse, child: []node{{typ: typeTpl, raw: raw, mod: mod_, noesc: noesc}}}
+			nodeFalse := node{typ: typeCondFalse, child: []node{{
+				typ:   typeTpl,
+				raw:   raw,
+				rawa:  tokenize1(nil, byteconv.B2S(raw)),
+				hasqb: p.hasqb(raw),
+				mod:   mod_,
+				noesc: noesc,
+			}}}
 			root.child = append(root.child, nodeFalse)
 		} else if m = reTplTernaryHelper.FindSubmatch(ct); m != nil {
 			root.typ = typeCond
@@ -318,11 +332,25 @@ func (p *parser) processCtl(nodes []node, root *node, ctl []byte, pos int) ([]no
 			}
 
 			raw, mod_, noesc := p.extractMods(bytealg.Trim(m[4], space), m[1])
-			nodeTrue := node{typ: typeCondTrue, child: []node{{typ: typeTpl, raw: raw, mod: mod_, noesc: noesc}}}
+			nodeTrue := node{typ: typeCondTrue, child: []node{{
+				typ:   typeTpl,
+				raw:   raw,
+				rawa:  tokenize1(nil, byteconv.B2S(raw)),
+				hasqb: p.hasqb(raw),
+				mod:   mod_,
+				noesc: noesc,
+			}}}
 			root.child = append(root.child, nodeTrue)
 
 			raw, mod_, noesc = p.extractMods(bytealg.Trim(m[5], space), m[1])
-			nodeFalse := node{typ: typeCondFalse, child: []node{{typ: typeTpl, raw: raw, mod: mod_, noesc: noesc}}}
+			nodeFalse := node{typ: typeCondFalse, child: []node{{
+				typ:   typeTpl,
+				raw:   raw,
+				rawa:  tokenize1(nil, byteconv.B2S(raw)),
+				hasqb: p.hasqb(raw),
+				mod:   mod_,
+				noesc: noesc,
+			}}}
 			root.child = append(root.child, nodeFalse)
 		} else if m = reTplPS.FindSubmatch(ct); m != nil {
 			// Tpl with prefix and suffix found.
@@ -345,6 +373,8 @@ func (p *parser) processCtl(nodes []node, root *node, ctl []byte, pos int) ([]no
 		} else {
 			root.raw, root.mod, root.noesc = p.extractMods(bytealg.Trim(ct, ctlTrimAll), nil)
 		}
+		root.rawa = tokenize1(root.rawa, byteconv.B2S(root.raw))
+		root.hasqb = p.hasqb(root.raw)
 		nodes = addNode(nodes, *root)
 		offset = pos + len(ctl)
 		return nodes, offset, up, err
@@ -1051,11 +1081,11 @@ func (p *parser) extractMods(t, outm []byte) ([]byte, []mod, bool) {
 // Get list of arguments of modifier or helper, ex:
 // {%= variable|mod(arg0, ..., argN) %}
 //
-//	^             ^
+//	________________^             ^
 //
 // {% if condHelper(arg0, ..., argN) %}...{% endif %}
 //
-//	^             ^
+//	________________^             ^
 func (p *parser) extractArgs(raw []byte) []*arg {
 	r := make([]*arg, 0)
 	if len(raw) == 0 {
@@ -1109,4 +1139,9 @@ func (p *parser) extractArgs(raw []byte) []*arg {
 		off += pos + 1
 	}
 	return r
+}
+
+func (p *parser) hasqb(raw []byte) bool {
+	i, j := bytes.IndexByte(raw, '['), bytes.IndexByte(raw, ']')
+	return i >= 0 && j > 0 && i < j
 }

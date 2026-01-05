@@ -177,7 +177,7 @@ func (t *Tpl) writeNode(w io.Writer, node *node, ctx *Ctx) (err error) {
 		}
 	case typeTpl:
 		// Get data from the context.
-		raw := ctx.get(node.raw)
+		raw := ctx.get2(node.rawa)
 		if ctx.Err != nil {
 			err = ctx.Err
 			return

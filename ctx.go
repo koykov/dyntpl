@@ -18,7 +18,7 @@ type Ctx struct {
 	vars []ctxVar
 	ln   int
 	// Check square brackets flag.
-	chQB bool
+	chQB bool // todo candidate to remove
 	// Check json quote/escape/encode flags.
 	chJQ, chHE, chUE, noesc bool
 	// Internal buffers.
@@ -342,24 +342,36 @@ func (ctx *Ctx) get(path []byte) any {
 	// Reset error to avoid catching errors from previous nodes.
 	ctx.Err = nil
 
+	// Split path to separate words using dot as separator.
+	// So, path user.Bio.Birthday will convert to []string{"user", "Bio", "Birthday"}
+	tknfn := tokenize
+	if ctx.chQB {
+		tknfn = tokenize1
+	}
+	ctx.bufS = tknfn(ctx.bufS[:0], byteconv.B2S(path))
+	return ctx.get2(ctx.bufS)
+}
+
+func (ctx *Ctx) get2(path []string) any {
+	if len(path) == 0 {
+		return nil
+	}
+
+	// Reset error to avoid catching errors from previous nodes.
+	ctx.Err = nil
+
 	// Special case: check square brackets on counter loops.
 	// See Ctx.replaceQB().
 	if ctx.chQB {
-		path = ctx.replaceQB(path)
-	}
-
-	// Split path to separate words using dot as separator.
-	// So, path user.Bio.Birthday will convert to []string{"user", "Bio", "Birthday"}
-	ctx.bufS = ctx.bufS[:0]
-	ctx.bufS = bytealg.AppendSplitString(ctx.bufS, byteconv.B2S(path), ".", -1)
-	if len(ctx.bufS) == 0 {
-		return nil
+		off := len(ctx.bufS)
+		ctx.bufS = ctx.replaceQB2(ctx.bufS, path)
+		ctx.bufS, path = ctx.bufS[:off], ctx.bufS[off:]
 	}
 
 	// Look for first path chunk in vars.
 	for i := 0; i < ctx.ln; i++ {
 		v := &ctx.vars[i]
-		if v.key == ctx.bufS[0] {
+		if v.key == path[0] {
 			// Var found.
 			if v.val == nil && len(v.buf) > 0 {
 				// Special case: var is a byte slice.
@@ -376,7 +388,7 @@ func (ctx *Ctx) get(path []byte) any {
 			// Inspect variable using inspector object.
 			// Give search path as list of split path minus first key, e.g. []string{"Bio", "Birthday"}
 			ctx.bufX = nil
-			ctx.Err = v.ins.GetTo(v.val, &ctx.bufX, ctx.bufS[1:]...)
+			ctx.Err = v.ins.GetTo(v.val, &ctx.bufX, path[1:]...)
 			if ctx.Err != nil {
 				return nil
 			}
@@ -522,6 +534,8 @@ func (ctx *Ctx) rloop(path []byte, node *node, tpl *Tpl, w io.Writer) {
 // user.History[i] -> user.History.0, user.History.1, ...
 // , since inspector doesn't support variadic paths.
 func (ctx *Ctx) replaceQB(path []byte) []byte {
+	// return path
+	// todo remove me
 	qbLi := bytes.Index(path, qbL)
 	qbRi := bytes.Index(path, qbR)
 	if qbLi != -1 && qbRi != -1 && qbLi < qbRi && qbRi < len(path) {
@@ -541,6 +555,32 @@ func (ctx *Ctx) replaceQB(path []byte) []byte {
 		path = ctx.BufAcc.StakedBytes()
 	}
 	return path
+}
+
+func (ctx *Ctx) replaceQB2(dst, path []string) []string {
+	for i := 0; i < len(path); i++ {
+		s := path[i]
+		if len(s) < 2 {
+			dst = append(dst, s)
+			continue
+		}
+		if s[0] == '[' && s[len(s)-1] == ']' {
+			key := s[1 : len(s)-1]
+			ctx.chQB = false
+			if ctx.bufX = ctx.get2([]string{key}); ctx.bufX != nil {
+				if err := ctx.BufAcc.StakeOut().WriteX(ctx.bufX).Error(); err != nil {
+					ctx.Err = err
+					ctx.chQB = true
+					return nil
+				}
+			}
+			dst = append(dst, ctx.BufAcc.StakedString())
+			ctx.chQB = true
+			continue
+		}
+		dst = append(dst, s)
+	}
+	return dst
 }
 
 // Get new or existing byte writer.
