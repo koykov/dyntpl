@@ -24,6 +24,7 @@ type Ctx struct {
 	// Internal buffers.
 	buf   []byte
 	bufS  []string
+	bufS1 []string
 	bufI  int
 	bufX  any
 	bufA  []any
@@ -309,6 +310,7 @@ func (ctx *Ctx) Reset() {
 	ctx.BufX = nil
 	ctx.chQB, ctx.chJQ, ctx.chHE, ctx.chUE = false, false, false, false
 	ctx.bufS = ctx.bufS[:0]
+	ctx.bufS1 = ctx.bufS1[:0]
 	ctx.bufCB.Reset()
 	ctx.BufAcc.Reset()
 	ctx.bufMO.Reset()
@@ -567,7 +569,8 @@ func (ctx *Ctx) replaceQB2(dst, path []string) []string {
 		if s[0] == '[' && s[len(s)-1] == ']' {
 			key := s[1 : len(s)-1]
 			ctx.chQB = false
-			if ctx.bufX = ctx.get2([]string{key}); ctx.bufX != nil {
+			ctx.bufS1 = append(ctx.bufS1[:0], key)
+			if ctx.bufX = ctx.get2(ctx.bufS1); ctx.bufX != nil {
 				if err := ctx.BufAcc.StakeOut().WriteX(ctx.bufX).Error(); err != nil {
 					ctx.Err = err
 					ctx.chQB = true
