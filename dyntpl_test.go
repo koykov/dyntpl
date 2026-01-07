@@ -36,6 +36,7 @@ func TestTpl(t *testing.T) {
 	t.Run("simple", testTpl)
 	t.Run("switch", testTpl)
 	t.Run("switchNoCondition", testTpl)
+	t.Run("map", testTpl)
 	t.Run("field404", testTpl)
 	t.Run("strAnyMap", func(t *testing.T) {
 		key := getTBName(t)

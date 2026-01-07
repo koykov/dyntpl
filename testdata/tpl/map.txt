@@ -1,0 +1,4 @@
+flags:
+export: 17
+rw: 7
+ro: 4
