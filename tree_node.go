@@ -6,7 +6,7 @@ package dyntpl
 type node struct {
 	typ    rtype
 	raw    []byte
-	rawa   []string
+	rawa   [2][]string
 	hasqb  bool
 	prefix []byte
 	suffix []byte
