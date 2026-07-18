@@ -104,6 +104,11 @@ func init() {
 {%= date|time::add("+1 minute")|time::date(time::StampNano) %}{% endl %} // Jan 21 20:05:26.000000555
 {%= date|time::add("+1 minutes")|time::date(time::StampNano) %}		 // Jan 21 20:05:26.000000555
 `)
+	RegisterModFnNS("time", "format_duration", "format_dur", modDurationFormat).
+		WithParam("duration int", "time.Duration representation as integer number").
+		WithDescription("Modifier `time::duration_format` returns a textual representation of the duration value.").
+		WithExample(`{%= dur|time::format_duration() %} // 15s
+{%= time::format_duration(dur) %} // 135µs`)
 
 	// Register math modifiers.
 	RegisterModFnNS("math", "abs", "", modAbs).

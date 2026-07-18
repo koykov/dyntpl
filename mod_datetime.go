@@ -121,3 +121,78 @@ func dateConv(val any) (t time.Time, ok bool) {
 	}
 	return
 }
+
+func modDurationFormat(ctx *Ctx, buf *any, val any, args []any) (err error) {
+	var (
+		d  time.Duration
+		ok bool
+	)
+
+	if val != nil {
+		d, ok = durConv(val)
+	} else if len(args) > 0 {
+		d, ok = durConv(args[0])
+	}
+	if !ok {
+		return
+	}
+
+	ctx.BufAcc.StakeOut().WriteString(d.String())
+	ctx.BufModOut(buf, ctx.BufAcc.StakedBytes())
+
+	return
+}
+
+func durConv(val any) (t time.Duration, ok bool) {
+	ok = true
+	switch x := val.(type) {
+	case time.Duration:
+		t = x
+	case *time.Duration:
+		t = *x
+	case int:
+		t = time.Duration(x)
+	case int8:
+		t = time.Duration(x)
+	case int16:
+		t = time.Duration(x)
+	case int32:
+		t = time.Duration(x)
+	case int64:
+		t = time.Duration(x)
+	case uint:
+		t = time.Duration(x)
+	case uint8:
+		t = time.Duration(x)
+	case uint16:
+		t = time.Duration(x)
+	case uint32:
+		t = time.Duration(x)
+	case uint64:
+		t = time.Duration(x)
+	case *int:
+		t = time.Duration(*x)
+	case *int8:
+		t = time.Duration(*x)
+	case *int16:
+		t = time.Duration(*x)
+	case *int32:
+		t = time.Duration(*x)
+	case *int64:
+		t = time.Duration(*x)
+	case *uint:
+		t = time.Duration(*x)
+	case *uint8:
+		t = time.Duration(*x)
+	case *uint16:
+		t = time.Duration(*x)
+	case *uint32:
+		t = time.Duration(*x)
+	case *uint64:
+		t = time.Duration(*x)
+	default:
+		ok = false
+		return
+	}
+	return
+}
