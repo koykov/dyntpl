@@ -19,6 +19,13 @@ var (
 	dtNative = time.Unix(0, 1233810057012345600).In(loc)
 	dtTZ     = time.Date(1994, 9, 17, 20, 4, 26, 0, time.FixedZone("EST", -18000))
 	dtAdd    = time.Date(2012, 1, 21, 20, 4, 26, 555, time.UTC)
+
+	durNs = time.Nanosecond * 237
+	durUs = time.Microsecond * 74
+	durMs = -time.Millisecond * 532
+	durS  = time.Second * 66
+	durM  = time.Minute * 13
+	durH  = time.Hour * 26
 )
 
 func TestModDatetime(t *testing.T) {
@@ -91,6 +98,13 @@ func TestModDatetime(t *testing.T) {
 	t.Run("addC", func(t *testing.T) { testModWA(t, modArgs{"date": dtAdd}) })
 	t.Run("addMIL", func(t *testing.T) { testModWA(t, modArgs{"date": dtAdd}) })
 	t.Run("addMixed", func(t *testing.T) { testModWA(t, modArgs{"date": dtAdd}) })
+
+	t.Run("durNs", func(t *testing.T) { testModWA(t, modArgs{"dur": durNs}) })
+	t.Run("durUs", func(t *testing.T) { testModWA(t, modArgs{"dur": durUs}) })
+	t.Run("durMs", func(t *testing.T) { testModWA(t, modArgs{"dur": durMs}) })
+	t.Run("durS", func(t *testing.T) { testModWA(t, modArgs{"dur": durS}) })
+	t.Run("durM", func(t *testing.T) { testModWA(t, modArgs{"dur": durM}) })
+	t.Run("durH", func(t *testing.T) { testModWA(t, modArgs{"dur": durH}) })
 }
 
 func BenchmarkModDatetime(b *testing.B) {
@@ -100,4 +114,6 @@ func BenchmarkModDatetime(b *testing.B) {
 	b.Run("dateStampNano", func(b *testing.B) { benchModWA(b, modArgs{"date": dtNative}) })
 
 	b.Run("addMixedBench", func(b *testing.B) { benchModWA(b, modArgs{"date": dtAdd}) })
+
+	b.Run("durH", func(b *testing.B) { benchModWA(b, modArgs{"dur": durH}) })
 }
