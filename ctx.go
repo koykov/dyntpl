@@ -446,9 +446,15 @@ func (ctx *Ctx) cmpLC(lc lc, path []byte, cond op, right []byte) bool {
 		if v.key == ctx.bufS[0] {
 			switch lc {
 			case lcLen:
-				ctx.Err = v.ins.Length(v.val, &ctx.bufI, ctx.bufS[1:]...)
+				if ctx.bufX = v.val; ctx.bufX == nil && len(v.buf) > 0 {
+					ctx.bufX = &v.buf
+				}
+				ctx.Err = v.ins.Length(ctx.bufX, &ctx.bufI, ctx.bufS[1:]...)
 			case lcCap:
-				ctx.Err = v.ins.Capacity(v.val, &ctx.bufI, ctx.bufS[1:]...)
+				if ctx.bufX = v.val; ctx.bufX == nil && len(v.buf) > 0 {
+					ctx.bufX = &v.buf
+				}
+				ctx.Err = v.ins.Capacity(ctx.bufX, &ctx.bufI, ctx.bufS[1:]...)
 			default:
 				return false
 			}
