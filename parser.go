@@ -101,14 +101,14 @@ var (
 	reCutFmt      = regexp.MustCompile(`\n+\t*\s*`)
 
 	// Regexp to parse print instructions.
-	reTplPS              = regexp.MustCompile(`^([jhqluacJfF.\d]*)=\s*(.*) (?:prefix|pfx) (.*) (?:suffix|sfx) (.*)`)
-	reTplP               = regexp.MustCompile(`^([jhqluacJfF.\d]*)=\s*(.*) (?:prefix|pfx) (.*)`)
-	reTplS               = regexp.MustCompile(`^([jhqluacJfF.\d]*)=\s*(.*) (?:suffix|sfx) (.*)`)
-	reTpl                = regexp.MustCompile(`^([jhqluacJfF.\d]*)=\s*(.*)`)
+	reTplPS              = regexp.MustCompile(`^([jhqluacJfFx.\d]*)=\s*(.*) (?:prefix|pfx) (.*) (?:suffix|sfx) (.*)`)
+	reTplP               = regexp.MustCompile(`^([jhqluacJfFx.\d]*)=\s*(.*) (?:prefix|pfx) (.*)`)
+	reTplS               = regexp.MustCompile(`^([jhqluacJfFx.\d]*)=\s*(.*) (?:suffix|sfx) (.*)`)
+	reTpl                = regexp.MustCompile(`^([jhqluacJfFx.\d]*)=\s*(.*)`)
 	reTplCB              = regexp.MustCompile(`^([^(\s]+)\(([^)]*)\)`)
-	reTplTernary         = regexp.MustCompile(`^([jhqluacJfF.\d]*)=\s*(.*)(==|!=|>=|<=|>|<)(.*)\s*\?\s*([^:]+):(.*)`)
-	reTplTernaryHelper   = regexp.MustCompile(`^([jhqluacJfF.\d]*)=\s*([^(]+)\(*([^)]*)\)\s*\?\s*([^:]+):(.*)`)
-	reTplTernaryCondExpr = regexp.MustCompile(`[jhqluacJfF.\d]*=\s*(.*)(==|!=|>=|<=|>|<)([^?]+)`)
+	reTplTernary         = regexp.MustCompile(`^([jhqluacJfFx.\d]*)=\s*(.*)(==|!=|>=|<=|>|<)(.*)\s*\?\s*([^:]+):(.*)`)
+	reTplTernaryHelper   = regexp.MustCompile(`^([jhqluacJfFx.\d]*)=\s*([^(]+)\(*([^)]*)\)\s*\?\s*([^:]+):(.*)`)
+	reTplTernaryCondExpr = regexp.MustCompile(`[jhqluacJfFx.\d]*=\s*(.*)(==|!=|>=|<=|>|<)([^?]+)`)
 	reModPfxF            = regexp.MustCompile(`([fF]+)\.*(\d*).*`)
 	reModNoVar           = regexp.MustCompile(`([^(]+)\(([^)]*)\)`)
 	reMod                = regexp.MustCompile(`([^(]+)\(*([^)]*)\)*`)
@@ -1035,6 +1035,17 @@ func (p *parser) extractMods(t, outm []byte) ([]byte, []mod, bool) {
 					// - {%J= ... %} - attribute escape.
 					fn := GetModFn("jsEscape")
 					c := getc(outm, 'J', off)
+					off += c
+					a := arg{val: []byte(strconv.Itoa(c)), static: true}
+					mods = append(mods, mod{
+						id:  idJS,
+						fn:  fn,
+						arg: []*arg{&a},
+					})
+				} else if outm[off] == 'x' {
+					// - {%x= ... %} - hex encode.
+					fn := GetModFn("hex")
+					c := getc(outm, 'x', off)
 					off += c
 					a := arg{val: []byte(strconv.Itoa(c)), static: true}
 					mods = append(mods, mod{

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nodes>
+	<node type="tpl" val="value">
+		<mods>
+			<mod name="hex"/>
+		</mods>
+	</node>
+	<node type="tpl">
+		<mods>
+			<mod name="hex" arg0="value"/>
+		</mods>
+	</node>
+	<node type="tpl" val="value">
+		<mods>
+			<mod name="jsEscape" sarg0="1"/>
+		</mods>
+	</node>
+</nodes>
