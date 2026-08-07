@@ -59,6 +59,7 @@ func init() {
 	// Register builtin encoding modifiers.
 	RegisterModFn("hex", "", modHex).
 		WithDescription("Convert value to hex representation.").
+		WithExample("`{%= value|hex %}`").
 		WithExample("`{%= hex(value) %}`").
 		WithExample("`{%x= value %}`")
 
