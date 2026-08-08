@@ -81,6 +81,8 @@ var (
 	idA   = []byte("attrEscape")
 	idC   = []byte("cssEscape")
 	idJS  = []byte("jsEscape")
+	idHex = []byte("hex")
+	idBin = []byte("bin")
 	outmf = 'f'                 // float precision floor
 	idf   = []byte("floorPrec") // float precision floor
 	outmF = 'F'                 // float precision ceil
@@ -101,14 +103,14 @@ var (
 	reCutFmt      = regexp.MustCompile(`\n+\t*\s*`)
 
 	// Regexp to parse print instructions.
-	reTplPS              = regexp.MustCompile(`^([jhqluacJfFx.\d]*)=\s*(.*) (?:prefix|pfx) (.*) (?:suffix|sfx) (.*)`)
-	reTplP               = regexp.MustCompile(`^([jhqluacJfFx.\d]*)=\s*(.*) (?:prefix|pfx) (.*)`)
-	reTplS               = regexp.MustCompile(`^([jhqluacJfFx.\d]*)=\s*(.*) (?:suffix|sfx) (.*)`)
-	reTpl                = regexp.MustCompile(`^([jhqluacJfFx.\d]*)=\s*(.*)`)
+	reTplPS              = regexp.MustCompile(`^([jhqluacJfFxb.\d]*)=\s*(.*) (?:prefix|pfx) (.*) (?:suffix|sfx) (.*)`)
+	reTplP               = regexp.MustCompile(`^([jhqluacJfFxb.\d]*)=\s*(.*) (?:prefix|pfx) (.*)`)
+	reTplS               = regexp.MustCompile(`^([jhqluacJfFxb.\d]*)=\s*(.*) (?:suffix|sfx) (.*)`)
+	reTpl                = regexp.MustCompile(`^([jhqluacJfFxb.\d]*)=\s*(.*)`)
 	reTplCB              = regexp.MustCompile(`^([^(\s]+)\(([^)]*)\)`)
-	reTplTernary         = regexp.MustCompile(`^([jhqluacJfFx.\d]*)=\s*(.*)(==|!=|>=|<=|>|<)(.*)\s*\?\s*([^:]+):(.*)`)
-	reTplTernaryHelper   = regexp.MustCompile(`^([jhqluacJfFx.\d]*)=\s*([^(]+)\(*([^)]*)\)\s*\?\s*([^:]+):(.*)`)
-	reTplTernaryCondExpr = regexp.MustCompile(`[jhqluacJfFx.\d]*=\s*(.*)(==|!=|>=|<=|>|<)([^?]+)`)
+	reTplTernary         = regexp.MustCompile(`^([jhqluacJfFxb.\d]*)=\s*(.*)(==|!=|>=|<=|>|<)(.*)\s*\?\s*([^:]+):(.*)`)
+	reTplTernaryHelper   = regexp.MustCompile(`^([jhqluacJfFxb.\d]*)=\s*([^(]+)\(*([^)]*)\)\s*\?\s*([^:]+):(.*)`)
+	reTplTernaryCondExpr = regexp.MustCompile(`[jhqluacJfFxb.\d]*=\s*(.*)(==|!=|>=|<=|>|<)([^?]+)`)
 	reModPfxF            = regexp.MustCompile(`([fF]+)\.*(\d*).*`)
 	reModNoVar           = regexp.MustCompile(`([^(]+)\(([^)]*)\)`)
 	reMod                = regexp.MustCompile(`([^(]+)\(*([^)]*)\)*`)
@@ -1049,7 +1051,18 @@ func (p *parser) extractMods(t, outm []byte) ([]byte, []mod, bool) {
 					off += c
 					a := arg{val: []byte(strconv.Itoa(c)), static: true}
 					mods = append(mods, mod{
-						id:  idJS,
+						id:  idHex,
+						fn:  fn,
+						arg: []*arg{&a},
+					})
+				} else if outm[off] == 'b' {
+					// - {%b= ... %} - hex encode.
+					fn := GetModFn("bin")
+					c := getc(outm, 'b', off)
+					off += c
+					a := arg{val: []byte(strconv.Itoa(c)), static: true}
+					mods = append(mods, mod{
+						id:  idBin,
 						fn:  fn,
 						arg: []*arg{&a},
 					})

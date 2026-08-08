@@ -3,6 +3,8 @@ package dyntpl
 import (
 	"encoding/binary"
 	"math"
+
+	"github.com/koykov/byteconv"
 )
 
 func modHex(ctx *Ctx, buf *any, val any, args []any) error {
@@ -40,6 +42,45 @@ func modHex(ctx *Ctx, buf *any, val any, args []any) error {
 		raw := ctx.BufAcc.WriteBinary(binary.LittleEndian, a).StakedBytes()
 		ctx.BufAcc.StakeOut().WriteHex(raw)
 	}
+	ctx.BufModOut(buf, ctx.BufAcc.StakedBytes())
+
+	return nil
+}
+
+func modBin(ctx *Ctx, buf *any, val any, args []any) error {
+	var a any
+	switch {
+	case val != nil:
+		a = val
+	case len(args) > 0:
+		a = args[0]
+		args = args[1:]
+	default:
+		return ErrModNoArgs
+	}
+
+	var order binary.ByteOrder
+	order = binary.LittleEndian
+	if len(args) > 1 {
+		var orderRaw string
+		if s, ok := ConvStr(args[1]); ok {
+			orderRaw = s
+		} else if b, ok := ConvBytes(args[1]); ok {
+			orderRaw = byteconv.B2S(b)
+		}
+		if len(orderRaw) > 0 {
+			switch orderRaw {
+			case "be", "BE", "big_endian", "bigEndian", "BigEndian":
+				order = binary.BigEndian
+			case "le", "LE", "little_endian", "littleEndian", "LittleEndian":
+				fallthrough
+			default:
+				order = binary.LittleEndian
+			}
+		}
+	}
+
+	ctx.BufAcc.StakeOut().WriteBinary(order, a)
 	ctx.BufModOut(buf, ctx.BufAcc.StakedBytes())
 
 	return nil

@@ -62,6 +62,11 @@ func init() {
 		WithExample("`{%= value|hex %}`").
 		WithExample("`{%= hex(value) %}`").
 		WithExample("`{%x= value %}`")
+	RegisterModFn("bin", "", modBin).
+		WithDescription("Convert value to binary representation.").
+		WithExample("`{%= value|bin %}`").
+		WithExample("`{%= bin(value) %}`").
+		WithExample("`{%b= value %}`")
 
 	// Register builtin round modifiers.
 	RegisterModFn("round", "", modRound).
