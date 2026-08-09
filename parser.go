@@ -1055,6 +1055,17 @@ func (p *parser) extractMods(t, outm []byte) ([]byte, []mod, bool) {
 						fn:  fn,
 						arg: []*arg{&a},
 					})
+				} else if outm[off] == 'o' {
+					// - {%o= ... %} - octal encode.
+					fn := GetModFn("oct")
+					c := getc(outm, 'o', off)
+					off += c
+					a := arg{val: []byte(strconv.Itoa(c)), static: true}
+					mods = append(mods, mod{
+						id:  idBin,
+						fn:  fn,
+						arg: []*arg{&a},
+					})
 				} else if outm[off] == 'b' {
 					// - {%b= ... %} - hex encode.
 					fn := GetModFn("bin")
