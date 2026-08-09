@@ -14,6 +14,7 @@ func modHex(ctx *Ctx, buf *any, val any, args []any) error {
 		a = val
 	case len(args) > 0:
 		a = args[0]
+		args = args[1:]
 	default:
 		return ErrModNoArgs
 	}
@@ -39,7 +40,28 @@ func modHex(ctx *Ctx, buf *any, val any, args []any) error {
 		bits := math.Float64bits(f)
 		ctx.BufAcc.WriteUintBase(bits, 16)
 	} else {
-		raw := ctx.BufAcc.WriteBinary(binary.LittleEndian, a).StakedBytes()
+		var order binary.ByteOrder
+		order = binary.LittleEndian
+		if len(args) > 1 {
+			var orderRaw string
+			if s, ok := ConvStr(args[1]); ok {
+				orderRaw = s
+			} else if b, ok := ConvBytes(args[1]); ok {
+				orderRaw = byteconv.B2S(b)
+			}
+			if len(orderRaw) > 0 {
+				switch orderRaw {
+				case "be", "BE", "big_endian", "bigEndian", "BigEndian":
+					order = binary.BigEndian
+				case "le", "LE", "little_endian", "littleEndian", "LittleEndian":
+					fallthrough
+				default:
+					order = binary.LittleEndian
+				}
+			}
+		}
+
+		raw := ctx.BufAcc.WriteBinary(order, a).StakedBytes()
 		ctx.BufAcc.StakeOut().WriteHex(raw)
 	}
 	ctx.BufModOut(buf, ctx.BufAcc.StakedBytes())
@@ -59,28 +81,58 @@ func modBin(ctx *Ctx, buf *any, val any, args []any) error {
 		return ErrModNoArgs
 	}
 
-	var order binary.ByteOrder
-	order = binary.LittleEndian
-	if len(args) > 1 {
-		var orderRaw string
-		if s, ok := ConvStr(args[1]); ok {
-			orderRaw = s
-		} else if b, ok := ConvBytes(args[1]); ok {
-			orderRaw = byteconv.B2S(b)
+	ctx.BufAcc.StakeOut()
+	if b, ok := ConvBytes(a); ok {
+		for _, c := range b {
+			ctx.BufAcc.WriteUintBase(uint64(c), 2)
 		}
-		if len(orderRaw) > 0 {
-			switch orderRaw {
-			case "be", "BE", "big_endian", "bigEndian", "BigEndian":
-				order = binary.BigEndian
-			case "le", "LE", "little_endian", "littleEndian", "LittleEndian":
-				fallthrough
-			default:
-				order = binary.LittleEndian
+	} else if bb, ok := ConvBytesSlice(a); ok {
+		for i := 0; i < len(bb); i++ {
+			for _, c := range bb[i] {
+				ctx.BufAcc.WriteUintBase(uint64(c), 2)
 			}
 		}
-	}
+	} else if s, ok := ConvStr(a); ok {
+		for _, r := range s {
+			ctx.BufAcc.WriteIntBase(int64(r), 2)
+		}
+	} else if ss, ok := ConvStrSlice(a); ok {
+		for i := 0; i < len(ss); i++ {
+			for _, r := range ss[i] {
+				ctx.BufAcc.WriteIntBase(int64(r), 2)
+			}
+		}
+	} else if i, ok := ConvInt(a); ok {
+		ctx.BufAcc.WriteIntBase(i, 2)
+	} else if u, ok := ConvUint(a); ok {
+		ctx.BufAcc.WriteUintBase(u, 2)
+	} else if f, ok := ConvFloat(a); ok {
+		bits := math.Float64bits(f)
+		ctx.BufAcc.WriteUintBase(bits, 2)
+	} else {
+		var order binary.ByteOrder
+		order = binary.LittleEndian
+		if len(args) > 1 {
+			var orderRaw string
+			if s, ok := ConvStr(args[1]); ok {
+				orderRaw = s
+			} else if b, ok := ConvBytes(args[1]); ok {
+				orderRaw = byteconv.B2S(b)
+			}
+			if len(orderRaw) > 0 {
+				switch orderRaw {
+				case "be", "BE", "big_endian", "bigEndian", "BigEndian":
+					order = binary.BigEndian
+				case "le", "LE", "little_endian", "littleEndian", "LittleEndian":
+					fallthrough
+				default:
+					order = binary.LittleEndian
+				}
+			}
+		}
 
-	ctx.BufAcc.StakeOut().WriteBinary(order, a)
+		ctx.BufAcc.WriteBinary(order, a)
+	}
 	ctx.BufModOut(buf, ctx.BufAcc.StakedBytes())
 
 	return nil
