@@ -70,7 +70,48 @@ func modHex(ctx *Ctx, buf *any, val any, args []any) error {
 }
 
 func modOct(ctx *Ctx, buf *any, val any, args []any) error {
-	// todo implement me
+	var a any
+	switch {
+	case val != nil:
+		a = val
+	case len(args) > 0:
+		a = args[0]
+		args = args[1:]
+	default:
+		return ErrModNoArgs
+	}
+
+	ctx.BufAcc.StakeOut()
+	if b, ok := ConvBytes(a); ok {
+		for _, c := range b {
+			ctx.BufAcc.WriteUintBase(uint64(c), 8)
+		}
+	} else if bb, ok := ConvBytesSlice(a); ok {
+		for i := 0; i < len(bb); i++ {
+			for _, c := range bb[i] {
+				ctx.BufAcc.WriteUintBase(uint64(c), 8)
+			}
+		}
+	} else if s, ok := ConvStr(a); ok {
+		for _, r := range s {
+			ctx.BufAcc.WriteIntBase(int64(r), 8)
+		}
+	} else if ss, ok := ConvStrSlice(a); ok {
+		for i := 0; i < len(ss); i++ {
+			for _, r := range ss[i] {
+				ctx.BufAcc.WriteIntBase(int64(r), 8)
+			}
+		}
+	} else if i, ok := ConvInt(a); ok {
+		ctx.BufAcc.WriteIntBase(i, 8)
+	} else if u, ok := ConvUint(a); ok {
+		ctx.BufAcc.WriteUintBase(u, 8)
+	} else if f, ok := ConvFloat(a); ok {
+		bits := math.Float64bits(f)
+		ctx.BufAcc.WriteUintBase(bits, 8)
+	}
+	ctx.BufModOut(buf, ctx.BufAcc.StakedBytes())
+
 	return nil
 }
 
