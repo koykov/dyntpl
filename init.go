@@ -62,6 +62,11 @@ func init() {
 		WithExample("`{%= value|hex %}`").
 		WithExample("`{%= hex(value) %}`").
 		WithExample("`{%x= value %}`")
+	RegisterModFn("oct", "", modOct).
+		WithDescription("Convert value to octal representation.").
+		WithExample("`{%= value|oct %}`").
+		WithExample("`{%= oct(value) %}`").
+		WithExample("`{%o= value %}`")
 	RegisterModFn("bin", "", modBin).
 		WithDescription("Convert value to binary representation.").
 		WithExample("`{%= value|bin %}`").

@@ -17,6 +17,21 @@
 	</node>
 	<node type="tpl" val="value">
 		<mods>
+			<mod name="oct"/>
+		</mods>
+	</node>
+	<node type="tpl">
+		<mods>
+			<mod name="oct" arg0="value"/>
+		</mods>
+	</node>
+	<node type="tpl" val="value">
+		<mods>
+			<mod name="bin" sarg0="1"/>
+		</mods>
+	</node>
+	<node type="tpl" val="value">
+		<mods>
 			<mod name="bin"/>
 		</mods>
 	</node>

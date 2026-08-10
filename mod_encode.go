@@ -69,6 +69,11 @@ func modHex(ctx *Ctx, buf *any, val any, args []any) error {
 	return nil
 }
 
+func modOct(ctx *Ctx, buf *any, val any, args []any) error {
+	// todo implement me
+	return nil
+}
+
 func modBin(ctx *Ctx, buf *any, val any, args []any) error {
 	var a any
 	switch {

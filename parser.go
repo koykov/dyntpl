@@ -103,14 +103,14 @@ var (
 	reCutFmt      = regexp.MustCompile(`\n+\t*\s*`)
 
 	// Regexp to parse print instructions.
-	reTplPS              = regexp.MustCompile(`^([jhqluacJfFxb.\d]*)=\s*(.*) (?:prefix|pfx) (.*) (?:suffix|sfx) (.*)`)
-	reTplP               = regexp.MustCompile(`^([jhqluacJfFxb.\d]*)=\s*(.*) (?:prefix|pfx) (.*)`)
-	reTplS               = regexp.MustCompile(`^([jhqluacJfFxb.\d]*)=\s*(.*) (?:suffix|sfx) (.*)`)
-	reTpl                = regexp.MustCompile(`^([jhqluacJfFxb.\d]*)=\s*(.*)`)
+	reTplPS              = regexp.MustCompile(`^([jhqluacJfFxob.\d]*)=\s*(.*) (?:prefix|pfx) (.*) (?:suffix|sfx) (.*)`)
+	reTplP               = regexp.MustCompile(`^([jhqluacJfFxob.\d]*)=\s*(.*) (?:prefix|pfx) (.*)`)
+	reTplS               = regexp.MustCompile(`^([jhqluacJfFxob.\d]*)=\s*(.*) (?:suffix|sfx) (.*)`)
+	reTpl                = regexp.MustCompile(`^([jhqluacJfFxob.\d]*)=\s*(.*)`)
 	reTplCB              = regexp.MustCompile(`^([^(\s]+)\(([^)]*)\)`)
-	reTplTernary         = regexp.MustCompile(`^([jhqluacJfFxb.\d]*)=\s*(.*)(==|!=|>=|<=|>|<)(.*)\s*\?\s*([^:]+):(.*)`)
-	reTplTernaryHelper   = regexp.MustCompile(`^([jhqluacJfFxb.\d]*)=\s*([^(]+)\(*([^)]*)\)\s*\?\s*([^:]+):(.*)`)
-	reTplTernaryCondExpr = regexp.MustCompile(`[jhqluacJfFxb.\d]*=\s*(.*)(==|!=|>=|<=|>|<)([^?]+)`)
+	reTplTernary         = regexp.MustCompile(`^([jhqluacJfFxob.\d]*)=\s*(.*)(==|!=|>=|<=|>|<)(.*)\s*\?\s*([^:]+):(.*)`)
+	reTplTernaryHelper   = regexp.MustCompile(`^([jhqluacJfFxob.\d]*)=\s*([^(]+)\(*([^)]*)\)\s*\?\s*([^:]+):(.*)`)
+	reTplTernaryCondExpr = regexp.MustCompile(`[jhqluacJfFxob.\d]*=\s*(.*)(==|!=|>=|<=|>|<)([^?]+)`)
 	reModPfxF            = regexp.MustCompile(`([fF]+)\.*(\d*).*`)
 	reModNoVar           = regexp.MustCompile(`([^(]+)\(([^)]*)\)`)
 	reMod                = regexp.MustCompile(`([^(]+)\(*([^)]*)\)*`)
@@ -371,7 +371,7 @@ func (p *parser) processCtl(nodes []node, root *node, ctl []byte, pos int) ([]no
 			// Simple tpl found.
 			root.raw, root.mod, root.noesc = p.extractMods(bytealg.Trim(m[2], ctlTrimAll), m[1])
 		} else if m = reTplCB.FindSubmatch(ct); m != nil {
-			root.raw, root.mod, root.noesc = p.extractMods(bytealg.Trim(m[0], ctlTrimAll), m[1])
+			root.raw, root.mod, root.noesc = p.extractMods(bytealg.Trim(m[0], ctlTrimAll), nil)
 		} else {
 			root.raw, root.mod, root.noesc = p.extractMods(bytealg.Trim(ct, ctlTrimAll), nil)
 		}
