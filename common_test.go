@@ -65,6 +65,7 @@ func init() {
 	registerTestStages("datetime")
 	registerTestStages("math")
 	registerTestStages("fmt")
+	registerTestStages("encode")
 
 	_ = filepath.Walk("testdata/parser", func(path string, info os.FileInfo, err error) error {
 		if filepath.Ext(path) == ".tpl" {

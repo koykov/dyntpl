@@ -81,6 +81,8 @@ var (
 	idA   = []byte("attrEscape")
 	idC   = []byte("cssEscape")
 	idJS  = []byte("jsEscape")
+	idHex = []byte("hex")
+	idBin = []byte("bin")
 	outmf = 'f'                 // float precision floor
 	idf   = []byte("floorPrec") // float precision floor
 	outmF = 'F'                 // float precision ceil
@@ -101,14 +103,14 @@ var (
 	reCutFmt      = regexp.MustCompile(`\n+\t*\s*`)
 
 	// Regexp to parse print instructions.
-	reTplPS              = regexp.MustCompile(`^([jhqluacJfF.\d]*)=\s*(.*) (?:prefix|pfx) (.*) (?:suffix|sfx) (.*)`)
-	reTplP               = regexp.MustCompile(`^([jhqluacJfF.\d]*)=\s*(.*) (?:prefix|pfx) (.*)`)
-	reTplS               = regexp.MustCompile(`^([jhqluacJfF.\d]*)=\s*(.*) (?:suffix|sfx) (.*)`)
-	reTpl                = regexp.MustCompile(`^([jhqluacJfF.\d]*)=\s*(.*)`)
+	reTplPS              = regexp.MustCompile(`^([jhqluacJfFxob.\d]*)=\s*(.*) (?:prefix|pfx) (.*) (?:suffix|sfx) (.*)`)
+	reTplP               = regexp.MustCompile(`^([jhqluacJfFxob.\d]*)=\s*(.*) (?:prefix|pfx) (.*)`)
+	reTplS               = regexp.MustCompile(`^([jhqluacJfFxob.\d]*)=\s*(.*) (?:suffix|sfx) (.*)`)
+	reTpl                = regexp.MustCompile(`^([jhqluacJfFxob.\d]*)=\s*(.*)`)
 	reTplCB              = regexp.MustCompile(`^([^(\s]+)\(([^)]*)\)`)
-	reTplTernary         = regexp.MustCompile(`^([jhqluacJfF.\d]*)=\s*(.*)(==|!=|>=|<=|>|<)(.*)\s*\?\s*([^:]+):(.*)`)
-	reTplTernaryHelper   = regexp.MustCompile(`^([jhqluacJfF.\d]*)=\s*([^(]+)\(*([^)]*)\)\s*\?\s*([^:]+):(.*)`)
-	reTplTernaryCondExpr = regexp.MustCompile(`[jhqluacJfF.\d]*=\s*(.*)(==|!=|>=|<=|>|<)([^?]+)`)
+	reTplTernary         = regexp.MustCompile(`^([jhqluacJfFxob.\d]*)=\s*(.*)(==|!=|>=|<=|>|<)(.*)\s*\?\s*([^:]+):(.*)`)
+	reTplTernaryHelper   = regexp.MustCompile(`^([jhqluacJfFxob.\d]*)=\s*([^(]+)\(*([^)]*)\)\s*\?\s*([^:]+):(.*)`)
+	reTplTernaryCondExpr = regexp.MustCompile(`[jhqluacJfFxob.\d]*=\s*(.*)(==|!=|>=|<=|>|<)([^?]+)`)
 	reModPfxF            = regexp.MustCompile(`([fF]+)\.*(\d*).*`)
 	reModNoVar           = regexp.MustCompile(`([^(]+)\(([^)]*)\)`)
 	reMod                = regexp.MustCompile(`([^(]+)\(*([^)]*)\)*`)
@@ -369,7 +371,7 @@ func (p *parser) processCtl(nodes []node, root *node, ctl []byte, pos int) ([]no
 			// Simple tpl found.
 			root.raw, root.mod, root.noesc = p.extractMods(bytealg.Trim(m[2], ctlTrimAll), m[1])
 		} else if m = reTplCB.FindSubmatch(ct); m != nil {
-			root.raw, root.mod, root.noesc = p.extractMods(bytealg.Trim(m[0], ctlTrimAll), m[1])
+			root.raw, root.mod, root.noesc = p.extractMods(bytealg.Trim(m[0], ctlTrimAll), nil)
 		} else {
 			root.raw, root.mod, root.noesc = p.extractMods(bytealg.Trim(ct, ctlTrimAll), nil)
 		}
@@ -1039,6 +1041,39 @@ func (p *parser) extractMods(t, outm []byte) ([]byte, []mod, bool) {
 					a := arg{val: []byte(strconv.Itoa(c)), static: true}
 					mods = append(mods, mod{
 						id:  idJS,
+						fn:  fn,
+						arg: []*arg{&a},
+					})
+				} else if outm[off] == 'x' {
+					// - {%x= ... %} - hex encode.
+					fn := GetModFn("hex")
+					c := getc(outm, 'x', off)
+					off += c
+					a := arg{val: []byte(strconv.Itoa(c)), static: true}
+					mods = append(mods, mod{
+						id:  idHex,
+						fn:  fn,
+						arg: []*arg{&a},
+					})
+				} else if outm[off] == 'o' {
+					// - {%o= ... %} - octal encode.
+					fn := GetModFn("oct")
+					c := getc(outm, 'o', off)
+					off += c
+					a := arg{val: []byte(strconv.Itoa(c)), static: true}
+					mods = append(mods, mod{
+						id:  idBin,
+						fn:  fn,
+						arg: []*arg{&a},
+					})
+				} else if outm[off] == 'b' {
+					// - {%b= ... %} - hex encode.
+					fn := GetModFn("bin")
+					c := getc(outm, 'b', off)
+					off += c
+					a := arg{val: []byte(strconv.Itoa(c)), static: true}
+					mods = append(mods, mod{
+						id:  idBin,
 						fn:  fn,
 						arg: []*arg{&a},
 					})

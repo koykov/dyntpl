@@ -56,6 +56,23 @@ func init() {
 	RegisterModFn("raw", "noesc", func(_ *Ctx, _ *any, _ any, _ []any) error { return nil }).
 		WithDescription("Disable value escaping/quoting inside bound tags (`{% jsonescape %}...{% endjsonescape %}`, ...)")
 
+	// Register builtin encoding modifiers.
+	RegisterModFn("hex", "", modHex).
+		WithDescription("Convert value to hex representation.").
+		WithExample("`{%= value|hex %}`").
+		WithExample("`{%= hex(value) %}`").
+		WithExample("`{%x= value %}`")
+	RegisterModFn("oct", "", modOct).
+		WithDescription("Convert value to octal representation.").
+		WithExample("`{%= value|oct %}`").
+		WithExample("`{%= oct(value) %}`").
+		WithExample("`{%o= value %}`")
+	RegisterModFn("bin", "", modBin).
+		WithDescription("Convert value to binary representation.").
+		WithExample("`{%= value|bin %}`").
+		WithExample("`{%= bin(value) %}`").
+		WithExample("`{%b= value %}`")
+
 	// Register builtin round modifiers.
 	RegisterModFn("round", "", modRound).
 		WithDescription("Modifier `round` returns the nearest integer, rounding half away from zero.")
